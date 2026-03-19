@@ -13,8 +13,7 @@ Diferente de aplicativos de investimento comuns, o MesclaInvest foca na transpar
 ### 🖥️ Principais Funcionalidades
 * **Catálogo de Startups:** Exploração detalhada de projetos, planos de negócio e estrutura societária.
 * **Balcão de Tokens:** Ambiente simulado para oferta e compra de tokens representativos de participação.
-* **Dashboard do Investidor:** Acompanhamento em tempo real da valorização do portfólio e ROI (Retorno sobre Investimento).
-* **Canal de Governança:** Interação direta entre investidores e fundadores das startups.
+* **Dashboard do Investidor:** Acompanhamento em tempo real da valorização dos tokens adquiridos e seu ROI (Retorno sobre Investimento).
 
 ---
 
@@ -23,7 +22,7 @@ Diferente de aplicativos de investimento comuns, o MesclaInvest foca na transpar
 O projeto utiliza tecnologias de ponta para garantir performance e escalabilidade:
 
 * **Framework:** [Flutter](https://flutter.dev/) 
-* **Linguagem:** Dart
+* **Linguagens:** Dart e Typescript
 * **Backend & Auth:** [Firebase](https://firebase.google.com/)
 * **Banco de Dados:** Cloud Firestore (NoSQL)
 * **Arquitetura:** Lógica de Blockchain simulada para integridade das transações.
@@ -38,6 +37,7 @@ Confira os desenvolvedores deste projeto:
 | :--- | :---: |
 | **Bernardo Castro Brandão de Oliveira** | [🔗](https://github.com/Bernardooficial123) |
 | **Enzo Olivato Pazian** | [🔗](https://github.com/EnzoOP1402) |
+| **Gabriela Sichiroli Ferrari** | [🔗](https://github.com/GabSichiroli) |
 | **Livia Carvalho Lucizano** | [🔗](https://github.com/Liviaengsoftware) |
 | **Murillo Iamarino Caravita** | [🔗](https://github.com/MurilloCaravita) |
 | **Rafael Henrique dos Santos Inácio** | [🔗](https://github.com/rafaelhenriqueinacio) |
