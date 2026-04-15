@@ -27,6 +27,7 @@ class _CadastroPageState extends State<CadastroPage> {
   // Chave do formulário (permite validar todos os campos)
   final _formKey = GlobalKey<FormState>();
   // Controllers capturam e controlam o texto digitado
+  final _nomeController = TextEditingController();
   final _emailController = TextEditingController();
   final _cpfController = TextEditingController();
   final _telefoneController = TextEditingController();
@@ -47,6 +48,7 @@ class _CadastroPageState extends State<CadastroPage> {
   @override
   void dispose() {
     // Libera memória dos controllers
+    _nomeController.dispose();
     _emailController.dispose();
     _cpfController.dispose();
     _telefoneController.dispose();
@@ -64,10 +66,8 @@ class _CadastroPageState extends State<CadastroPage> {
       );
     }
   }
-
   bool obscureText = true;
   IconData iconPassword = Icons.visibility;
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,6 +81,23 @@ class _CadastroPageState extends State<CadastroPage> {
           key: _formKey, // Conecta o formulário à chave
           child: Column(
             children: [
+              TextFormField(
+                controller: _nomeController,
+                decoration: const InputDecoration(
+                  labelText: 'Nome completo',
+                  border: OutlineInputBorder(),
+
+                ),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  // Validação simples
+                  if (value == null || value.isEmpty) {
+                    return 'Informe o nome completo';
+                  }
+                  return null; // válido
+                },
+              ),
+              const SizedBox(height: 16),
               // CAMPO EMAIL
               TextFormField(
                 controller: _emailController,
@@ -151,7 +168,6 @@ class _CadastroPageState extends State<CadastroPage> {
                 controller: _senhaController,
                 decoration: InputDecoration(
                   labelText: 'Senha',
-                  prefixIcon: Icon(Icons.email),
                   suffixIcon: IconButton(
                     onPressed: (){
                       if (obscureText == true) {
