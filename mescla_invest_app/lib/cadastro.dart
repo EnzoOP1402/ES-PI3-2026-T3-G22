@@ -1,73 +1,102 @@
-//Autor: Gabriela Sichiroli
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
-// Widget principal do app (Stateless = não tem estado mutável)
+
+/*void main() {
+  runApp(const MyApp());
+}*/
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Cadastro',
       theme: ThemeData(
-        primarySwatch: Colors.deepPurple, // Cor principal
-        useMaterial3: true, // Ativa Material Design 3
+        primarySwatch: Colors.deepPurple,
+        useMaterial3: true,
       ),
-      home: const CadastroPage(), // Tela inicial
+      home: const CadastroPage(),
     );
   }
 }
-// Tela de cadastro (Stateful = possui estado que pode mudar)
 class CadastroPage extends StatefulWidget {
   const CadastroPage({super.key});
+
   @override
   State<CadastroPage> createState() => _CadastroPageState();
 }
-// Estado da tela (onde fica a lógica)
+
 class _CadastroPageState extends State<CadastroPage> {
-  // Chave do formulário (permite validar todos os campos)
   final _formKey = GlobalKey<FormState>();
-  // Controllers capturam e controlam o texto digitado
+
   final _nomeController = TextEditingController();
   final _emailController = TextEditingController();
   final _cpfController = TextEditingController();
   final _telefoneController = TextEditingController();
   final _senhaController = TextEditingController();
-  // Máscara para CPF (formato: 000.000.000-00)
+  final _confirmarSenhaController = TextEditingController();
+
   final cpfMask = MaskTextInputFormatter(
     mask: '###.###.###-##',
-    filter: {"#": RegExp(r'[0-9]')}, // só aceita números
+    filter: {"#": RegExp(r'[0-9]')},
   );
 
-  // Máscara para telefone (formato: (00) 00000-0000)
   final telefoneMask = MaskTextInputFormatter(
     mask: '(##) #####-####',
     filter: {"#": RegExp(r'[0-9]')},
   );
 
-  // Método chamado quando o widget é destruído
+  bool obscureText = true;
+  bool obscureConfirm = true;
+
+  bool hasUppercase = false;
+  bool hasNumber = false;
+  bool hasMinLength = false;
+  bool hasSpecialChar = false;
+  bool showRequirements = false;
+
+  bool get senhaValida =>
+      hasUppercase && hasNumber && hasMinLength && hasSpecialChar;
+
   @override
   void dispose() {
-    // Libera memória dos controllers
     _nomeController.dispose();
     _emailController.dispose();
     _cpfController.dispose();
     _telefoneController.dispose();
     _senhaController.dispose();
+    _confirmarSenhaController.dispose();
     super.dispose();
   }
 
-  // Função chamada ao clicar no botão
   void _submit() {
-    // Valida todos os campos do formulário
     if (_formKey.currentState!.validate()) {
-      // Se tudo estiver válido, mostra mensagem
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Cadastro realizado com sucesso!')),
       );
     }
   }
-  bool obscureText = true;
-  IconData iconPassword = Icons.visibility;
+
+  Widget _buildRequirement(String text, bool isValid) {
+    return Row(
+      children: [
+        Icon(
+          isValid ? Icons.check : Icons.close,
+          color: isValid ? Colors.green : Colors.red,
+          size: 18,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: TextStyle(
+            color: isValid ? Colors.green : Colors.red,
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,55 +104,51 @@ class _CadastroPageState extends State<CadastroPage> {
         title: const Text('Cadastro'),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0), // Espaçamento interno
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Form(
-          key: _formKey, // Conecta o formulário à chave
+          key: _formKey,
           child: Column(
             children: [
+              // NOME
               TextFormField(
                 controller: _nomeController,
                 decoration: const InputDecoration(
                   labelText: 'Nome completo',
                   border: OutlineInputBorder(),
-
                 ),
-                keyboardType: TextInputType.emailAddress,
                 validator: (value) {
-                  // Validação simples
                   if (value == null || value.isEmpty) {
                     return 'Informe o nome completo';
                   }
-                  return null; // válido
+                  return null;
                 },
               ),
               const SizedBox(height: 16),
-              // CAMPO EMAIL
+
+              // EMAIL
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
                   labelText: 'Email',
                   border: OutlineInputBorder(),
-
                 ),
-                keyboardType: TextInputType.emailAddress,
                 validator: (value) {
-                  // Validação simples
                   if (value == null || value.isEmpty) {
                     return 'Informe o email';
                   }
                   if (!value.contains('@')) {
                     return 'Email inválido';
                   }
-                  return null; // válido
+                  return null;
                 },
               ),
               const SizedBox(height: 16),
 
-              // CAMPO CPF
+              // CPF
               TextFormField(
                 controller: _cpfController,
-                inputFormatters: [cpfMask], // aplica máscara
+                inputFormatters: [cpfMask],
                 decoration: const InputDecoration(
                   labelText: 'CPF',
                   border: OutlineInputBorder(),
@@ -141,10 +166,10 @@ class _CadastroPageState extends State<CadastroPage> {
               ),
               const SizedBox(height: 16),
 
-              // CAMPO TELEFONE
+              // TELEFONE
               TextFormField(
                 controller: _telefoneController,
-                inputFormatters: [telefoneMask], // aplica máscara
+                inputFormatters: [telefoneMask],
                 decoration: const InputDecoration(
                   labelText: 'Telefone',
                   border: OutlineInputBorder(),
@@ -162,47 +187,105 @@ class _CadastroPageState extends State<CadastroPage> {
               ),
               const SizedBox(height: 16),
 
-              // CAMPO SENHA
+              // SENHA
               TextFormField(
-                obscureText: obscureText, // esconde o texto
+                obscureText: obscureText,
                 controller: _senhaController,
+                onChanged: (value) {
+                  setState(() {
+                    showRequirements = true;
+                    hasUppercase = value.contains(RegExp(r'[A-Z]'));
+                    hasNumber = value.contains(RegExp(r'[0-9]'));
+                    hasMinLength = value.length >= 6;
+                    hasSpecialChar = value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+                  });
+                },
                 decoration: InputDecoration(
                   labelText: 'Senha',
                   suffixIcon: IconButton(
-                    onPressed: (){
-                      if (obscureText == true) {
-                        setState(() {
-                          obscureText = false;
-                          iconPassword = Icons.visibility_off;
-                        });
-                      } else {
-                        setState(() {
-                          obscureText = true;
-                          iconPassword = Icons.visibility;
-                        });
-                      }
+                    onPressed: () {
+                      setState(() {
+                        obscureText = !obscureText;
+                      });
                     },
-                    icon: Icon(iconPassword),
+                    icon: Icon(
+                      obscureText
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                    ),
                   ),
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Informe a senha';
                   }
-                  if (value.length < 6) {
-                    return 'Mínimo 6 caracteres';
+                  if (!senhaValida) {
+                    return 'Senha não atende os requisitos';
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 24),
 
-              // BOTÃO DE CADASTRO
+              // REQUISITOS
+              if (showRequirements) ...[
+                const SizedBox(height: 8),
+                _buildRequirement(
+                    "Pelo menos 1 letra maiúscula", hasUppercase),
+                _buildRequirement(
+                    "Pelo menos 1 número", hasNumber),
+                _buildRequirement(
+                    "Mínimo 6 caracteres", hasMinLength),
+                _buildRequirement(
+                    "Pelo menos 1 caractere especial",
+                    hasSpecialChar),
+              ],
+
+              const SizedBox(height: 16),
+
+              // CONFIRMAR SENHA (SÓ APARECE SE FOR VÁLIDA)
+              if (senhaValida) ...[
+                TextFormField(
+                  obscureText: obscureConfirm,
+                  controller: _confirmarSenhaController,
+                  onTap: () {
+                    setState(() {
+                      showRequirements = false;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Confirmar senha',
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          obscureConfirm = !obscureConfirm;
+                        });
+                      },
+                      icon: Icon(
+                        obscureConfirm
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                    ),
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Confirme a senha';
+                    }
+                    if (value != _senhaController.text) {
+                      return 'As senhas estão diferentes';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+              const SizedBox(height: 24),
+              // BOTÃO
               SizedBox(
-                width: double.infinity, // ocupa largura total
+                width: double.infinity,
                 child: FilledButton(
-                  onPressed: _submit, // chama função
+                  onPressed: _submit,
                   child: const Text('Cadastrar'),
                 ),
               ),
