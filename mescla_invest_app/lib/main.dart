@@ -13,7 +13,7 @@ void main() {
   runApp(const MesclaInvest());
 }
 
-// Widget que representa a aplicação 
+// Widget que representa a aplicação
 class MesclaInvest extends StatelessWidget {
   // Construtor da aplicação (herda o atributo key de sua superclasse)
   const MesclaInvest({super.key});
@@ -23,9 +23,7 @@ class MesclaInvest extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'MesclaInvest',
-      theme: ThemeData(
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
+      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
       // Definindo a página de recepção como a página inicial do aplicativo
       home: const ReceptionPage(title: 'MesclaInvest'),
     );
@@ -46,7 +44,6 @@ class ReceptionPage extends StatefulWidget {
 
 // Classe que possui os elementos gráficos e o controle de estado da página de recepção
 class _ReceptionPageState extends State<ReceptionPage> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,7 +59,7 @@ class _ReceptionPageState extends State<ReceptionPage> {
           children: [
             Text(
               'Seja bem-vindo ao MesclaInvest!',
-              style: Theme.of(context).textTheme.bodyLarge
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
           ],
         ),
