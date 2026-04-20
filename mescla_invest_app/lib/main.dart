@@ -1,9 +1,5 @@
 /* Autor: Enzo Olivato Pazian */
 
-// AVISO: Ao fazer as telas, usem esse arquivo para rodar o app e testá-las,
-// mas, quando vocês finalizarem o desenvolimento e fizerem o último commit,
-// voltem essa tela ao estado original (esta versão) para evitar conflitos de merge.
-
 // Importação das dependências
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
