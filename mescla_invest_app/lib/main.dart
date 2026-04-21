@@ -6,9 +6,16 @@
 
 // Importação das dependências
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:mescla_invest_app/presentation/widgets/auth_wrapper.dart';
+import 'firebase_options.dart';
 
 // Função principal: ponto de entrada da aplicação
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   // Função responsável por executar a aplicação
   runApp(const MesclaInvest());
 }
@@ -25,45 +32,8 @@ class MesclaInvest extends StatelessWidget {
       title: 'MesclaInvest',
       theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
       // Definindo a página de recepção como a página inicial do aplicativo
-      home: const ReceptionPage(title: 'MesclaInvest'),
-    );
-  }
-}
-
-// A página de recepção poderá ser separada e será reestilizada. Esta tela é, por enquanto, apenas um protótipo.
-
-// Widget que representa a página de recepção (possui controle de estado)
-class ReceptionPage extends StatefulWidget {
-  const ReceptionPage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<ReceptionPage> createState() => _ReceptionPageState();
-}
-
-// Classe que possui os elementos gráficos e o controle de estado da página de recepção
-class _ReceptionPageState extends State<ReceptionPage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        // Título da aplicação trazido do construtor
-        title: Text(widget.title),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: .center,
-          children: [
-            Text(
-              'Seja bem-vindo ao MesclaInvest!',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-          ],
-        ),
-      ),
+      debugShowCheckedModeBanner: false,
+      home: const AuthWrapper(),
     );
   }
 }

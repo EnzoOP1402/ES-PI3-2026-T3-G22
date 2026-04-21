@@ -1,7 +1,11 @@
 /* Autor: Gabriela Sichiroli Ferrari */
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'package:mescla_invest_app/data/models/user_model.dart';
+import 'package:mescla_invest_app/data/repositories/auth_repository.dart';
+import 'package:mescla_invest_app/presentation/widgets/snackbar_utils.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -12,13 +16,25 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  
+  // Variável controladora do carregamento da página
+  // Quando o login entra em operação, ela muda de valor e aciona a tela de carregamento,
+  // fazendo com que o usuário não consiga apertar múltiplas vezes o mesmo botão e enviar
+  // várias requisições ao Firebase
+  bool _isLoading = false;
 
-  final _nomeController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _cpfController = TextEditingController();
-  final _telefoneController = TextEditingController();
-  final _senhaController = TextEditingController();
-  final _confirmarSenhaController = TextEditingController();
+  // Declarando o controlador do campo de nome
+  final TextEditingController _nameController = TextEditingController();
+  // Declarando o controlador do campo de email
+  final TextEditingController _emailController = TextEditingController();
+  // Declarando o controlador do campo de cpf
+  final TextEditingController _cpfController = TextEditingController();
+  // Declarando o controlador do campo de telefone
+  final TextEditingController _phoneController = TextEditingController();
+  // Declarando o controlador do campo de senha
+  final TextEditingController _passwordController = TextEditingController();
+  // Declarando o controlador do campo de confirmação senha
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
   final cpfMask = MaskTextInputFormatter(
     mask: '###.###.###-##',
@@ -42,22 +58,62 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool get senhaValida =>
       hasUppercase && hasNumber && hasMinLength && hasSpecialChar;
 
+  // Método usado para eliminar variáveis, objetos, etc da árvore de elementos para liberar memória. Ele é chamado quando o widget é removido da Widget tree, por exemplo, quando saímos dessa página
   @override
   void dispose() {
-    _nomeController.dispose();
+    // Elimina os controladores
+    _nameController.dispose();
     _emailController.dispose();
     _cpfController.dispose();
-    _telefoneController.dispose();
-    _senhaController.dispose();
-    _confirmarSenhaController.dispose();
+    _phoneController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    // Elimina todas as variáveis usadas na página
     super.dispose();
   }
 
-  void _submit() {
-    if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cadastro realizado com sucesso!')),
-      );
+  // Função que lida com o cadastro dos usuários
+  // Ela é responsável por acionar a função do repositório que lida com a autenticação de novos usuários do app
+  // e exibe a snackbar com os erros encontrados
+  void _handleRegister() async {
+    // Se o estado atual do formulário com os campos validados for nulo, executa as operações
+    if (_formKey.currentState?.validate() ?? false) {
+      try {
+        // Muda o estado para mudar o valor do indicador de carregamento e acionar
+        // a renderização da tela de carregamento no Scaffold
+        setState( () => _isLoading = true,);
+
+        // Obtendo os dados do usuário a partir dos valores armazenados nos controladores do formulário
+        final newUser = UserModel(
+          uid: '', // O repositório preencherá isso
+          fullName: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          cpf: _cpfController.text.trim(),
+          phone: _phoneController.text.trim(),
+          createdAt: Timestamp.now(),
+        );
+
+        // Executando o cadastro do usuário
+        // Invoca a instância do repositório de autenticação e aciona o método de cadastro,
+        // passando como parâmetro o objeto de usuário criado e a senha contida no controlador do input
+        await AuthRepository.instance.register(newUser, _confirmPasswordController.text.trim());
+        
+        // Se a operação foi bem sucedida e o widget não foi destruído, volta para a base da pilha de telas,
+        // permitindo que o AuthWrapper perceba o login e mostre a tela inicial
+        if (mounted) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
+      }
+      catch (e) {
+        // Se o Widget foi destruído, encerra a função
+        if(!mounted) return;
+        // Cas contrário, chama a função responsável por exibir erros na snackbar
+        showErrorSnackBar(context, e.toString());
+      }
+      finally {
+        // Se deu certo e o widget não foi destruído, atualiza o controlador de carregamento
+        if (mounted) setState(() => _isLoading = false,);
+      }
     }
   }
 
@@ -87,7 +143,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         title: const Text('Cadastro'),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
+      body: _isLoading ?
+      Center(child: CircularProgressIndicator(),) :
+      SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
@@ -95,7 +153,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             children: [
               // NOME
               TextFormField(
-                controller: _nomeController,
+                controller: _nameController,
                 decoration: const InputDecoration(
                   labelText: 'Nome completo',
                   border: OutlineInputBorder(),
@@ -152,7 +210,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               // TELEFONE
               TextFormField(
-                controller: _telefoneController,
+                controller: _phoneController,
                 inputFormatters: [telefoneMask],
                 decoration: const InputDecoration(
                   labelText: 'Telefone',
@@ -174,7 +232,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // SENHA
               TextFormField(
                 obscureText: obscureText,
-                controller: _senhaController,
+                controller: _passwordController,
                 onChanged: (value) {
                   setState(() {
                     showRequirements = true;
@@ -231,7 +289,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               if (senhaValida) ...[
                 TextFormField(
                   obscureText: obscureConfirm,
-                  controller: _confirmarSenhaController,
+                  controller: _confirmPasswordController,
                   onTap: () {
                     setState(() {
                       showRequirements = false;
@@ -257,7 +315,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Confirme a senha';
                     }
-                    if (value != _senhaController.text) {
+                    if (value != _passwordController.text) {
                       return 'As senhas estão diferentes';
                     }
                     return null;
@@ -269,7 +327,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: _submit,
+                  onPressed: _handleRegister,
                   child: const Text('Cadastrar'),
                 ),
               ),
