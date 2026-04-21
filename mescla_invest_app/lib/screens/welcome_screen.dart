@@ -1,7 +1,10 @@
-/* Autor: Livia Lucizano */
+/* Autor: Rafael Henrique dos Santos Inácio */
+
 import 'package:flutter/material.dart';
 
 class WelcomeScreen extends StatelessWidget {
+  const WelcomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,7 +29,7 @@ class WelcomeScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black,
                     blurRadius: 10,
                     offset: Offset(0, 10),
                   ),

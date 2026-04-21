@@ -1,33 +1,16 @@
+/* Autor: Gabriela Sichiroli Ferrari */
+
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
-/*void main() {
-  runApp(const MyApp());
-}*/
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Cadastro',
-      theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
-        useMaterial3: true,
-      ),
-      home: const CadastroPage(),
-    );
-  }
-}
-class CadastroPage extends StatefulWidget {
-  const CadastroPage({super.key});
-
-  @override
-  State<CadastroPage> createState() => _CadastroPageState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _CadastroPageState extends State<CadastroPage> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final _nomeController = TextEditingController();
@@ -133,6 +116,7 @@ class _CadastroPageState extends State<CadastroPage> {
                   labelText: 'Email',
                   border: OutlineInputBorder(),
                 ),
+                keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Informe o email';
@@ -196,7 +180,7 @@ class _CadastroPageState extends State<CadastroPage> {
                     showRequirements = true;
                     hasUppercase = value.contains(RegExp(r'[A-Z]'));
                     hasNumber = value.contains(RegExp(r'[0-9]'));
-                    hasMinLength = value.length >= 6;
+                    hasMinLength = value.length >= 8;
                     hasSpecialChar = value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
                   });
                 },
@@ -235,7 +219,7 @@ class _CadastroPageState extends State<CadastroPage> {
                 _buildRequirement(
                     "Pelo menos 1 número", hasNumber),
                 _buildRequirement(
-                    "Mínimo 6 caracteres", hasMinLength),
+                    "Mínimo 8 caracteres", hasMinLength),
                 _buildRequirement(
                     "Pelo menos 1 caractere especial",
                     hasSpecialChar),
