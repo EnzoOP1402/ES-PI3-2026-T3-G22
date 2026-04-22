@@ -163,26 +163,6 @@ class _LoginScreenState extends State<LoginScreen> {
               
               // Definindo uma caixa de espaçamento
               const SizedBox(height: 16,),
-
-              // Link para a tela de cadastro
-              TextButton(
-                onPressed: () => showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text("E-mail Enviado"),
-                    content: const Text("Verifique sua caixa de entrada para redefinir sua senha (não se esqueça de verificar o Spam)."),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context); // Fecha o diálogo
-                        },
-                        child: const Text("OK"),
-                      ),
-                    ],
-                  ),
-                ),
-                child: Text("Testar dialog")
-              ),
             ],
           ),
         ),
