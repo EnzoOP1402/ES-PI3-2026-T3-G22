@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mescla_invest_app/data/repositories/auth_repository.dart';
+import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
 import 'background_app.dart';
 
 class MesclaInvest extends StatelessWidget {

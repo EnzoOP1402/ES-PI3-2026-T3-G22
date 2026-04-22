@@ -1,10 +1,12 @@
 /* Autor: Livia Lucizano */
 
 import 'package:flutter/material.dart';
-import 'package:mescla_invest_app/data/repositories/auth_repository.dart';
-import 'package:mescla_invest_app/presentation/screens/password_recovery_screen.dart';
-import 'package:mescla_invest_app/presentation/screens/register_screen.dart';
-import 'package:mescla_invest_app/presentation/widgets/snackbar_utils.dart';
+import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
+import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
+import '../widgets/auth_layout.dart';
+import '../widgets/auth_input.dart';
+import '../widgets/auth_button.dart';
+import '../../../../routes/app_routes.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,8 +27,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  // Variável controladora da propriedade de visibilidade da senha
   bool obscureText = true;
-  bool obscureConfirm = true;
 
   // Método usado para eliminar variáveis, objetos, etc da árvore de elementos para liberar memória.
   // Ele é chamado quando o widget é removido da Widget tree, por exemplo, quando saímos dessa página
@@ -71,28 +73,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-        centerTitle: true,
-      ),
-      body: _isLoading ?
-        Center(child: CircularProgressIndicator(),) :
-        SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+    return _isLoading ?
+      Scaffold(
+        body: Center(child: CircularProgressIndicator(),)
+        ) :
+      AuthLayout(
+        title: "Bem-vindo",
+        subtitle: "Entre na sua conta",
         child: Form(
           key: _formKey,
           child: Column(
             children: [
-
               // EMAIL
-              TextFormField(
+              AuthInput(
+                hint: "E-mail",
                 controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Informe o email';
@@ -103,27 +98,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
               ),
+
               const SizedBox(height: 16),
 
               // SENHA
-              TextFormField(
-                obscureText: obscureText,
+              AuthInput(
+                hint: "Senha",
                 controller: _passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Senha',
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        obscureText = !obscureText;
-                      });
-                    },
-                    icon: Icon(
-                      obscureText
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
+                obscure: obscureText,
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      obscureText = !obscureText;
+                    });
+                  },
+                  icon: Icon(
+                    obscureText
+                        ? Icons.visibility
+                        : Icons.visibility_off,
                   ),
-                  border: const OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -132,41 +125,52 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
               ),
-              
-              // Definindo uma caixa de espaçamento
-              const SizedBox(height: 16,),
 
-              // Link para a tela de esqueci a senha
-              TextButton(
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PasswordRecoveryScreen())),
-                child: Text("Esqueceu a senha?")
-              ),
+              const SizedBox(height: 10),
 
-              const SizedBox(height: 24),
-              // BOTÃO
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _handleLogin,
-                  child: const Text('Entrar'),
+              // ESQUECEU SENHA
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, AppRoutes.recover);
+                  },
+                  child: const Text("Esqueceu a senha?"),
                 ),
               ),
 
-              // Definindo uma caixa de espaçamento
-              const SizedBox(height: 16,),
+              const SizedBox(height: 20),
 
-              // Link para a tela de cadastro
-              TextButton(
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen())),
-                child: Text("Cadastre-se")
+              // BOTÃO LOGIN
+              AuthButton(
+                text: "Entrar",
+                onPressed: _handleLogin,
               ),
-              
-              // Definindo uma caixa de espaçamento
-              const SizedBox(height: 16,),
+
+              const SizedBox(height: 20),
+
+              // IR PARA CADASTRO
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Não tem conta?"),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.register);
+                    },
+                    child: const Text(
+                      "Cadastrar",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFE60073),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }

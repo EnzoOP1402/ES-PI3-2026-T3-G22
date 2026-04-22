@@ -1,8 +1,8 @@
 /* Autor: Bernardo Castro Brandão de Oliveira */
 
 import 'package:flutter/material.dart';
-import 'package:mescla_invest_app/data/repositories/auth_repository.dart';
-import 'package:mescla_invest_app/presentation/widgets/snackbar_utils.dart';
+import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
+import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 
 class PasswordRecoveryScreen extends StatefulWidget {
   const PasswordRecoveryScreen({super.key});

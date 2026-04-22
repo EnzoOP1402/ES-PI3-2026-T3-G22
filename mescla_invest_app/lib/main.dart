@@ -7,7 +7,7 @@
 // Importação das dependências
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:mescla_invest_app/presentation/widgets/auth_wrapper.dart';
+import 'package:mescla_invest_app/core/widgets/auth_wrapper.dart';
 import 'firebase_options.dart';
 
 // Função principal: ponto de entrada da aplicação
