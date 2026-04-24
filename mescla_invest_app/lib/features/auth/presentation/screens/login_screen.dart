@@ -1,6 +1,6 @@
 /* Autor: Livia Lucizano */
-
 import 'package:flutter/material.dart';
+
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_button.dart';
@@ -174,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Navigator.pushNamed(context, AppRoutes.register);
                       },
                     child: Text(
-                      "Cadastrar",
+                      " Cadastrar",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Color(0xFFE60073),

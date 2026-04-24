@@ -27,7 +27,7 @@ class AuthLayout extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Image.asset(
-                  'images/logo_app.png',
+                  'assets/images/logo_app.png',
                   width: 25,
                   height: 25,
                 ),

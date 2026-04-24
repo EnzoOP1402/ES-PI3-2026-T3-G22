@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
-import 'background_app.dart';
+import '../theme/background_app.dart';
 
 class MesclaInvest extends StatelessWidget {
   const MesclaInvest({super.key});
@@ -49,7 +49,7 @@ class Catalogo extends StatelessWidget {
     final List<CardCatalogo> startups = [
       CardCatalogo(
         nome_startup: "NotaCerta LTDA",
-        logoImg: "images/logo_notacerta.png",
+        logoImg: "assets/images/logo_notacerta.png",
         mini_descricao: "Plataforma de aulas de música",
         status: "Em Operação",
         tokens_emitidos: 100000,
@@ -62,7 +62,7 @@ class Catalogo extends StatelessWidget {
 
       CardCatalogo(
         nome_startup: "HealthVibe LTDA",
-        logoImg: "images/logo_healthvibe.png",
+        logoImg: "assets/images/logo_healthvibe.png",
         mini_descricao: "Aplicativo de telemedicina focado em saúde mental para estudantes.",
         status: "Em Operação",
         tokens_emitidos: 1000000,
@@ -74,7 +74,7 @@ class Catalogo extends StatelessWidget {
 
       CardCatalogo(
         nome_startup: "MetaLive LTDA",
-        logoImg: "images/logo_metalive.png",
+        logoImg: "assets/images/logo_metalive.png",
         mini_descricao: "Aplicativo de integração de realidade aumentada no ambiente metaverso",
         status: "Em Operação",
         tokens_emitidos: 100000,
@@ -91,7 +91,7 @@ class Catalogo extends StatelessWidget {
 
       CardCatalogo(
         nome_startup: "CardVIsion LTDA",
-        logoImg: "images/logo_cardvision.png",
+        logoImg: "assets/images/logo_cardvision.png",
         mini_descricao: "Plataforma de valorização de cartas colecionáveis da cultura Geek",
         status: "Em Operação",
         tokens_emitidos: 500000,
