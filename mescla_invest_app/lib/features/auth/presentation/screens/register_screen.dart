@@ -127,8 +127,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     // Se estiver carregando, ainda precisamos do AuthLayout para manter o fundo/estilo
     if (_isLoading) {
       return const AuthLayout(
-        title: "Recuperar senha",
-        subtitle: "Insira o e-mail utilizado em seu cadastro para enviarmos um link de recuperação.",
+      title: "Crie sua conta",
+      subtitle: "e faça parte da melhor plataforma de investimentos.",
         child: Center(child: CircularProgressIndicator()),
       );
     }

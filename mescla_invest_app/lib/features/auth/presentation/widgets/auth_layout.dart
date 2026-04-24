@@ -28,8 +28,8 @@ class AuthLayout extends StatelessWidget {
               children: [
                 Image.asset(
                   'images/logo_app.png',
-                  width: 35,
-                  height: 35,
+                  width: 25,
+                  height: 25,
                 ),
               ]
           )
@@ -59,19 +59,10 @@ class AuthLayout extends StatelessWidget {
               children: [
                 // TOPO (ALINHADO À ESQUERDA)
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                  padding: const EdgeInsets.fromLTRB(40, 40, 20, 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // BOTÃO VOLTAR
-                      // InkWell(
-                      //   onTap: () => Navigator.pop(context),
-                      //   child: const Icon(
-                      //     Icons.arrow_back,
-                      //     color: Colors.white,
-                      //   ),
-                      // ),
-                      // const SizedBox(height: 15),
                       Text(
                         title,
                         textAlign: TextAlign.left,
