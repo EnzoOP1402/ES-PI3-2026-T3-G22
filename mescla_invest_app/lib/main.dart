@@ -1,13 +1,14 @@
 /* Autor: Enzo Olivato Pazian */
 
-// AVISO: Ao fazer as telas, usem esse arquivo para rodar o app e testá-las,
-// mas, quando vocês finalizarem o desenvolimento e fizerem o último commit,
-// voltem essa tela ao estado original (esta versão) para evitar conflitos de merge.
-
 // Importação das dependências
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/core/widgets/auth_wrapper.dart';
+import 'package:mescla_invest_app/features/auth/presentation/screens/login_screen.dart';
+import 'package:mescla_invest_app/features/auth/presentation/screens/password_recovery_screen.dart';
+import 'package:mescla_invest_app/features/auth/presentation/screens/register_screen.dart';
+import 'package:mescla_invest_app/routes/app_routes.dart';
 import 'firebase_options.dart';
 
 // Função principal: ponto de entrada da aplicação
@@ -30,10 +31,40 @@ class MesclaInvest extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'MesclaInvest',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
-      // Definindo a página de recepção como a página inicial do aplicativo
+      theme: ThemeData(
+        useMaterial3: true,
+        textTheme: GoogleFonts.montserratTextTheme(),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            textStyle: GoogleFonts.montserrat(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            textStyle: GoogleFonts.montserrat(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+          ),
+        ),
+      ),
       debugShowCheckedModeBanner: false,
-      home: const AuthWrapper(),
+      initialRoute: '/',
+      routes: {
+        '/': (_) => const AuthWrapper(),
+        AppRoutes.login: (_) => LoginScreen(),
+        AppRoutes.register: (_) => RegisterScreen(),
+        AppRoutes.recover: (_) => PasswordRecoveryScreen(),
+      },
     );
   }
 }

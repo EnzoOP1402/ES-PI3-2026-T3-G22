@@ -6,10 +6,10 @@ import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:mescla_invest_app/features/auth/data/models/user_model.dart';
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
-import '../widgets/auth_layout.dart';
-import '../widgets/auth_input.dart';
-import '../widgets/auth_button.dart';
-import '../widgets/auth_requirements.dart';
+import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_button.dart';
+import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_input.dart';
+import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_layout.dart';
+import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_requirements.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -124,171 +124,178 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _isLoading ?
-      Scaffold(
-        body: Center(child: CircularProgressIndicator(),)
-        ) :
-      AuthLayout(
-        title: "Crie sua conta",
-        subtitle: "e faça parte da melhor plataforma de investimentos.",
+    // Se estiver carregando, ainda precisamos do AuthLayout para manter o fundo/estilo
+    if (_isLoading) {
+      return const AuthLayout(
+        title: "Recuperar senha",
+        subtitle: "Insira o e-mail utilizado em seu cadastro para enviarmos um link de recuperação.",
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return AuthLayout(
+      title: "Crie sua conta",
+      subtitle: "e faça parte da melhor plataforma de investimentos.",
+      child: SingleChildScrollView(
         child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            AuthInput(
-              hint: "Nome completo *",
-              controller: _nameController,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Informe o nome completo';
-                }
-                return null;
-              },
-            ),
+          key: _formKey,
+          child: Column(
+            children: [
+              AuthInput(
+                hint: "Nome completo *",
+                controller: _nameController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Informe o nome completo';
+                  }
+                  return null;
+                },
+              ),
 
-            AuthInput(
-              hint: "CPF *",
-              controller: _cpfController,
-              inputFormatters: [cpfMask],
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Informe o CPF';
-                }
-                if (value.length < 14) {
-                  return 'CPF incompleto';
-                }
-                return null;
-              },
-            ),
+              AuthInput(
+                hint: "CPF *",
+                controller: _cpfController,
+                inputFormatters: [cpfMask],
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Informe o CPF';
+                  }
+                  if (value.length < 14) {
+                    return 'CPF incompleto';
+                  }
+                  return null;
+                },
+              ),
 
-            AuthInput(
-              hint: "E-mail *",
-              controller: _emailController,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Informe o email';
-                }
-                if (!value.contains('@')) {
-                  return 'Email inválido';
-                }
-                return null;
-              },
-            ),
+              AuthInput(
+                hint: "E-mail *",
+                controller: _emailController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Informe o email';
+                  }
+                  if (!value.contains('@')) {
+                    return 'Email inválido';
+                  }
+                  return null;
+                },
+              ),
 
-            AuthInput(
-              hint: "Telefone *",
-              controller: _phoneController,
-              inputFormatters: [telefoneMask],
-              keyboardType: TextInputType.phone,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Informe o telefone';
-                }
-                if (value.length < 15) {
-                  return 'Telefone incompleto';
-                }
-                return null;
-              },
-            ),
+              AuthInput(
+                hint: "Telefone *",
+                controller: _phoneController,
+                inputFormatters: [telefoneMask],
+                keyboardType: TextInputType.phone,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Informe o telefone';
+                  }
+                  if (value.length < 15) {
+                    return 'Telefone incompleto';
+                  }
+                  return null;
+                },
+              ),
 
-            AuthInput(
-              hint: "Senha *",
-              controller: _passwordController,
-              obscure: obscureText,
-              onChanged: (value) {
-                setState(() {
-                  showRequirements = true;
-                  hasUppercase = value.contains(RegExp(r'[A-Z]'));
-                  hasNumber = value.contains(RegExp(r'[0-9]'));
-                  hasMinLength = value.length >= 8;
-                  hasSpecialChar = value.contains(
-                    RegExp(r'[!@#$%^&*(),.?":{}|<>]'),
-                  );
-                });
-              },
-              suffixIcon: IconButton(
-                onPressed: () {
+              AuthInput(
+                hint: "Senha *",
+                controller: _passwordController,
+                obscure: obscureText,
+                onChanged: (value) {
                   setState(() {
-                    obscureText = !obscureText;
+                    showRequirements = true;
+                    hasUppercase = value.contains(RegExp(r'[A-Z]'));
+                    hasNumber = value.contains(RegExp(r'[0-9]'));
+                    hasMinLength = value.length >= 8;
+                    hasSpecialChar = value.contains(
+                      RegExp(r'[!@#$%^&*(),.?":{}|<>]'),
+                    );
                   });
                 },
-                icon: Icon(
-                  obscureText
-                      ? Icons.visibility
-                      : Icons.visibility_off,
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Informe a senha';
-                }
-                if (!senhaValida) {
-                  return 'Senha não atende os requisitos';
-                }
-                return null;
-              },
-            ),
-
-            if (showRequirements) ...[
-              const SizedBox(height: 8),
-              AuthRequirement(
-                text: "Pelo menos 1 letra maiúscula",
-                isValid: hasUppercase,
-              ),
-              AuthRequirement(
-                text: "Pelo menos 1 número",
-                isValid: hasNumber,
-              ),
-              AuthRequirement(
-                text: "Mínimo 8 caracteres",
-                isValid: hasMinLength,
-              ),
-              AuthRequirement(
-                text: "1 caractere especial",
-                isValid: hasSpecialChar,
-              ),
-            ],
-
-            const SizedBox(height: 16),
-
-            if (senhaValida)
-              AuthInput(
-                hint: "Confirmar senha",
-                controller: _confirmPasswordController,
-                obscure: obscureConfirm,
                 suffixIcon: IconButton(
                   onPressed: () {
                     setState(() {
-                      obscureConfirm = !obscureConfirm;
+                      obscureText = !obscureText;
                     });
                   },
                   icon: Icon(
-                    obscureConfirm
+                    obscureText
                         ? Icons.visibility
                         : Icons.visibility_off,
                   ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Confirme a senha';
+                    return 'Informe a senha';
                   }
-                  if (value != _passwordController.text) {
-                    return 'As senhas estão diferentes';
+                  if (!senhaValida) {
+                    return 'Senha não atende os requisitos';
                   }
                   return null;
                 },
               ),
 
-            const SizedBox(height: 20),
+              if (showRequirements) ...[
+                const SizedBox(height: 8),
+                AuthRequirement(
+                  text: "Pelo menos 1 letra maiúscula",
+                  isValid: hasUppercase,
+                ),
+                AuthRequirement(
+                  text: "Pelo menos 1 número",
+                  isValid: hasNumber,
+                ),
+                AuthRequirement(
+                  text: "Mínimo 8 caracteres",
+                  isValid: hasMinLength,
+                ),
+                AuthRequirement(
+                  text: "1 caractere especial",
+                  isValid: hasSpecialChar,
+                ),
+              ],
 
-            AuthButton(
-              text: "Cadastrar",
-              onPressed: _handleRegister,
-            ),
-          ],
+              const SizedBox(height: 16),
+
+              if (senhaValida)
+                AuthInput(
+                  hint: "Confirmar senha",
+                  controller: _confirmPasswordController,
+                  obscure: obscureConfirm,
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        obscureConfirm = !obscureConfirm;
+                      });
+                    },
+                    icon: Icon(
+                      obscureConfirm
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Confirme a senha';
+                    }
+                    if (value != _passwordController.text) {
+                      return 'As senhas estão diferentes';
+                    }
+                    return null;
+                  },
+                ),
+
+              const SizedBox(height: 20),
+
+              AuthButton(
+                text: "Cadastrar",
+                onPressed: _handleRegister,
+              ),
+            ],
+          ),
         ),
-      )
+      ) 
     );
   }
 }

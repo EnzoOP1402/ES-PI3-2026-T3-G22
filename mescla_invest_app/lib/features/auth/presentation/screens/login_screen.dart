@@ -3,10 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
-import '../widgets/auth_layout.dart';
-import '../widgets/auth_input.dart';
-import '../widgets/auth_button.dart';
-import '../../../../routes/app_routes.dart';
+import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_button.dart';
+import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_input.dart';
+import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_layout.dart';
+import 'package:mescla_invest_app/routes/app_routes.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -57,6 +57,12 @@ class _LoginScreenState extends State<LoginScreen> {
         // Invoca a instância do repositório de autenticação e aciona o método de login,
         // passando como parâmetro os valores obtidos dos controladores dos inputs
         await AuthRepository.instance.login(_emailController.text.trim(), _passwordController.text.trim());
+
+        // Se a operação foi bem sucedida e o widget não foi destruído, volta para a base da pilha de telas,
+        // permitindo que o AuthWrapper perceba o login e mostre a tela inicial
+        if (mounted) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
       }
       catch (e) {
         // Se o Widget foi destruído, encerra a função
@@ -73,13 +79,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _isLoading ?
-      Scaffold(
-        body: Center(child: CircularProgressIndicator(),)
-        ) :
-      AuthLayout(
-        title: "Bem-vindo",
-        subtitle: "Entre na sua conta",
+    // Se estiver carregando, ainda precisamos do AuthLayout para manter o fundo/estilo
+    if (_isLoading) {
+      return const AuthLayout(
+        title: "Seja bem-vindo!",
+        subtitle: "É muito bom te ter de volta.",
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return AuthLayout(
+      title: "Seja bem-vindo!",
+      subtitle: "É muito bom te ter de volta.",
+      child: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
@@ -130,12 +142,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // ESQUECEU SENHA
               Align(
-                alignment: Alignment.centerRight,
+                alignment: Alignment.centerLeft,
                 child: TextButton(
                   onPressed: () {
                     Navigator.pushNamed(context, AppRoutes.recover);
                   },
-                  child: const Text("Esqueceu a senha?"),
+                  child: const Text(
+                    "Esqueceu a senha?",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
 
@@ -154,23 +169,24 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text("Não tem conta?"),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.register);
-                    },
-                    child: const Text(
+                  TextButton(
+                    onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.register);
+                      },
+                    child: Text(
                       "Cadastrar",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Color(0xFFE60073),
                       ),
                     ),
-                  ),
+                  )
                 ],
               ),
             ],
           ),
         ),
-      );
+      ) 
+    );
   }
 }

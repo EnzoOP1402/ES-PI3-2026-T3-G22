@@ -1,3 +1,5 @@
+/* Autor: Gabriela Sichiroli Ferrari */
+
 import 'package:flutter/material.dart';
 
 class AuthLayout extends StatelessWidget {
@@ -16,6 +18,22 @@ class AuthLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          title: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Image.asset(
+                  'images/logo_app.png',
+                  width: 35,
+                  height: 35,
+                ),
+              ]
+          )
+      ),
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child:Stack(
@@ -46,14 +64,14 @@ class AuthLayout extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // BOTÃO VOLTAR
-                      InkWell(
-                        onTap: () => Navigator.pop(context),
-                        child: const Icon(
-                          Icons.arrow_back,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 15),
+                      // InkWell(
+                      //   onTap: () => Navigator.pop(context),
+                      //   child: const Icon(
+                      //     Icons.arrow_back,
+                      //     color: Colors.white,
+                      //   ),
+                      // ),
+                      // const SizedBox(height: 15),
                       Text(
                         title,
                         textAlign: TextAlign.left,
@@ -80,9 +98,9 @@ class AuthLayout extends StatelessWidget {
                 Expanded(
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(30),
                     decoration: const BoxDecoration(
-                      color: Color(0xFFEDEDED),
+                      color: Color(0xFFD4D4D4),
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(40),
                       ),

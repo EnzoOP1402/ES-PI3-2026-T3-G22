@@ -1,3 +1,5 @@
+/* Autor: Gabriela Sichiroli Ferrari */
+
 import 'package:flutter/material.dart';
 
 class AuthButton extends StatelessWidget {
@@ -15,7 +17,7 @@ class AuthButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: double.infinity,
+      width: MediaQuery.of(context).size.width * 0.6,
       height: 55,
       child: ElevatedButton(
         onPressed: loading ? null : onPressed,

@@ -1,3 +1,5 @@
+/* Autor: Gabriela Sichiroli Ferrari */
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -40,7 +42,7 @@ class AuthInput extends StatelessWidget {
           fillColor: Colors.grey[200],
           contentPadding: const EdgeInsets.symmetric(horizontal: 20),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(15),
             borderSide: BorderSide.none,
           ),
           suffixIcon: suffixIcon,

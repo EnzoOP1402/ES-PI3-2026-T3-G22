@@ -1,3 +1,5 @@
+/* Autor: Gabriela Sichiroli Ferrari */
+
 import 'package:flutter/material.dart';
 
 class AuthRequirement extends StatelessWidget {

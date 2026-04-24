@@ -3,6 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
+import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_button.dart';
+import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_input.dart';
+import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_layout.dart';
 
 class PasswordRecoveryScreen extends StatefulWidget {
   const PasswordRecoveryScreen({super.key});
@@ -85,52 +88,44 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Recuperação de senha'),
-        centerTitle: true,
-      ),
-      body: _isLoading ?
-      Center(child: CircularProgressIndicator(),) :
-      SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+    // Se estiver carregando, ainda precisamos do AuthLayout para manter o fundo/estilo
+    if (_isLoading) {
+      return const AuthLayout(
+        title: "Recuperar senha",
+        subtitle: "Insira o e-mail utilizado em seu cadastro para enviarmos um link de recuperação.",
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return AuthLayout(
+      title: "Recuperar senha",
+      subtitle: "Insira o e-mail utilizado em seu cadastro para enviarmos um link de recuperação.",
+      child: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
             children: [
-
-              // EMAIL
-              TextFormField(
-                controller: _recoveryEmailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Informe o email';
-                  }
-                  if (!value.contains('@')) {
-                    return 'Email inválido';
-                  }
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 24),
-              // BOTÃO
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _handlePasswordRecovery,
-                  child: const Text('Enviar'),
-                ),
+              AuthInput(hint: "E-mail *",
+                    controller:_recoveryEmailController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Informe o e-mail';
+                      }
+                      if (!value.contains('@')) {
+                        return 'E-mail inválido';
+                      }
+                      return null;
+                    },
+                  ),
+              const SizedBox(height: 20),
+              AuthButton(
+                text: "Enviar",
+                onPressed:_handlePasswordRecovery,
               ),
             ],
           ),
         ),
-      ),
+      ) 
     );
   }
 }

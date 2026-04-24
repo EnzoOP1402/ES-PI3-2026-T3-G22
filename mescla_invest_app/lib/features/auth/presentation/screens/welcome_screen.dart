@@ -1,6 +1,8 @@
 /* Autor: Rafael Henrique dos Santos Inácio */
 
 import 'package:flutter/material.dart';
+import 'package:mescla_invest_app/features/auth/presentation/theme/background_painter.dart';
+import 'package:mescla_invest_app/routes/app_routes.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -8,118 +10,119 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF9C27B0), // Cor roxa
-              Color(0xFFFF4081), // Cor rosa
-            ],
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Center(
-            child: Container(
-              width: 350,
-              decoration: BoxDecoration(
-                color: Colors.deepPurple, // Cor roxa escura
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black,
-                    blurRadius: 10,
-                    offset: Offset(0, 10),
-                  ),
-                ],
+      body: Stack(
+        children: [
+          //FUNDO GRADIENTE
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+              colors: [
+                        Color(0xFF353988),
+                        Color(0xFFDB0065) ],
+               stops: [0.65, 0.95],
+               begin: Alignment.bottomRight,
+               end: Alignment.topLeft,
+                ),
               ),
-              padding: EdgeInsets.all(20),
+            ),
+          // DESENHO DE FUNDO
+          Positioned.fill(
+            child: CustomPaint(
+              painter: BackgroundPainter(), 
+            ),
+          ),
+          // CONTEÚDO
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  // Título de boas-vindas
-                  Text(
-                    'Bem-vindo ao',
+                children: [
+                  const Spacer(),
+
+                  // TEXTO
+                  const Text(
+                    "Bem-vindo ao",
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 28,
+                      fontSize: 18,
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  //LOGO
+                  Image.asset(
+                    'assets/images/logo_app.png',
+                    width: 100,
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  const Text(
+                    "MesclaInvest",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 10),
-                  Text(
-                    'MesclaInvest',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 40),
 
-                  // Botão para "Criar conta"
-                  ElevatedButton(
-                    onPressed: () {
-                      // Navegar para a tela de cadastro
-                      Navigator.pushNamed(context, '/signup');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFFF4081), // Cor do botão
-                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                  const Spacer(),
+
+                  // BOTÃO ENTRAR
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.login);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE60073),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Criar conta',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
+                      child: const Text(
+                        "Entrar",
+                          style: TextStyle(
+                            color: Colors.white),
                       ),
                     ),
                   ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "ou",
+                    style: TextStyle(color: Colors.white70),
+                  ),
 
-                  SizedBox(height: 20),
+                  const SizedBox(height: 10),
 
-                  // "ou" entre os botões
-                  Text(
-                    'ou',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
+                  // BOTÃO CADASTRO
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.register);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[300],
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: const Text("Criar conta"),
                     ),
                   ),
 
-                  SizedBox(height: 20),
-
-                  // Botão para "Entrar"
-                  ElevatedButton(
-                    onPressed: () {
-                      // Navegar para a tela de login
-                      Navigator.pushNamed(context, '/login');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFBB86FC), // Cor do botão
-                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: Text(
-                      'Entrar',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
