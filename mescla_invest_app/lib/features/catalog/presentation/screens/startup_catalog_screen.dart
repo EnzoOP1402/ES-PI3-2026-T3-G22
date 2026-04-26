@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
 import '../theme/background_app.dart';
+import '../widgets/nav_menu.dart';
+import '../widgets/pesquisar_menu.dart';
 
 class MesclaInvest extends StatelessWidget {
   const MesclaInvest({super.key});
@@ -41,8 +43,17 @@ class CardCatalogo {
   });
 }
 
-class Catalogo extends StatelessWidget {
+class Catalogo extends StatefulWidget {
   const Catalogo({super.key});
+
+  @override
+  State<Catalogo> createState() => _CatalogoState();
+}
+
+class _CatalogoState extends State<Catalogo> {
+  int paginaAtual = 0;
+  final TextEditingController _buscaController = TextEditingController();
+  String _textoBusca = "";
 
   @override
   Widget build(BuildContext context) {
@@ -103,8 +114,53 @@ class Catalogo extends StatelessWidget {
       ),
     ];
 
+    final List<CardCatalogo> startupsFiltradas = startups.where((startup) {
+      final busca = _textoBusca.toLowerCase();
+
+      return startup.nome_startup.toLowerCase().contains(busca) ||
+          startup.mini_descricao.toLowerCase().contains(busca) ||
+          startup.status.toLowerCase().contains(busca);
+    }).toList();
+
+    final List<Widget> paginas = [
+      // 0 - Início
+      BackgroundContainer(
+        child: Column(
+        children: [
+          const SizedBox(height: 45),
+          BuscaStartup(controller: _buscaController, 
+          onChanged: (valor) {
+            setState(() {
+              _textoBusca = valor;
+            });
+          },
+        ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: startupsFiltradas.length,
+              itemBuilder: (context, index) {
+                final startup = startupsFiltradas[index];
+                return CardStartup(s: startup);
+              },
+            ),
+          ),
+        ],
+      ),
+    ),
+
+      // Criando telas para as outras abas do menu (Trocar para redirecionamento)
+      // 1 - Catálogo
+      const Center(child: Text("Catálogo")),
+
+      // 2 - Dashboard
+      const Center(child: Text("Dashboard")),
+
+      // 3 - Perfil
+      const Center(child: Text("Perfil")),
+    ];
+
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      extendBodyBehindAppBar: paginaAtual==0,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         centerTitle: true,
@@ -118,14 +174,15 @@ class Catalogo extends StatelessWidget {
         ],
       ),
 
-      body: BackgroundContainer(
-        child: ListView.builder(
-          itemCount: startups.length,
-          itemBuilder: (context, index) {
-            return CardStartup(s: startups[index]);
-          },
-        ),
-      ),
+      body: paginas[paginaAtual],
+      bottomNavigationBar: MenuInferior(
+        PaginaAtual: paginaAtual,
+        onItemSelected: (index) {
+          setState(() {
+            paginaAtual = index;
+          });
+        },
+      )
     );
   }
 }
@@ -134,6 +191,8 @@ class BotaoIrPara extends StatelessWidget {
   final Widget pagina;
   final String texto;
 
+  //Sugestão de mudança do nome da variavel para BotaoVerMais, 
+  //para ficar mais claro o propósito do botão.
   const BotaoIrPara({
     super.key,
     required this.pagina,
@@ -297,54 +356,6 @@ class _CardStartupState extends State<CardStartup> {
                 ),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-class Pesquisar extends StatefulWidget {
-  const Pesquisar({super.key});
-
-  @override
-  State<Pesquisar> createState() => _PesquisarState();
-}
-
-class _PesquisarState extends State<Pesquisar> {
-  final TextEditingController _controller = TextEditingController();
-
-  String resultado = "";
-
-  void _buscar() {
-    setState(() {
-      resultado = _controller.text;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Pesquisar Startup')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: _controller,
-              decoration: const InputDecoration(
-                labelText: "Nome da startup",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _buscar,
-              child: const Text("Pesquisar"),
-            ),
-            const SizedBox(height: 20),
-            Text("Resultado: $resultado"),
           ],
         ),
       ),
