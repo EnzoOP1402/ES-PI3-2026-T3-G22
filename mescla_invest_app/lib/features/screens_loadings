@@ -1,1 +1,16 @@
-
+        child: ListView.builder( //Lista dinâmica
+          controller: controller, //Liga a rolagem ao controller
+          itemCount: startups.length + 1, //+1 para mostrar loading no final.
+          itemBuilder: (context, index) { //Função que cria cada item.
+            if (index < startups.length) {
+              return CardStartup(s: startups[index]); //Se ainda for item normal mostra o card
+            } else {
+              return carregando //Caso contrário, se estiver carregando, mostra espaço com padding.
+                  ? const Padding(
+                      padding: EdgeInsets.all(16), //Espaçamento
+                      child: Center(child: CircularProgressIndicator()), //Mostra o Girador de Carregamento
+                    )
+                  : const SizedBox(); //Se não estiver carregando, não mostra nada.
+            }
+          },
+        ),
