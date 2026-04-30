@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart'; //Permite usar fontes externas 
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart'; //Importa um arquivo do seu projeto (provavelmente usado para login/logout)
 import '../theme/background_app.dart'; //Importa um widget personalizado de fundo (BackgroundContainer).
 import 'package:cloud_firestore/cloud_firestore.dart'; //Importa o Firebase Firestore (banco de dados).
-import 'package:mescla_invest_app/features/frame_cards/data_cards'; //(importa a classe com as informações de cada card)
+import 'package:mescla_invest_app/features/frame_cards/data_cards'; //(importa o arquivo que tem a classe com as informações de cada card)
 
 
 class MesclaInvest extends StatelessWidget { //Define o app principal como imutável (Stateless).
