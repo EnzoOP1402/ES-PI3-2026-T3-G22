@@ -1,4 +1,6 @@
-        child: ListView.builder( //Lista dinâmica
+import mescla_invest_app/lib/features/catalog/presentation/screens/startup_catalog_screen.dart
+
+child: ListView.builder( //Lista dinâmica
           controller: controller, //Liga a rolagem ao controller
           itemCount: startups.length + 1, //+1 para mostrar loading no final.
           itemBuilder: (context, index) { //Função que cria cada item.
