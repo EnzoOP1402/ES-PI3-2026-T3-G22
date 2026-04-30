@@ -1,0 +1,28 @@
+  Future<void> carregarMais() async { //Função assíncrona para mostrar o carregamento
+    setState(() => carregando = true); //Atualiza a tela para mostrar que está carregando
+
+    Query query = FirebaseFirestore.instance //Busca 20 documentos do Firebase.
+        .collection('startups')
+        .limit(20); //Coloca o limite de 20 aqui!
+
+    if (lastDoc != null) { //Veriffica se já carregou antes
+      query = query.startAfterDocument(lastDoc!);//Continua a partir do último documento
+    }
+
+    final snapshot = await query.get(); //Execulta a query (pega os dados do Firebase)
+
+    if (snapshot.docs.isEmpty) { 
+      acabou = true; //Se não vier nada, acaba a exibição
+    } else { 
+      final novos = snapshot.docs.map((doc) { //Caso contrário, Converte documentos em objetos
+        return CardCatalogo.fromFirestore(
+          doc.data() as Map<String, dynamic>,
+        );
+      }).toList(); //Transforma em lista
+
+      startups.addAll(novos); //Adiciona novos itens à lista existente.
+      lastDoc = snapshot.docs.last; //Atualiza o último documento
+    }
+
+    setState(() => carregando = false); //Remove loading
+  }
