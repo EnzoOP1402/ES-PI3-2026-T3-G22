@@ -1,4 +1,5 @@
-  Future<void> carregarMais() async { //Função assíncrona para mostrar o carregamento
+import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart'; //Importa o arquivo de catálogo
+Future<void> carregarMais() async { //Função assíncrona para mostrar o carregamento
     setState(() => carregando = true); //Atualiza a tela para mostrar que está carregando
 
     Query query = FirebaseFirestore.instance //Busca 20 documentos do Firebase.
