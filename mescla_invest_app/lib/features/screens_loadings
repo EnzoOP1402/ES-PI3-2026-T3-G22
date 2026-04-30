@@ -1,4 +1,4 @@
-import mescla_invest_app/lib/features/catalog/presentation/screens/startup_catalog_screen.dart
+import 'package:mescla_invest_app/lib/features/catalog/presentation/screens/startup_catalog_screen.dart'; //Importa o arquivo de catálogo
 
 child: ListView.builder( //Lista dinâmica
           controller: controller, //Liga a rolagem ao controller
