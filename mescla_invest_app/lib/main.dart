@@ -2,26 +2,14 @@
 
 // Importação das dependências
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mescla_invest_app/core/widgets/auth_wrapper.dart';
-import 'package:mescla_invest_app/features/auth/presentation/screens/login_screen.dart';
-import 'package:mescla_invest_app/features/auth/presentation/screens/password_recovery_screen.dart';
-import 'package:mescla_invest_app/features/auth/presentation/screens/register_screen.dart';
-import 'package:mescla_invest_app/routes/app_routes.dart';
-import 'firebase_options.dart';
 
 // Função principal: ponto de entrada da aplicação
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+void main() {
   // Função responsável por executar a aplicação
   runApp(const MesclaInvest());
 }
 
-// Widget que representa a aplicação
+// Widget que representa a aplicação 
 class MesclaInvest extends StatelessWidget {
   // Construtor da aplicação (herda o atributo key de sua superclasse)
   const MesclaInvest({super.key});
@@ -32,39 +20,49 @@ class MesclaInvest extends StatelessWidget {
     return MaterialApp(
       title: 'MesclaInvest',
       theme: ThemeData(
-        useMaterial3: true,
-        textTheme: GoogleFonts.montserratTextTheme(),
-        filledButtonTheme: FilledButtonThemeData(
-          style: FilledButton.styleFrom(
-            textStyle: GoogleFonts.montserrat(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+      ),
+      // Definindo a página de recepção como a página inicial do aplicativo
+      home: const ReceptionPage(title: 'MesclaInvest'),
+    );
+  }
+}
+
+// A página de recepção poderá ser separada e será reestilizada. Esta tela é, por enquanto, apenas um protótipo.
+
+// Widget que representa a página de recepção (possui controle de estado)
+class ReceptionPage extends StatefulWidget {
+  const ReceptionPage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  State<ReceptionPage> createState() => _ReceptionPageState();
+}
+
+// Classe que possui os elementos gráficos e o controle de estado da página de recepção
+class _ReceptionPageState extends State<ReceptionPage> {
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        // Título da aplicação trazido do construtor
+        title: Text(widget.title),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: .center,
+          children: [
+            Text(
+              'Seja bem-vindo ao MesclaInvest!',
+              style: Theme.of(context).textTheme.bodyLarge
             ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-          ),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            textStyle: GoogleFonts.montserrat(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-          ),
+          ],
         ),
       ),
-      debugShowCheckedModeBanner: false,
-      initialRoute: '/',
-      routes: {
-        '/': (_) => const AuthWrapper(),
-        AppRoutes.login: (_) => LoginScreen(),
-        AppRoutes.register: (_) => RegisterScreen(),
-        AppRoutes.recover: (_) => PasswordRecoveryScreen(),
-      },
     );
   }
 }

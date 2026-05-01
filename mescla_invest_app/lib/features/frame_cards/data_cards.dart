@@ -48,7 +48,7 @@ class CardCatalogo { //Classe que representa uma startup
     video_demoURL: data['video_demoURL'],
     socios_stp: List<String>.from(data['socios_stp'] ?? []), //Converte lista dinâmica em lista de String
     ment_conselho: List<String>.from(data['ment_conselho'] ?? []),
-    ofetas_ativas: List<int>.from(data['ofetas_ativas'] ?? []),
+    ofertas_ativas: List<int>.from(data['ofetas_ativas'] ?? []),
     part_societaria: List<String>.from(data['part_societaria'] ?? []),
   );    
 }

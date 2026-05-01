@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart'; //Permite usar fontes externas 
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart'; //Importa um arquivo do seu projeto (provavelmente usado para login/logout)
 import '../theme/background_app.dart'; //Importa um widget personalizado de fundo (BackgroundContainer).
 import 'package:cloud_firestore/cloud_firestore.dart'; //Importa o Firebase Firestore (banco de dados).
-import 'package:mescla_invest_app/features/frame_cards/data_cards'; //(importa o arquivo que tem a classe com as informações de cada card)
+import 'package:mescla_invest_app/features/frame_cards/data_cards.dart'; //(importa o arquivo que tem a classe com as informações de cada card)
 
 
 class MesclaInvest extends StatelessWidget { //Define o app principal como imutável (Stateless).
@@ -55,6 +55,7 @@ class _CatalogoState extends State<Catalogo> { //Classe que controla comportamen
       }
     });
   }
+  
 Future<void> carregarMais() async { //Função assíncrona para mostrar o carregamento
     setState(() => carregando = true); //Atualiza a tela para mostrar que está carregando
 
@@ -94,7 +95,17 @@ Future<void> carregarMais() async { //Função assíncrona para mostrar o carreg
           itemCount: startups.length + 1, //+1 para mostrar loading no final.
           itemBuilder: (context, index) { //Função que cria cada item.
             if (index < startups.length) {
-              return CardStartup(s: startups[index]); //Se ainda for item normal mostra o card
+
+              final s = startups[index];
+
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: ListTile(
+                  title: Text(s.nome_startup),
+                  subtitle: Text(s.mini_descricao),
+                  trailing: Text('R\$ ${s.valorFixo_token}'),
+                ),
+              ); //Se ainda for item normal mostra o card
             } else {
               return carregando //Caso contrário, se estiver carregando, mostra espaço com padding.
                   ? const Padding(
