@@ -2,6 +2,7 @@
 /* Autor: Enzo Olivato Pazian */
 
 // Importando os recursos principais para o uso do firebase
+import { onRequest } from "firebase-functions/v2/https";
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
@@ -10,11 +11,14 @@ const app = admin.initializeApp();
 // Referenciando o banco de dados Firestore
 const db = app.firestore();
 // Referenciando a coleção Startups do banco de dados
-const collectionStartups = db.collection("Startups");
+const collectionStartups = db.collection("startups");
 
 // Function para a inserção de dados de startups em lote
-export const addBatchStartups = functions
-  .https.onRequest(async (request, response) => {
+export const addBatchStartups = onRequest(
+  {
+    invoker: "public", 
+  },
+  async (request, response) => {
     // Lista com as startups a serem inseridas
     const startups = [
       {
