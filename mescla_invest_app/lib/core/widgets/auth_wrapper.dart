@@ -4,7 +4,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
-import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
+import 'package:mescla_invest_app/features/catalog/presentation/screens/public_questions.dart';
+// import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
 import 'package:mescla_invest_app/features/auth/presentation/screens/welcome_screen.dart';
 
 // Criando a classe responsável por identificar o estado da autenticação do usuário e
@@ -37,7 +38,7 @@ class AuthWrapper extends StatelessWidget {
 
         // Se houver um usuário logado, renderiza a tela inicial, se não, a tela de recepção
         if (snapshot.hasData) {
-          return const Catalogo();
+          return const PublicQuestions();
         } else {
           return const WelcomeScreen();
         }
