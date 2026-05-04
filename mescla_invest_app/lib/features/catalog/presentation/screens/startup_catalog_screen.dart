@@ -4,7 +4,9 @@ import 'package:flutter/material.dart'; //Importa o framework principal do Flutt
 import 'package:cloud_firestore/cloud_firestore.dart'; //Importa o Firebase Firestore (banco de dados).
 import 'package:mescla_invest_app/features/frame_cards/data_cards.dart'; //(importa o arquivo que tem a classe com as informações de cada card)
 import 'package:mescla_invest_app/features/catalog/presentation/theme/background_app.dart';
-
+import '../widgets/nav_menu.dart';
+import '../widgets/pesquisar_menu.dart';
+import '../widgets/botao_ir_para.dart';
 
 class Catalogo extends StatefulWidget {
   //Tela que muda dinamicamente
@@ -15,10 +17,29 @@ class Catalogo extends StatefulWidget {
 }
 
 class _CatalogoState extends State<Catalogo> {
+  final TextEditingController buscaController = TextEditingController();
+  // Variáveis de controle para menu e busca
+  int paginaAtual = 1;
+  String textoBusca = '';
+
   //Classe que controla comportamento da tela.
   final List<CardCatalogo> startups = []; //Lista de startups carregadas.
   final ScrollController controller =
       ScrollController(); //Controla a rolagem da lista.
+
+  List<CardCatalogo> get startupsFiltradas {
+    //Retorna a lista de startups filtrada pelo texto de busca.
+    if (textoBusca.trim().isEmpty) return startups; //Se a busca está vazia, retorna tudo.
+
+    final busca = textoBusca.toLowerCase(); //Transforma a busca em minúscula para comparação.
+    return startups.where((s) {
+      //Filtra a lista de startups
+      final nome = s.nome_startup.toLowerCase();
+      final descricao = s.mini_descricao.toLowerCase();
+
+      return nome.contains(busca) || descricao.contains(busca); //Retorna true se o nome ou descrição contiverem o texto de busca.
+    }).toList();
+  }
 
   QueryDocumentSnapshot? lastDoc; //Guarda o último documento (para paginação).
   bool carregando = false; //Indica se está carregando dados.
@@ -85,40 +106,157 @@ class _CatalogoState extends State<Catalogo> {
 
   @override
   Widget build(BuildContext context) {
-    //Constrói o design
-    return Scaffold(
-      //Estrutura base da tela
-      appBar: AppBar(title: const Text('Catálogo')), //Barra superior com título
-      body: BackgroundContainer(
-        //Fundo personalizado
-        child: ListView.builder(
-          //Lista dinâmica
-          controller: controller, //Liga a rolagem ao controller
-          itemCount: startups.length + 1, //+1 para mostrar loading no final.
-          itemBuilder: (context, index) {
-            //Função que cria cada item.
-            if (index < startups.length) {
-              final s = startups[index];
+    final lista = startupsFiltradas;
 
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: ListTile(
-                  title: Text(s.nome_startup),
-                  subtitle: Text(s.mini_descricao),
-                  trailing: Text('R\$ ${s.valorFixo_token}'),
-                ),
-              ); //Se ainda for item normal mostra o card
-            } else {
-              return carregando //Caso contrário, se estiver carregando, mostra espaço com padding.
-                  ? const Padding(
-                      padding: EdgeInsets.all(16), //Espaçamento
-                      child: Center(
-                        child: CircularProgressIndicator(),
-                      ), //Mostra o Girador de Carregamento
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Catálogo'),
+      ),
+      bottomNavigationBar: MenuInferior(
+        PaginaAtual: paginaAtual,
+        onItemSelected: (index) {
+          setState(() => paginaAtual = index);
+        },
+      ),
+      body: BackgroundContainer(
+        child: Column(
+          children: [
+            BuscaStartup(
+              controller: buscaController,
+              onChanged: (valor) {
+                setState(() {
+                  textoBusca = valor;
+                });
+              },
+            ),
+            Expanded(
+              child: startups.isEmpty && carregando
+                  ? const Center(
+                      child: CircularProgressIndicator(),
                     )
-                  : const SizedBox(); //Se não estiver carregando, não mostra nada.
-            }
-          },
+                  : lista.isEmpty
+                      ? const Center(
+                          child: Text("Nenhuma startup encontrada"),
+                        )
+                      : ListView.builder(
+                          controller: controller,
+                          itemCount: lista.length + (carregando ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (index < lista.length) {
+                              final s = lista[index];
+
+                              return Card(
+                                color: const Color(0xFFE8E9EB),
+                                elevation: 2,
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 22,
+                                        backgroundColor: Colors.white,
+                                        child: const Icon(
+                                          Icons.business,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    s.nome_startup,
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: const TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  'R\$ ${s.valorFixo_token}',
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 15,
+                                                    color: Color.fromARGB(255, 47, 40, 148),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              s.mini_descricao,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 10,
+                                                vertical: 4,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFDADADA),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              child: const Text(
+                                                'Startup',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 10),
+                                            Align(
+                                              alignment: Alignment.centerRight,
+                                              child: BotaoIrPara(
+                                                pagina: const Placeholder(),
+                                                texto: "Ver mais",
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              child: Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          },
+                        ),
+            ),
+          ],
         ),
       ),
     );
