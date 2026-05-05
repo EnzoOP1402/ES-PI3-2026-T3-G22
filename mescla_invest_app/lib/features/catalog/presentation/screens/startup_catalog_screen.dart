@@ -1,4 +1,4 @@
-/* Autor: Bernardo Castro Brandão de Oliveira */
+/* Autor: Rafael Henrique dos Santos Inácio (responsável pela função de filtro de Startups) */
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
