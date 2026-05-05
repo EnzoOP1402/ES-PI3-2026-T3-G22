@@ -1,5 +1,7 @@
 /* eslint-disable require-jsdoc */
 import {FieldValue} from "firebase-admin/firestore";
+import {auth} from "firebase-admin";
+
 import {
   StartupDocument,
   StartupListItem,
@@ -178,16 +180,41 @@ export async function listPublicQuestions(startupId: string) {
     .limit(50)
     .get();
 
-  return questionsSnapshot.docs
-    .map((doc) => ({
-      id: doc.id,
-      text: doc.get("text"),
-      answer: doc.get("answer") ?? null,
-      answeredAt: doc.get("answeredAt")?.toDate?.()?.toISOString?.() ?? null,
-      createdAt: doc.get("createdAt")?.toDate?.()?.toISOString?.() ?? null,
-    }))
-    .sort((left, right) => String(right.createdAt ?? "")
-      .localeCompare(String(left.createdAt ?? "")));
+  // Usamos Promise.all para processar as buscas de usuário de forma assíncrona
+  const questionsWithUsers = await Promise.all(
+    questionsSnapshot.docs.map(async (doc) => {
+      const data = doc.data();
+      const authorId = data.authorUid || data.authorId;
+
+      let authorName = "Usuário";
+      let authorPhotoUrl = null;
+
+      if (authorId) {
+        try {
+          // Busca os dados do perfil do usuário no Firebase Auth
+          const userRecord = await auth().getUser(authorId);
+          authorName = userRecord.displayName || "Usuário";
+          authorPhotoUrl = userRecord.photoURL || null;
+        } catch (error) {
+          console.error(`Erro ao buscar usuário ${authorId}:`, error);
+        }
+      }
+
+      return {
+        id: doc.id,
+        text: data.text,
+        answer: data.answer ?? null,
+        answeredAt: data.answeredAt?.toDate?.()?.toISOString?.() ?? null,
+        createdAt: data.createdAt?.toDate?.()?.toISOString?.() ?? null,
+        authorName,
+        authorPhotoUrl,
+      };
+    })
+  );
+
+  return questionsWithUsers.sort((left, right) =>
+    String(right.createdAt ?? "").localeCompare(String(left.createdAt ?? ""))
+  );
 }
 
 export async function createQuestion(
