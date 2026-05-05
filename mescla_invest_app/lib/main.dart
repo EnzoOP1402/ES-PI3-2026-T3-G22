@@ -20,8 +20,10 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
   // Função responsável por executar a aplicação
   runApp(const MesclaInvest());
+  
 }
 
 // Widget que representa a aplicação
