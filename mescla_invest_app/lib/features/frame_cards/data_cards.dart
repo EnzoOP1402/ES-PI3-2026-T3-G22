@@ -35,29 +35,47 @@ class CardCatalogo {
     required this.part_societaria,
   });
   factory CardCatalogo.fromFirestore(Map<String, dynamic> data) {
-    //Construtor especial que transforma dados do Firebase em objeto Dart.
+    // 1. Tratamento para a lista de sócios (founders)
+    final List<String> listaSocios = [];
+    if (data['founders'] != null && data['founders'] is List) {
+      for (var f in data['founders']) {
+        if (f is Map && f['name'] != null) {
+          listaSocios.add(f['name'].toString());
+        }
+      }
+    }
+
+    // 2. Tratamento para a lista de mentores (externalMembers)
+    final List<String> listaMentores = [];
+    if (data['externalMembers'] != null && data['externalMembers'] is List) {
+      for (var m in data['externalMembers']) {
+        if (m is Map && m['name'] != null) {
+          listaMentores.add(m['name'].toString());
+        }
+      }
+    }
+
+    // 3. Retorno do objeto mapeando os campos do Firebase para os da classe
     return CardCatalogo(
-      //Cria um novo objeto
-      nome_startup: data['nome'] ?? '', //Se existir usa, senão usa string vazia
+      nome_startup: data['name'] ?? 'Sem nome',
       data_criacao: data['dataCriacao'] ?? '',
-      mini_descricao: data['descricao'] ?? '',
-      estagio_stp: data['estagio'] ?? '',
-      status_stp: data['status'] ?? '',
-      tokens_disponiveis: data['tokensDisponiveis'] ?? 0,
-      tokens_emitidos: data['tokensEmitidos'] ?? 0,
-      valorFixo_token: (data['valorFixoTokens'] ?? 0)
-          .toDouble(), //Garante que o valor seja double
-      capital_aportado: (data['capitalAportado'] ?? 0).toDouble(),
-      setor_stp: data['setor'] ?? '',
-      video_demoURL: data['videoDemo'],
-      socios_stp: List<String>.from(
-        data['socios'] ?? [],
-      ), //Converte lista dinâmica em lista de String
-      ment_conselho: List<String>.from(data['mentoresConselho'] ?? []),
-      ofertas_ativas: List<Map<String, dynamic>>.from(
-        data['ofertasAtivas'] ?? [],
-      ),
-      part_societaria: List<String>.from(data['participacaoSocietaria'] ?? []),
+      mini_descricao: data['shortDescription'] ?? data['description'] ?? '',
+      estagio_stp: data['stage'] ?? '',
+      status_stp: data['status'] ?? 'Ativo',
+      tokens_disponiveis: (data['totalTokensIssued'] ?? 0) as int,
+      tokens_emitidos: (data['totalTokensIssued'] ?? 0) as int,
+      valorFixo_token: ((data['currentTokenPriceCents'] ?? 0) as int) / 100.0,
+      capital_aportado: ((data['capitalRaisedCents'] ?? 0) as int) / 100.0,
+      setor_stp: (data['tags'] as List?)?.isNotEmpty == true
+          ? data['tags'][0].toString()
+          : 'Geral',
+      video_demoURL: (data['demoVideos'] as List?)?.isNotEmpty == true
+          ? data['demoVideos'][0].toString()
+          : null,
+      socios_stp: listaSocios,
+      ment_conselho: listaMentores,
+      ofertas_ativas: [], // Inicializa vazio se não houver no banco
+      part_societaria: [], // Inicializa vazio se não houver no banco
     );
   }
 }

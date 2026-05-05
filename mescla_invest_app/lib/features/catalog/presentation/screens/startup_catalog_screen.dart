@@ -1,76 +1,89 @@
 /* Autor: Bernardo Castro Brandão de Oliveira */
 
-import 'package:flutter/material.dart'; //Importa o framework principal do Flutter (widgets, UI, Scaffold, etc) 
-import 'package:cloud_firestore/cloud_firestore.dart'; //Importa o Firebase Firestore (banco de dados).
-import 'package:mescla_invest_app/features/frame_cards/data_cards.dart'; //(importa o arquivo que tem a classe com as informações de cada card)
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mescla_invest_app/features/frame_cards/data_cards.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/theme/background_app.dart';
 import '../widgets/nav_menu.dart';
 import '../widgets/pesquisar_menu.dart';
 import '../widgets/botao_ir_para.dart';
 
 class Catalogo extends StatefulWidget {
-  //Tela que muda dinamicamente
-  const Catalogo({super.key}); //Construtor da classe
+  const Catalogo({super.key});
 
   @override
-  State<Catalogo> createState() => _CatalogoState(); //Cria o estado da tela.
+  State<Catalogo> createState() => _CatalogoState();
 }
 
 class _CatalogoState extends State<Catalogo> {
   final TextEditingController buscaController = TextEditingController();
-  // Variáveis de controle para menu e busca
+
+  // Variáveis de controle de estado
   int paginaAtual = 1;
   String textoBusca = '';
+  String filtroSelecionado = 'Todas';
+  final List<String> categorias = [
+    'Todas',
+    'Em operação',
+    'Em expansão',
+    'Nova',
+  ];
 
-  //Classe que controla comportamento da tela.
-  final List<CardCatalogo> startups = []; //Lista de startups carregadas.
-  final ScrollController controller =
-      ScrollController(); //Controla a rolagem da lista.
+  final List<CardCatalogo> startups = [];
+  final ScrollController controller = ScrollController();
 
+  // Lógica de filtragem combinada (Filtro + Busca)
   List<CardCatalogo> get startupsFiltradas {
-    //Retorna a lista de startups filtrada pelo texto de busca.
-    if (textoBusca.trim().isEmpty) return startups; //Se a busca está vazia, retorna tudo.
+    List<CardCatalogo> resultado = startups;
 
-    final busca = textoBusca.toLowerCase(); //Transforma a busca em minúscula para comparação.
-    return startups.where((s) {
-      //Filtra a lista de startups
+    // 1. Aplicar filtro de categoria (estágio)
+    if (filtroSelecionado != 'Todas') {
+      // Mapeia o texto do botão para o padrão do seu Firestore (ex: em_operacao)
+      String valorBanco = filtroSelecionado.toLowerCase().replaceAll(' ', '_');
+      if (valorBanco == "em_operação") valorBanco = "em_operacao";
+      if (valorBanco == "em_expansão") valorBanco = "em_expansao";
+
+      resultado = resultado.where((s) => s.estagio_stp == valorBanco).toList();
+    }
+
+    // 2. Aplicar filtro de busca por texto
+    if (textoBusca.trim().isEmpty) return resultado;
+
+    final busca = textoBusca.toLowerCase();
+    return resultado.where((s) {
       final nome = s.nome_startup.toLowerCase();
       final descricao = s.mini_descricao.toLowerCase();
-
-      return nome.contains(busca) || descricao.contains(busca); //Retorna true se o nome ou descrição contiverem o texto de busca.
+      return nome.contains(busca) || descricao.contains(busca);
     }).toList();
   }
 
-  QueryDocumentSnapshot? lastDoc; //Guarda o último documento (para paginação).
-  bool carregando = false; //Indica se está carregando dados.
-  bool acabou = false; //Indica se não há mais dados.
+  QueryDocumentSnapshot? lastDoc;
+  bool carregando = false;
+  bool acabou = false;
 
   @override
   void initState() {
-    //Executa quando a tela inicia.
-    super.initState(); //Inicializa corretamente a classe pai.
-    carregarMais(); //Carrega os primeiros dados
+    super.initState();
+    carregarMais();
 
     controller.addListener(() {
-      //Escuta a rolagem
       if (controller.position.pixels >=
               controller.position.maxScrollExtent - 200 &&
           !carregando &&
           !acabou) {
-        //verifica se chegou no fim da lista
-
-        carregarMais(); //Carrega mais dados, se não estiver carregando e ainda tem dados
+        carregarMais();
       }
     });
   }
 
   Future<void> carregarMais() async {
-    if (carregando || acabou) return; // Proteção extra
+    if (carregando || acabou) return;
 
     setState(() => carregando = true);
 
     try {
-      Query query = FirebaseFirestore.instance.collection('startups').limit(20);
+      // Busca na coleção 'Startups' com S maiúsculo conforme seu banco
+      Query query = FirebaseFirestore.instance.collection('Startups').limit(20);
 
       if (lastDoc != null) {
         query = query.startAfterDocument(lastDoc!);
@@ -79,7 +92,6 @@ class _CatalogoState extends State<Catalogo> {
       final snapshot = await query.get();
 
       if (snapshot.docs.isNotEmpty) {
-        // ATUALIZA O ÚLTIMO DOCUMENTO PARA A PRÓXIMA PÁGINA
         lastDoc = snapshot.docs.last;
         final novos = snapshot.docs.map((doc) {
           return CardCatalogo.fromFirestore(doc.data() as Map<String, dynamic>);
@@ -88,20 +100,14 @@ class _CatalogoState extends State<Catalogo> {
         setState(() {
           startups.addAll(novos);
         });
-        print("DOCS: ${snapshot.docs.length}");
-
-        // Aqui deve vir a lógica de adicionar os itens na sua lista (ex: lista.addAll)
       } else {
-        acabou = true; // Não há mais dados no banco
+        setState(() => acabou = true);
       }
     } catch (e) {
-      print("Erro ao carregar: $e");
-      
+      print("Erro ao carregar no Firestore: $e");
     } finally {
-      // SEMPRE volta para false, mesmo se der erro, para não travar o app
       setState(() => carregando = false);
     }
-    
   }
 
   @override
@@ -109,9 +115,7 @@ class _CatalogoState extends State<Catalogo> {
     final lista = startupsFiltradas;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Catálogo'),
-      ),
+      appBar: AppBar(title: const Text('Catálogo')),
       bottomNavigationBar: MenuInferior(
         PaginaAtual: paginaAtual,
         onItemSelected: (index) {
@@ -121,140 +125,161 @@ class _CatalogoState extends State<Catalogo> {
       body: BackgroundContainer(
         child: Column(
           children: [
+            // Barra de busca
             BuscaStartup(
               controller: buscaController,
               onChanged: (valor) {
-                setState(() {
-                  textoBusca = valor;
-                });
+                setState(() => textoBusca = valor);
               },
             ),
+
+            // Linha de Filtros (Chips)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: categorias.map((cat) {
+                  final selecionado = filtroSelecionado == cat;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(cat),
+                      selected: selecionado,
+                      onSelected: (bool selected) {
+                        setState(() => filtroSelecionado = cat);
+                      },
+                      selectedColor: const Color(
+                        0xFFE91E63,
+                      ), // Cor rosa da imagem
+                      backgroundColor: Colors.white,
+                      labelStyle: TextStyle(
+                        color: selecionado ? Colors.white : Colors.black87,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+
+            // Lista de Startups
             Expanded(
               child: startups.isEmpty && carregando
-                  ? const Center(
-                      child: CircularProgressIndicator(),
-                    )
+                  ? const Center(child: CircularProgressIndicator())
                   : lista.isEmpty
-                      ? const Center(
-                          child: Text("Nenhuma startup encontrada"),
-                        )
-                      : ListView.builder(
-                          controller: controller,
-                          itemCount: lista.length + (carregando ? 1 : 0),
-                          itemBuilder: (context, index) {
-                            if (index < lista.length) {
-                              final s = lista[index];
+                  ? const Center(child: Text("Nenhuma startup encontrada"))
+                  : ListView.builder(
+                      controller: controller,
+                      itemCount: lista.length + (carregando ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index < lista.length) {
+                          final s = lista[index];
 
-                              return Card(
-                                color: const Color(0xFFE8E9EB),
-                                elevation: 2,
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      CircleAvatar(
-                                        radius: 22,
-                                        backgroundColor: Colors.white,
-                                        child: const Icon(
-                                          Icons.business,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                          return Card(
+                            color: const Color(0xFFE8E9EB),
+                            elevation: 2,
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const CircleAvatar(
+                                    radius: 22,
+                                    backgroundColor: Colors.white,
+                                    child: Icon(
+                                      Icons.business,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Expanded(
-                                                  child: Text(
-                                                    s.nome_startup,
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: const TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight: FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Text(
-                                                  'R\$ ${s.valorFixo_token}',
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 15,
-                                                    color: Color.fromARGB(255, 47, 40, 148),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              s.mini_descricao,
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.black87,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 10,
-                                                vertical: 4,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFFDADADA),
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              child: const Text(
-                                                'Startup',
-                                                style: TextStyle(
+                                            Expanded(
+                                              child: Text(
+                                                s.nome_startup,
+                                                style: const TextStyle(
+                                                  fontSize: 18,
                                                   fontWeight: FontWeight.bold,
-                                                  fontSize: 12,
                                                 ),
                                               ),
                                             ),
-                                            const SizedBox(height: 10),
-                                            Align(
-                                              alignment: Alignment.centerRight,
-                                              child: BotaoIrPara(
-                                                pagina: const Placeholder(),
-                                                texto: "Ver mais",
+                                            Text(
+                                              'R\$ ${s.valorFixo_token.toStringAsFixed(2)}',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Color(0xFF2F2894),
                                               ),
                                             ),
                                           ],
                                         ),
-                                      ),
-                                    ],
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          s.mini_descricao,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        // Badge de estágio
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFDADADA),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            s.estagio_stp
+                                                .replaceAll('_', ' ')
+                                                .toUpperCase(),
+                                            style: const TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        Align(
+                                          alignment: Alignment.centerRight,
+                                          child: BotaoIrPara(
+                                            pagina: const Placeholder(),
+                                            texto: "Ver mais",
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              );
-                            }
-
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16),
-                              child: Center(
-                                child: CircularProgressIndicator(),
+                                ],
                               ),
-                            );
-                          },
-                        ),
+                            ),
+                          );
+                        }
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
