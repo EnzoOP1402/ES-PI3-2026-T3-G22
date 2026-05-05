@@ -61,6 +61,15 @@ class QuestionModel {
 
     return map;
   }
+
+  /// Retorna apenas os dados necessários para a chamada HTTPS Callable.
+  /// Remove campos que o servidor gera sozinho (como datas).
+  Map<String, dynamic> toCallableMap() {
+    return {
+      'text': text,
+      'visibility': visibility.name,
+    };
+  }
   
   // Criando um construtor factory para converter os dados do map criado pelo método toMap()
   /// factory fromMap() - converte o [map] que o Firestore devolve em um objeto UserModel

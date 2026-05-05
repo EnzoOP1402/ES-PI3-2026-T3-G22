@@ -38,7 +38,7 @@ class AuthWrapper extends StatelessWidget {
 
         // Se houver um usuário logado, renderiza a tela inicial, se não, a tela de recepção
         if (snapshot.hasData) {
-          return const PublicQuestions();
+          return const PublicQuestions(startupId: 'WdVqZWOcWuzYnCVpH43m', startupName: 'NotaCerta LTDA',);
         } else {
           return const WelcomeScreen();
         }

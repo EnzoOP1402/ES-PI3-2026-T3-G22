@@ -7,7 +7,7 @@ import {
 } from "../types";
 import {db} from "../shared/firebase";
 
-const startupsCollection = db.collection("startups");
+const startupsCollection = db.collection("Startups");
 
 const demoStartups: Array<StartupDocument & {id: string}> = [
   {

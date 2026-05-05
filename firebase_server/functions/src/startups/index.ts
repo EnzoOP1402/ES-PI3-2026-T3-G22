@@ -1,5 +1,7 @@
-export { addBatchStartups } from "./handlers/addBatchStartups";
+export {addBatchStartups} from "./handlers/addBatchStartups";
 
-export { getStartups } from "./handlers/getStartups";
+export {getStartups} from "./handlers/getStartups";
 
-export { getStartupsTest } from "./handlers/getStartupsTest";
+export {getStartupsTest} from "./handlers/getStartupsTest";
+
+export {createStartupQuestion} from "./handlers/createStartupQuestion";
