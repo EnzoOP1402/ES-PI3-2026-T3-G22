@@ -102,7 +102,7 @@ class _CatalogoState extends State<Catalogo> {
 
       body: Column(
         children: [
-          /// 🔍 PESQUISA
+        
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: TextField(
@@ -120,7 +120,7 @@ class _CatalogoState extends State<Catalogo> {
             ),
           ),
 
-          /// 🏷️ FILTROS
+         
           SizedBox(
             height: 40,
             child: ListView(
@@ -137,7 +137,7 @@ class _CatalogoState extends State<Catalogo> {
 
           const SizedBox(height: 10),
 
-          /// 📜 LISTA
+          
           Expanded(
             child: ListView.builder(
               controller: controller,
@@ -161,7 +161,7 @@ class _CatalogoState extends State<Catalogo> {
                       ),
                       padding: const EdgeInsets.all(16),
 
-                      /// 🎨 CARD IGUAL AO DESIGN
+                    
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
@@ -170,7 +170,7 @@ class _CatalogoState extends State<Catalogo> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          /// 🔝 TOPO
+                   
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -195,7 +195,7 @@ class _CatalogoState extends State<Catalogo> {
 
                           const SizedBox(height: 6),
 
-                          /// 📝 DESCRIÇÃO
+                        
                           Text(
                             s.mini_descricao,
                             style: const TextStyle(
@@ -206,7 +206,7 @@ class _CatalogoState extends State<Catalogo> {
 
                           const SizedBox(height: 10),
 
-                          /// 🏷️ TAG (cor correta)
+                         
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
@@ -225,7 +225,7 @@ class _CatalogoState extends State<Catalogo> {
                             ),
                           ),
 
-                          /// 🔽 EXPANSÃO
+                          
                           if (isExpanded) ...[
                             const SizedBox(height: 12),
                             const Divider(),
@@ -254,7 +254,7 @@ class _CatalogoState extends State<Catalogo> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              /// 🔢 TOKENS (lado esquerdo)
+                             
                               Text(
                                 "${s.tokens_emitidos} tokens",
                                 style: const TextStyle(color: Colors.black),
