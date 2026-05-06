@@ -53,7 +53,7 @@ class _CatalogoState extends State<Catalogo> {
     setState(() => carregando = true);
 
     try {
-      Query query = FirebaseFirestore.instance.collection('startups').limit(20);
+      Query query = FirebaseFirestore.instance.collection('Startups').limit(20);
 
       if (lastDoc != null) {
         query = query.startAfterDocument(lastDoc!);
@@ -102,7 +102,6 @@ class _CatalogoState extends State<Catalogo> {
 
       body: Column(
         children: [
-        
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: TextField(
@@ -120,7 +119,6 @@ class _CatalogoState extends State<Catalogo> {
             ),
           ),
 
-         
           SizedBox(
             height: 40,
             child: ListView(
@@ -137,7 +135,6 @@ class _CatalogoState extends State<Catalogo> {
 
           const SizedBox(height: 10),
 
-          
           Expanded(
             child: ListView.builder(
               controller: controller,
@@ -161,7 +158,6 @@ class _CatalogoState extends State<Catalogo> {
                       ),
                       padding: const EdgeInsets.all(16),
 
-                    
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
@@ -170,7 +166,6 @@ class _CatalogoState extends State<Catalogo> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                   
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -195,7 +190,6 @@ class _CatalogoState extends State<Catalogo> {
 
                           const SizedBox(height: 6),
 
-                        
                           Text(
                             s.mini_descricao,
                             style: const TextStyle(
@@ -206,7 +200,6 @@ class _CatalogoState extends State<Catalogo> {
 
                           const SizedBox(height: 10),
 
-                         
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
@@ -225,7 +218,6 @@ class _CatalogoState extends State<Catalogo> {
                             ),
                           ),
 
-                          
                           if (isExpanded) ...[
                             const SizedBox(height: 12),
                             const Divider(),
@@ -254,13 +246,11 @@ class _CatalogoState extends State<Catalogo> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                             
                               Text(
                                 "${s.tokens_emitidos} tokens",
                                 style: const TextStyle(color: Colors.black),
                               ),
 
-                            
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: ElevatedButton(
