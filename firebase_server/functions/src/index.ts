@@ -1,8 +1,8 @@
 import * as admin from "firebase-admin";
-import { setGlobalOptions } from "firebase-functions";
+import {setGlobalOptions} from "firebase-functions";
 
 admin.initializeApp();
 
-setGlobalOptions({ maxInstances: 10 });
+setGlobalOptions({maxInstances: 10});
 
 export * from "./startups";
