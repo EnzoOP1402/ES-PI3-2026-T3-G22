@@ -260,7 +260,7 @@ class _CatalogoState extends State<Catalogo> {
                                 style: const TextStyle(color: Colors.black),
                               ),
 
-                              /// 🔘 BOTÃO (cor correta)
+                            
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: ElevatedButton(
