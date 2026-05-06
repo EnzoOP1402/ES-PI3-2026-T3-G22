@@ -1,6 +1,5 @@
 /* eslint-disable require-jsdoc */
 import {FieldValue} from "firebase-admin/firestore";
-import {auth} from "firebase-admin";
 
 import {
   StartupDocument,
@@ -184,17 +183,20 @@ export async function listPublicQuestions(startupId: string) {
   const questionsWithUsers = await Promise.all(
     questionsSnapshot.docs.map(async (doc) => {
       const data = doc.data();
-      const authorId = data.authorUid || data.authorId;
+      const authorId = data.authorUid;
 
       let authorName = "Usuário";
       let authorPhotoUrl = null;
 
       if (authorId) {
         try {
-          // Busca os dados do perfil do usuário no Firebase Auth
-          const userRecord = await auth().getUser(authorId);
-          authorName = userRecord.displayName || "Usuário";
-          authorPhotoUrl = userRecord.photoURL || null;
+          // Busca o documento do usuário na coleção "users" do Firestore
+          const userDoc = await db.collection("users").doc(authorId).get();
+          if (userDoc.exists) {
+            const userData = userDoc.data();
+            authorName = userData?.fullName || "Usuário";
+            authorPhotoUrl = userData?.profilePicture || null;
+          }
         } catch (error) {
           console.error(`Erro ao buscar usuário ${authorId}:`, error);
         }

@@ -1,3 +1,5 @@
+/* Autor: Enzo Olivato Pazian */
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -49,6 +51,22 @@ class _PublicQuestionsState extends State<PublicQuestions> {
   // Definindo a lista que recebe as perguntas públicas obtidas
   List<dynamic> _publicQuestionsList = []; // Lista bruta vinda do backend
 
+  // Variável para armazenar os dados do usuário ao enviar mensagens
+  Map<String, dynamic>? _currentUserProfile;
+
+  // Função para obter dados do usuário necessários para a exibição de uma
+  // mensagem recém enviada
+  Future<void> _loadCurrentUserProfile() async {
+    final uid = AuthRepository.instance.currentUser?.uid;
+    if (uid != null) {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists && mounted) {
+        setState(() => _currentUserProfile = doc.data());
+      }
+    }
+  }
+
+  // Função para obter os dados da página detalhada
   Future<void> _fetchStartupDetails() async {
     try {
       setState(() => _isLoading = true);
@@ -65,10 +83,8 @@ class _PublicQuestionsState extends State<PublicQuestions> {
 
       if (mounted) {
         setState(() {
-          
           // Mapeamos a lista de perguntas retornada pela listPublicQuestions (backend)
           _publicQuestionsList = startupData['publicQuestions'] ?? [];
-          print(_publicQuestionsList.toString());
           _isLoading = false;
         });
       }
@@ -84,9 +100,13 @@ class _PublicQuestionsState extends State<PublicQuestions> {
   @override
   void initState() {
     super.initState();
-    // Chamamos a função assim que o widget é carregado
+    // Chamamos as funções assim que o widget é carregado
     // O Flutter iniciará o carregamento dos dados imediatamente
-    _fetchStartupDetails(); 
+
+    // Função de obtenção dos dados da startup
+    _fetchStartupDetails();
+    // Função de obtenção dos dados do usuário para o envio de mensagens
+    _loadCurrentUserProfile();
   }
 
   // Método usado para eliminar variáveis, objetos, etc da árvore de elementos para liberar memória.
@@ -124,12 +144,26 @@ class _PublicQuestionsState extends State<PublicQuestions> {
 
       await callable.call(payload);
 
-      // 3. Opcional: Você pode acessar os dados retornados pela função, se precisar
-      // final data = response.data;
-      // print("Pergunta criada com ID: ${data['id']}");
-
       // Exibe uma mensagem de sucesso
       if (mounted) {
+        // 3. Inserindo a pergunta recém criada na lista de perguntas sem precisar chamar a Function
+        final novaPerguntaLocal = {
+          'id': 'temp_${DateTime.now().millisecondsSinceEpoch}', // ID temporário
+          'authorName': _currentUserProfile?['fullName'] ?? 'Eu', // Busca o fullName do Firestore
+          'authorPhotoUrl': _currentUserProfile?['profilePicture'], // Busca a foto do Firestore
+          'text': message,
+          'createdAt': DateTime.now().toIso8601String(), // Data local para exibição imediata
+          'answer': null,
+          'answeredAt': null,
+        };
+
+        setState(() {
+          // Insere no início da lista (index 0) para aparecer no topo, 
+          // respeitando a ordenação por data do protótipo
+          _publicQuestionsList.insert(0, novaPerguntaLocal);
+        });
+
+        // Emite uma mensagem de sucesso
         showSuccessSnackBar(context, "Pergunta enviada com sucesso!");
       }
     } on FirebaseFunctionsException catch (e) {
@@ -289,6 +323,10 @@ class _PublicQuestionsState extends State<PublicQuestions> {
                                               child: Form(
                                                 key: _modalFormKey,
                                                 child: TextFormField(
+                                                  // Configurações para o comportamento de textarea
+                                                  minLines: 1,      // Começa com uma linha
+                                                  maxLines: 5,      // Cresce até 5 linhas e depois habilita scroll interno
+                                                  keyboardType: TextInputType.multiline, // Permite o botão 'Enter' para pular linha
                                                   controller: _modalPublicQuestionController,
                                                   validator: (value) {
                                                     if (value == null || value.isEmpty || value.toString().trim().isEmpty) {
@@ -351,6 +389,10 @@ class _PublicQuestionsState extends State<PublicQuestions> {
                     Form(
                       key: _formKey,
                       child: TextFormField(
+                        // Configurações para o comportamento de textarea
+                        minLines: 1,      // Começa com uma linha
+                        maxLines: 5,      // Cresce até 5 linhas e depois habilita scroll interno
+                        keyboardType: TextInputType.multiline, // Permite o botão 'Enter' para pular linha
                         controller: _publicQuestionController,
                         validator: (value) {
                           if (value == null || value.isEmpty || value.toString().trim().isEmpty) {

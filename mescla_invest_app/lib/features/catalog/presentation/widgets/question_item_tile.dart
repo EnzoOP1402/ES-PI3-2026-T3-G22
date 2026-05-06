@@ -1,6 +1,11 @@
+/* Autor: Enzo Olivato Pazian */
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart'; // Necessário para formatar a data (adicione no pubspec.yaml)
+import 'package:intl/intl.dart';
+
+// Widget modularizado para a criação dos conjuntos que representam
+// cada pergunta exibida na página detalhada das startups
 
 class QuestionItemTile extends StatefulWidget {
   final Map<String, dynamic> questionData;
@@ -34,6 +39,8 @@ class _QuestionItemTileState extends State<QuestionItemTile> {
     final String createdAt = _formatDate(widget.questionData['createdAt']);
     final String answeredAt = _formatDate(widget.questionData['answeredAt']);
     
+    // Variável que controla se a pergunta possui ou não resposta
+    // para que possa renderizar a funcionalidade corretamente
     final bool hasAnswer = answer != null && answer.isNotEmpty;
 
     return Padding(
@@ -47,7 +54,7 @@ class _QuestionItemTileState extends State<QuestionItemTile> {
               // 1. Avatar (Foto ou Inicial)
               CircleAvatar(
                 radius: 25,
-                backgroundColor: const Color(0xFFA2A2A2), // Cor do protótipo
+                backgroundColor: const Color(0xFFA2A2A2),
                 backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
                 child: photoUrl == null
                     ? Text(
@@ -118,19 +125,23 @@ class _QuestionItemTileState extends State<QuestionItemTile> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.subdirectory_arrow_right_rounded, size: 16),
-                              const SizedBox(width: 4),
-                              Text(
-                                "Resposta",
-                                style: GoogleFonts.montserrat(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 13,
-                                  color: Colors.black,
+                          GestureDetector(
+                            // Recolhe a resposta caso ela seja clicada novamente
+                            onTap: () => setState(() => _isExpanded = false),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.subdirectory_arrow_right_rounded, size: 16),
+                                const SizedBox(width: 4),
+                                Text(
+                                  "Resposta",
+                                  style: GoogleFonts.montserrat(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13,
+                                    color: Colors.black,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           Text(
                             answeredAt,
@@ -155,8 +166,10 @@ class _QuestionItemTileState extends State<QuestionItemTile> {
             ],
           ),
           
+          // Espaçamento
           const SizedBox(height: 12),
-          // Linha divisória fina (opcional, como no protótipo)
+
+          // Linha divisória fina
           Divider(color: const Color(0xFFA2A2A2), thickness: 0.5, height: 1),
         ],
       ),
