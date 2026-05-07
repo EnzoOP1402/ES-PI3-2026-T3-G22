@@ -1,3 +1,5 @@
+/* Autor: Rafael Henrique Inácio */
+
 import 'package:flutter/material.dart';
 
 class TelaRecepcao extends StatelessWidget {
