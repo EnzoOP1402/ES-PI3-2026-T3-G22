@@ -1,4 +1,4 @@
-/* Autor: Enzo Olivato Pazian */
+/* Autor: Bernardo Castro Brandão de Oliveira */
 
 // Importação das dependências
 import 'package:flutter/material.dart';
