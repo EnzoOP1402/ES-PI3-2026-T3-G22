@@ -1,8 +1,11 @@
-/* Autor: Bernardo Castro Brandão de Oliveira */
+
 
 import 'package:flutter/material.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
+import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_detail_screen.dart';
+
 import '../theme/background_app.dart';
 
 class MesclaInvest extends StatelessWidget {
@@ -12,7 +15,7 @@ class MesclaInvest extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Catalogo(),
+      home: const Catalogo(),
       theme: ThemeData(
         textTheme: GoogleFonts.montserratTextTheme(),
       ),
@@ -20,109 +23,225 @@ class MesclaInvest extends StatelessWidget {
   }
 }
 
-class CardCatalogo {
-  final String nome_startup;
-  final String logoImg;
-  final String mini_descricao;
-  final String status;
-  final int tokens_emitidos;
+class StartupCatalogItem {
+  final String id;
+  final String name;
+  final String shortDescription;
+  final String stage;
+  final List<String> tags;
+  final int totalTokensIssued;
+  final num capitalRaisedCents;
 
-  final List<String> socios;
-  final double capital_aportado;
-
-  CardCatalogo({
-    required this.nome_startup,
-    required this.logoImg,
-    required this.mini_descricao,
-    required this.status,
-    required this.tokens_emitidos,
-    required this.socios,
-    required this.capital_aportado,
+  const StartupCatalogItem({
+    required this.id,
+    required this.name,
+    required this.shortDescription,
+    required this.stage,
+    required this.tags,
+    required this.totalTokensIssued,
+    required this.capitalRaisedCents,
   });
+
+  factory StartupCatalogItem.fromMap(Map<String, dynamic> data) {
+    return StartupCatalogItem(
+      id: data['id']?.toString() ?? '',
+      name: data['name']?.toString() ??
+          data['nome']?.toString() ??
+          'Startup sem nome',
+      shortDescription: data['shortDescription']?.toString() ??
+          data['description']?.toString() ??
+          data['descricao']?.toString() ??
+          'Descrição não informada.',
+      stage: data['stage']?.toString() ??
+          data['estagio']?.toString() ??
+          'Status não informado',
+      tags: _parseTags(data['tags']),
+      totalTokensIssued: _parseInt(
+        data['totalTokensIssued'] ??
+            data['tokensEmitidos'] ??
+            data['totalTokensEmitidos'],
+      ),
+      capitalRaisedCents: _parseNum(
+        data['capitalRaisedCents'] ?? data['capitalAportado'],
+      ),
+    );
+  }
+
+  static List<String> _parseTags(dynamic value) {
+    if (value is List) {
+      return value.map((item) => item.toString()).toList();
+    }
+
+    return <String>[];
+  }
+
+  static int _parseInt(dynamic value) {
+    if (value is int) {
+      return value;
+    }
+
+    if (value is num) {
+      return value.toInt();
+    }
+
+    if (value is String) {
+      return int.tryParse(value) ?? 0;
+    }
+
+    return 0;
+  }
+
+  static num _parseNum(dynamic value) {
+    if (value is num) {
+      return value;
+    }
+
+    if (value is String) {
+      return num.tryParse(value) ?? 0;
+    }
+
+    return 0;
+  }
 }
 
-class Catalogo extends StatelessWidget {
+class Catalogo extends StatefulWidget {
   const Catalogo({super.key});
 
   @override
+  State<Catalogo> createState() => _CatalogoState();
+}
+
+class _CatalogoState extends State<Catalogo> {
+  late final Future<List<StartupCatalogItem>> _startupsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _startupsFuture = _getStartups();
+  }
+
+  Future<List<StartupCatalogItem>> _getStartups() async {
+    try {
+      final functions = FirebaseFunctions.instance;
+
+      final callable = functions.httpsCallable('listStartups');
+
+      final result = await callable.call(<String, dynamic>{});
+      
+      debugPrint('RETORNO LIST STARTUPS: ${result.data}');
+
+      final resultData = Map<String, dynamic>.from(result.data);
+
+      final rawStartups = resultData['data'];
+
+      if (rawStartups is! List) {
+        return <StartupCatalogItem>[];
+      }
+
+      return rawStartups.map((item) {
+        final data = Map<String, dynamic>.from(item);
+        return StartupCatalogItem.fromMap(data);
+      }).toList();
+    } on FirebaseFunctionsException catch (e) {
+      debugPrint('Erro Firebase Functions: ${e.code}');
+      debugPrint('Mensagem: ${e.message}');
+      debugPrint('Detalhes: ${e.details}');
+      rethrow;
+    } catch (e) {
+      debugPrint('Erro inesperado ao buscar startups: $e');
+      rethrow;
+    }
+  }
+
+  void _openStartupDetail(StartupCatalogItem startup) {
+    if (startup.id.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ID da startup não encontrado.'),
+        ),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => StartupDetailScreen(
+          startupId: startup.id,
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final List<CardCatalogo> startups = [
-      CardCatalogo(
-        nome_startup: "NotaCerta LTDA",
-        logoImg: "assets/images/logo_notacerta.png",
-        mini_descricao: "Plataforma de aulas de música",
-        status: "Em Operação",
-        tokens_emitidos: 100000,
-        socios: [
-          "Livia Lucizano - 50%",
-          "Laura Soares - 50%",
-        ],
-        capital_aportado: 70000,
-      ),
-
-      CardCatalogo(
-        nome_startup: "HealthVibe LTDA",
-        logoImg: "assets/images/logo_healthvibe.png",
-        mini_descricao: "Aplicativo de telemedicina focado em saúde mental para estudantes.",
-        status: "Em Operação",
-        tokens_emitidos: 1000000,
-        socios: [
-          "Beatriz Fernandes Costa - 100%",
-        ],
-        capital_aportado: 50000,
-      ),
-
-      CardCatalogo(
-        nome_startup: "MetaLive LTDA",
-        logoImg: "assets/images/logo_metalive.png",
-        mini_descricao: "Aplicativo de integração de realidade aumentada no ambiente metaverso",
-        status: "Em Operação",
-        tokens_emitidos: 100000,
-        socios: [
-          "Moski Shimoji - 25%",
-          "Abran Lincher - 25%",
-          "Erick Lujahini - 15%",
-          "Emay Saltgate - 15%",
-          "Truham Wilson - 10%",
-          "Maly Salzburg - 10%",
-        ],
-        capital_aportado: 89000,
-      ),
-
-      CardCatalogo(
-        nome_startup: "CardVIsion LTDA",
-        logoImg: "assets/images/logo_cardvision.png",
-        mini_descricao: "Plataforma de valorização de cartas colecionáveis da cultura Geek",
-        status: "Em Operação",
-        tokens_emitidos: 500000,
-        socios: [
-          "Gabriela Silva - 50%",
-          "Lucas Mendes - 50%",
-        ],
-        capital_aportado: 60000,
-      ),
-    ];
-
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         centerTitle: true,
-        title: const Text("Catálogo"),
+        title: const Text('Catálogo'),
         foregroundColor: const Color(0xFF353988),
         actions: [
           TextButton.icon(
             onPressed: AuthRepository.instance.logout,
-            label: Icon(Icons.logout)
-          )
+            label: const Icon(Icons.logout),
+          ),
         ],
       ),
-
       body: BackgroundContainer(
-        child: ListView.builder(
-          itemCount: startups.length,
-          itemBuilder: (context, index) {
-            return CardStartup(s: startups[index]);
+        child: FutureBuilder<List<StartupCatalogItem>>(
+          future: _startupsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: Color(0xFF353988),
+                ),
+              );
+            }
+
+            if (snapshot.hasError) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    'Erro ao carregar startups.\n\n${snapshot.error}',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            final startups = snapshot.data ?? <StartupCatalogItem>[];
+
+            if (startups.isEmpty) {
+              return Center(
+                child: Text(
+                  'Nenhuma startup encontrada.',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              );
+            }
+
+            return ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 100, 16, 24),
+              itemCount: startups.length,
+              itemBuilder: (context, index) {
+                return CardStartup(
+                  startup: startups[index],
+                  onOpenDetails: () => _openStartupDetail(startups[index]),
+                );
+              },
+            );
           },
         ),
       ),
@@ -130,41 +249,15 @@ class Catalogo extends StatelessWidget {
   }
 }
 
-class BotaoIrPara extends StatelessWidget {
-  final Widget pagina;
-  final String texto;
-
-  const BotaoIrPara({
-    super.key,
-    required this.pagina,
-    this.texto = "Ver mais",
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF353988),
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => pagina),
-        );
-      },
-      child: Text(texto),
-    );
-  }
-}
-
 class CardStartup extends StatefulWidget {
-  final CardCatalogo s;
+  final StartupCatalogItem startup;
+  final VoidCallback onOpenDetails;
 
-  const CardStartup({super.key, required this.s});
+  const CardStartup({
+    super.key,
+    required this.startup,
+    required this.onOpenDetails,
+  });
 
   @override
   State<CardStartup> createState() => _CardStartupState();
@@ -173,180 +266,260 @@ class CardStartup extends StatefulWidget {
 class _CardStartupState extends State<CardStartup> {
   bool expandido = false;
 
+  String _formatCurrencyFromCents(num cents) {
+    final value = cents / 100;
+    return 'R\$ ${value.toStringAsFixed(2).replaceAll('.', ',')}';
+  }
+
+  String _formatStage(String stage) {
+    switch (stage) {
+      case 'nova':
+        return 'Nova';
+      case 'em_operacao':
+        return 'Em operação';
+      case 'em_expansao':
+        return 'Em expansão';
+      default:
+        return stage;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final s = widget.s;
+    final startup = widget.startup;
 
-    return Card(
-      color: const Color(0xFFE8E9EB),
-      margin: const EdgeInsets.all(6),
-      child: Padding(
-        padding: const EdgeInsets.all(6),
-        child: Column(
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.white,
-                  backgroundImage: AssetImage(s.logoImg),
-                ),
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: widget.onOpenDetails,
+      child: Card(
+        color: const Color(0xFFE8E9EB),
+        margin: const EdgeInsets.only(bottom: 12),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    child: Icon(
+                      Icons.business_rounded,
+                      color: Color(0xFF353988),
+                      size: 30,
+                    ),
+                  ),
 
-                const SizedBox(width: 12),
+                  const SizedBox(width: 12),
 
-                Expanded(
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                startup.name,
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                expandido
+                                    ? Icons.expand_less
+                                    : Icons.expand_more,
+                                color: const Color(0xFF353988),
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  expandido = !expandido;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDADADA),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            _formatStage(startup.stage),
+                            style: GoogleFonts.montserrat(
+                              fontSize: 12,
+                              color: const Color(0xFF353988),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              AnimatedCrossFade(
+                firstChild: const SizedBox.shrink(),
+                secondChild: Padding(
+                  padding: const EdgeInsets.only(top: 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text(
+                        startup.shortDescription,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 13,
+                          color: Colors.black87,
+                          height: 1.4,
+                        ),
+                      ),
+
+                      if (startup.tags.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: startup.tags.map((tag) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                tag,
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+
+                      const SizedBox(height: 12),
+
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
-                            child: Text(
-                              s.nome_startup,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                            child: _MiniInfo(
+                              label: 'Tokens emitidos',
+                              value: '${startup.totalTokensIssued}',
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _MiniInfo(
+                              label: 'Capital aportado',
+                              value: _formatCurrencyFromCents(
+                                startup.capitalRaisedCents,
                               ),
                             ),
                           ),
-
-                          IconButton(
-                            icon: Icon(
-                              expandido
-                                  ? Icons.close_fullscreen
-                                  : Icons.open_in_full,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                expandido = !expandido;
-                              });
-                            },
-                          ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(s.mini_descricao),
 
-                      const SizedBox(height: 8),
-
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFDADADA),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          s.status,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-
-                      AnimatedCrossFade(
-                        firstChild: const SizedBox(),
-                        secondChild: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 10),
-
-                            const Text(
-                              "Participação (p/sócio):",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-
-                            const SizedBox(height: 4),
-
-                            ...s.socios.map((socio) => Text("• $socio")),
-
-                            const SizedBox(height: 10),
-
-                            const Text(
-                              "Capital Aportado:",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-
-                            Text("R\$ ${s.capital_aportado.toStringAsFixed(0)}"),
-                          ],
-                        ),
-                        crossFadeState: expandido
-                            ? CrossFadeState.showSecond
-                            : CrossFadeState.showFirst,
-                        duration: const Duration(milliseconds: 300),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      const Text("Tokens emitidos:"),
-                      Text("${s.tokens_emitidos} tokens"),
+                      const SizedBox(height: 12),
 
                       Align(
-                        alignment: Alignment.bottomRight,
-                        child: BotaoIrPara(
-                          pagina: const Placeholder(),
+                        alignment: Alignment.centerRight,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF353988),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: widget.onOpenDetails,
+                          child: Text(
+                            'Ver mais',
+                            style: GoogleFonts.montserrat(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          ),
                         ),
                       ),
                     ],
-
                   ),
                 ),
-              ],
-            ),
-          ],
+                crossFadeState: expandido
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
+                duration: const Duration(milliseconds: 250),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
+class _MiniInfo extends StatelessWidget {
+  final String label;
+  final String value;
 
-class Pesquisar extends StatefulWidget {
-  const Pesquisar({super.key});
-
-  @override
-  State<Pesquisar> createState() => _PesquisarState();
-}
-
-class _PesquisarState extends State<Pesquisar> {
-  final TextEditingController _controller = TextEditingController();
-
-  String resultado = "";
-
-  void _buscar() {
-    setState(() {
-      resultado = _controller.text;
-    });
-  }
+  const _MiniInfo({
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Pesquisar Startup')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: _controller,
-              decoration: const InputDecoration(
-                labelText: "Nome da startup",
-                border: OutlineInputBorder(),
-              ),
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.65),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.montserrat(
+              fontSize: 11,
+              color: Colors.black54,
+              fontWeight: FontWeight.w500,
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _buscar,
-              child: const Text("Pesquisar"),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            value,
+            style: GoogleFonts.montserrat(
+              fontSize: 12,
+              color: const Color(0xFF353988),
+              fontWeight: FontWeight.w800,
             ),
-            const SizedBox(height: 20),
-            Text("Resultado: $resultado"),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

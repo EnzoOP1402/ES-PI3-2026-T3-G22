@@ -3,13 +3,13 @@
 // Importação das dependências
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
-import 'package:mescla_invest_app/features/catalog/presentation/screens/public_questions.dart';
-// import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
 import 'package:mescla_invest_app/features/auth/presentation/screens/welcome_screen.dart';
+import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
 
 // Criando a classe responsável por identificar o estado da autenticação do usuário e
-// alternar qual tela será exibida: com sessão -> página inicial; sem sessão -> tela de recepção
+// alternar qual tela será exibida: com sessão -> catálogo; sem sessão -> tela de recepção
 class AuthWrapper extends StatelessWidget {
   // Declarando o construtor com a chave de sua superclasse
   const AuthWrapper({super.key});
@@ -21,27 +21,33 @@ class AuthWrapper extends StatelessWidget {
       // O observador de stream vem do Singleton definido no AuthRepository
       stream: AuthRepository.instance.authStateChange,
       builder: (context, snapshot) {
-        // Verificando o estado da conexão (carregando token do disco)
+        // Verificando o estado da conexão enquanto carrega o token do usuário
         if (snapshot.connectionState == ConnectionState.waiting) {
-          // Retorna uma tela com um ícone de carregamento
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            body: Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFF353988),
+              ),
+            ),
           );
         }
 
         // Se houver algum erro na stream, exibe uma página de erro
         if (snapshot.hasError) {
           return const Scaffold(
-            body: Center(child: Text('Erro ao verificar autenticação')),
+            body: Center(
+              child: Text('Erro ao verificar autenticação'),
+            ),
           );
         }
 
-        // Se houver um usuário logado, renderiza a tela inicial, se não, a tela de recepção
+        // Se houver usuário logado, abre o catálogo.
+        // Se não houver usuário logado, abre a tela de recepção.
         if (snapshot.hasData) {
-          return const PublicQuestions();
-        } else {
-          return const WelcomeScreen();
+          return const Catalogo();
         }
+
+        return const WelcomeScreen();
       },
     );
   }
