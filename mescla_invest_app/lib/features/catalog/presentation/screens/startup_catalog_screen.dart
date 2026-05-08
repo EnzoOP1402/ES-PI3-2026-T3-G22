@@ -1,4 +1,4 @@
-
+/* Autor:  */
 
 import 'package:flutter/material.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -112,7 +112,11 @@ class Catalogo extends StatefulWidget {
 }
 
 class _CatalogoState extends State<Catalogo> {
-  late final Future<List<StartupCatalogItem>> _startupsFuture;
+  final TextEditingController _searchController = TextEditingController();
+
+  Future<List<StartupCatalogItem>>? _startupsFuture;
+
+  String _selectedStage = 'todos';
 
   @override
   void initState() {
@@ -120,14 +124,35 @@ class _CatalogoState extends State<Catalogo> {
     _startupsFuture = _getStartups();
   }
 
-  Future<List<StartupCatalogItem>> _getStartups() async {
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  String? _stageForRequest() {
+    if (_selectedStage == 'todos') {
+      return null;
+    }
+
+    return _selectedStage;
+  }
+
+  Future<List<StartupCatalogItem>> _getStartups({
+    String? search,
+    String? stage,
+  }) async {
     try {
       final functions = FirebaseFunctions.instance;
 
       final callable = functions.httpsCallable('listStartups');
 
-      final result = await callable.call(<String, dynamic>{});
-      
+      final result = await callable.call(<String, dynamic>{
+        if (search != null && search.trim().isNotEmpty)
+          'search': search.trim(),
+        if (stage != null && stage.trim().isNotEmpty) 'state': stage.trim(),
+      });
+
       debugPrint('RETORNO LIST STARTUPS: ${result.data}');
 
       final resultData = Map<String, dynamic>.from(result.data);
@@ -153,6 +178,24 @@ class _CatalogoState extends State<Catalogo> {
     }
   }
 
+  void _applyFilters() {
+    setState(() {
+      _startupsFuture = _getStartups(
+        search: _searchController.text,
+        stage: _stageForRequest(),
+      );
+    });
+  }
+
+  void _clearFilters() {
+    _searchController.clear();
+
+    setState(() {
+      _selectedStage = 'todos';
+      _startupsFuture = _getStartups();
+    });
+  }
+
   void _openStartupDetail(StartupCatalogItem startup) {
     if (startup.id.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -173,6 +216,20 @@ class _CatalogoState extends State<Catalogo> {
     );
   }
 
+  String _selectedStageLabel() {
+    switch (_selectedStage) {
+      case 'nova':
+        return 'Nova';
+      case 'em_operacao':
+        return 'Em operação';
+      case 'em_expansao':
+        return 'Em expansão';
+      case 'todos':
+      default:
+        return 'Todos os estágios';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -190,60 +247,239 @@ class _CatalogoState extends State<Catalogo> {
         ],
       ),
       body: BackgroundContainer(
-        child: FutureBuilder<List<StartupCatalogItem>>(
-          future: _startupsFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(
+        child: Column(
+          children: [
+            const SizedBox(height: 96),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _CatalogFilters(
+                searchController: _searchController,
+                selectedStage: _selectedStage,
+                selectedStageLabel: _selectedStageLabel(),
+                onSearch: _applyFilters,
+                onClear: _clearFilters,
+                onStageChanged: (value) {
+                  setState(() {
+                    _selectedStage = value;
+                    _startupsFuture = _getStartups(
+                      search: _searchController.text,
+                      stage: _stageForRequest(),
+                    );
+                  });
+                },
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            Expanded(
+              child: FutureBuilder<List<StartupCatalogItem>>(
+                future: _startupsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF353988),
+                      ),
+                    );
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          'Erro ao carregar startups.\n\n${snapshot.error}',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 13,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  final startups = snapshot.data ?? <StartupCatalogItem>[];
+
+                  if (startups.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'Nenhuma startup encontrada.',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 14,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                    itemCount: startups.length,
+                    itemBuilder: (context, index) {
+                      return CardStartup(
+                        startup: startups[index],
+                        onOpenDetails: () {
+                          _openStartupDetail(startups[index]);
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CatalogFilters extends StatelessWidget {
+  final TextEditingController searchController;
+  final String selectedStage;
+  final String selectedStageLabel;
+  final VoidCallback onSearch;
+  final VoidCallback onClear;
+  final ValueChanged<String> onStageChanged;
+
+  const _CatalogFilters({
+    required this.searchController,
+    required this.selectedStage,
+    required this.selectedStageLabel,
+    required this.onSearch,
+    required this.onClear,
+    required this.onStageChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8E9EB),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          TextField(
+            controller: searchController,
+            textInputAction: TextInputAction.search,
+            onSubmitted: (_) => onSearch(),
+            decoration: InputDecoration(
+              hintText: 'Pesquisar startup...',
+              prefixIcon: const Icon(
+                Icons.search,
+                color: Color(0xFF353988),
+              ),
+              suffixIcon: IconButton(
+                onPressed: onSearch,
+                icon: const Icon(
+                  Icons.arrow_forward_rounded,
                   color: Color(0xFF353988),
                 ),
-              );
-            }
+              ),
+              filled: true,
+              fillColor: Colors.white.withValues(alpha: 0.85),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
+            ),
+          ),
 
-            if (snapshot.hasError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    'Erro ao carregar startups.\n\n${snapshot.error}',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 13,
-                      color: Colors.black87,
+          const SizedBox(height: 10),
+
+          Row(
+            children: [
+              Expanded(
+                child: PopupMenuButton<String>(
+                  onSelected: onStageChanged,
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  itemBuilder: (context) {
+                    return const [
+                      PopupMenuItem<String>(
+                        value: 'todos',
+                        child: Text('Todos os estágios'),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'nova',
+                        child: Text('Nova'),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'em_operacao',
+                        child: Text('Em operação'),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'em_expansao',
+                        child: Text('Em expansão'),
+                      ),
+                    ];
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 13,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.filter_list_rounded,
+                          color: Color(0xFF353988),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            selectedStageLabel,
+                            style: GoogleFonts.montserrat(
+                              color: Colors.black87,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: Color(0xFF353988),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              );
-            }
+              ),
 
-            final startups = snapshot.data ?? <StartupCatalogItem>[];
+              const SizedBox(width: 10),
 
-            if (startups.isEmpty) {
-              return Center(
-                child: Text(
-                  'Nenhuma startup encontrada.',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 14,
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w600,
+              IconButton(
+                tooltip: 'Limpar filtros',
+                onPressed: onClear,
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.white.withValues(alpha: 0.85),
+                  foregroundColor: const Color(0xFF353988),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-              );
-            }
-
-            return ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 100, 16, 24),
-              itemCount: startups.length,
-              itemBuilder: (context, index) {
-                return CardStartup(
-                  startup: startups[index],
-                  onOpenDetails: () => _openStartupDetail(startups[index]),
-                );
-              },
-            );
-          },
-        ),
+                icon: const Icon(Icons.close_rounded),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -288,17 +524,17 @@ class _CardStartupState extends State<CardStartup> {
   Widget build(BuildContext context) {
     final startup = widget.startup;
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(18),
-      onTap: widget.onOpenDetails,
-      child: Card(
-        color: const Color(0xFFE8E9EB),
-        margin: const EdgeInsets.only(bottom: 12),
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
-        clipBehavior: Clip.antiAlias,
+    return Card(
+      color: const Color(0xFFE8E9EB),
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: widget.onOpenDetails,
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(
