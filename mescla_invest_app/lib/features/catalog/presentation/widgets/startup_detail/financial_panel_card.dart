@@ -1,13 +1,17 @@
+/* Autor: Livia Lucizano */
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/detailed_catalog_card_section.dart';
 
 class FinancialPanelCard extends StatelessWidget {
   final Map<String, dynamic> startupData;
+  final VoidCallback? onInvestPressed;
 
   const FinancialPanelCard({
     super.key,
     required this.startupData,
+    this.onInvestPressed,
   });
 
   num _getNumberField(
@@ -22,7 +26,8 @@ class FinancialPanelCard extends StatelessWidget {
       }
 
       if (value is String) {
-        final parsed = num.tryParse(value);
+        final parsed = num.tryParse(value.replaceAll(',', '.'));
+
         if (parsed != null) {
           return parsed;
         }
@@ -106,6 +111,42 @@ class FinancialPanelCard extends StatelessWidget {
         _InfoRow(
           label: 'Valor do token',
           value: _formatCurrency(valorToken),
+        ),
+
+        const SizedBox(height: 16),
+
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton(
+            onPressed: onInvestPressed,
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor: const Color(0xFFE4007C),
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: Colors.grey.shade400,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.trending_up_rounded,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Investir na startup',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );

@@ -1,4 +1,4 @@
-/* Autor: coloque seu nome aqui */
+/* Autor: Livia Lucizano */
 
 import 'package:flutter/material.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -26,6 +26,10 @@ class StartupDetailScreen extends StatefulWidget {
 
 class _StartupDetailScreenState extends State<StartupDetailScreen> {
   late final Future<Map<String, dynamic>> _startupDetailsFuture;
+
+  static const Color _primaryColor = Color(0xFF2F3192);
+  static const Color _accentColor = Color(0xFFE4007C);
+  static const Color _backgroundColor = Color(0xFFF5F5F5);
 
   @override
   void initState() {
@@ -88,18 +92,75 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
     return fallback;
   }
 
+  void _goToInvestScreen(Map<String, dynamic> startupData) {
+    Navigator.pushNamed(
+      context,
+      '/balcao',
+      arguments: {
+        'startupId': widget.startupId,
+        'startupData': startupData,
+        'openBuyOrder': true,
+      },
+    );
+  }
+
+  void _onBottomMenuTap(int index) {
+    switch (index) {
+      case 0:
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/home',
+          (route) => false,
+        );
+        break;
+
+      case 1:
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/catalog',
+          (route) => false,
+        );
+        break;
+
+      case 2:
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/dashboard',
+          (route) => false,
+        );
+        break;
+
+      case 3:
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/carteira',
+          (route) => false,
+        );
+        break;
+
+      case 4:
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/conta',
+          (route) => false,
+        );
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: _backgroundColor,
+
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF5F5F5),
+        backgroundColor: _backgroundColor,
         elevation: 0,
         centerTitle: false,
         title: Text(
           'Detalhes da Startup',
           style: GoogleFonts.montserrat(
-            color: const Color(0xFF2F3192),
+            color: _primaryColor,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -107,7 +168,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new,
-            color: Color(0xFF2F3192),
+            color: _primaryColor,
             size: 20,
           ),
           onPressed: () {
@@ -115,13 +176,14 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
           },
         ),
       ),
+
       body: FutureBuilder<Map<String, dynamic>>(
         future: _startupDetailsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(
-                color: Color(0xFF2F3192),
+                color: _primaryColor,
               ),
             );
           }
@@ -215,7 +277,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
           );
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 110),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -233,7 +295,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
                         errorBuilder: (context, error, stackTrace) {
                           return const Icon(
                             Icons.business_rounded,
-                            color: Color(0xFF2F3192),
+                            color: _primaryColor,
                             size: 42,
                           );
                         },
@@ -247,7 +309,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
                 Text(
                   nome,
                   style: GoogleFonts.montserrat(
-                    color: const Color(0xFF2F3192),
+                    color: _primaryColor,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
@@ -280,6 +342,9 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
 
                 FinancialPanelCard(
                   startupData: startupData,
+                  onInvestPressed: () {
+                    _goToInvestScreen(startupData);
+                  },
                 ),
 
                 PartnersCard(
@@ -301,12 +366,134 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
                 PrivateQuestionsCard(
                   perguntasPrivadas: perguntasPrivadas,
                 ),
-
-                const SizedBox(height: 80),
               ],
             ),
           );
         },
+      ),
+
+      bottomNavigationBar: _DetailBottomMenu(
+        selectedIndex: 1,
+        onTap: _onBottomMenuTap,
+      ),
+    );
+  }
+}
+
+class _DetailBottomMenu extends StatelessWidget {
+  final int selectedIndex;
+  final ValueChanged<int> onTap;
+
+  const _DetailBottomMenu({
+    required this.selectedIndex,
+    required this.onTap,
+  });
+
+  static const Color _primaryColor = Color(0xFF2F3192);
+  static const Color _accentColor = Color(0xFFE4007C);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 78,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 18,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _BottomMenuItem(
+              icon: Icons.home_outlined,
+              label: 'Início',
+              isSelected: selectedIndex == 0,
+              onTap: () => onTap(0),
+            ),
+            _BottomMenuItem(
+              icon: Icons.lightbulb_outline_rounded,
+              label: 'Catálogo',
+              isSelected: selectedIndex == 1,
+              onTap: () => onTap(1),
+            ),
+            _BottomMenuItem(
+              icon: Icons.bar_chart_rounded,
+              label: 'Dashboards',
+              isSelected: selectedIndex == 2,
+              onTap: () => onTap(2),
+            ),
+            _BottomMenuItem(
+              icon: Icons.account_balance_wallet_outlined,
+              label: 'Carteira',
+              isSelected: selectedIndex == 3,
+              onTap: () => onTap(3),
+            ),
+            _BottomMenuItem(
+              icon: Icons.person_outline_rounded,
+              label: 'Conta',
+              isSelected: selectedIndex == 4,
+              onTap: () => onTap(4),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomMenuItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _BottomMenuItem({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  static const Color _primaryColor = Color(0xFF2F3192);
+  static const Color _accentColor = Color(0xFFE4007C);
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isSelected ? _accentColor : _primaryColor;
+
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: color,
+                size: 23,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: GoogleFonts.montserrat(
+                  color: color,
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
