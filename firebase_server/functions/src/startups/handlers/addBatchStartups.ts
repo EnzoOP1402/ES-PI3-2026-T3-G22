@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+/* eslint-disable linebreak-style *//* eslint-disable max-len */
 /* Autor: Enzo Olivato Pazian */
 
 // Importando os recursos principais para o uso do firebase
@@ -10,146 +10,340 @@ const db = admin.firestore();
 // Referenciando a coleção Startups do banco de dados
 const collectionStartups = db.collection("Startups");
 
+/**
+ * Exclui TODOS os documentos de uma colecao.
+ * @param {FirebaseFirestore.CollectionReference} collectionRef
+ * Referencia da colecao desejada.
+ * @return {Promise<number>} Numero de documentos excluidos.
+ */
+async function deleteCollectionDocuments(
+  collectionRef: FirebaseFirestore.CollectionReference,
+): Promise<number> {
+  const snapshot = await collectionRef.get();
+
+  if (snapshot.empty) {
+    return 0;
+  }
+
+  const deletePromises = snapshot.docs.map((doc) => doc.ref.delete());
+  await Promise.all(deletePromises);
+
+  return snapshot.size;
+}
+
 // Function para a inserção de dados de startups em lote
 export const addBatchStartups = functions
   .https.onRequest(async (request, response) => {
+    // Excluindo os dados antigos da coleção
+    await deleteCollectionDocuments(collectionStartups);
+
     // Lista com as startups a serem inseridas
     const startups = [
       {
-        "nome": "NotaCerta",
-        "descricao": "Plataforma digital que conecta alunos interessados em aprender música com professores qualificados",
-        "estagio": "Em operação",
-        "setor": "Edtech",
-        "capitalAportado": 70000.0,
-        "tokensEmitidos": 100000,
-        "tokensDisponiveis": 20000,
-        "socios": ["Livia Lucizano", "Laura Soares"],
-        "participacaoSocietaria": ["50%", "50%"],
-        "mentoresConselho": ["Harry Styles"],
-        "videoDemo": "https://notacerta-demo.com",
-        "dataCriacao": "2026-04-05T19:01:00Z",
-        "valorFixoTokens": 0.70,
-        "ofertasAtivas": [{}],
-        "status": "Ativa",
+        "name": "NotaCerta",
+        "stage": "em_operacao",
+        "shortDescription": "Plataforma digital que conecta alunos interresados em aprender música ...",
+        "description": "Plataforma digital que conecta alunos interresados em aprender música com professores qualificados ",
+        "executiveSummary": "Startup do setor de Edtech focada em inovação e escalabilidade dentro do ecossistema Mescla.",
+        "capitalRaisedCents": 7000000,
+        "totalTokensIssued": 100000,
+        "currentTokenPriceCents": 70,
+        "founders": [
+          {
+            "name": "Livia Lucizano",
+            "role": "CEO",
+            "equityPercent": 50,
+            "bio": "Responsável pela liderança e visão estratégica da Livia Lucizano.",
+          },
+          {
+            "name": "Laura Soares",
+            "role": "Sócio-Fundador",
+            "equityPercent": 50,
+            "bio": "Responsável pela liderança e visão estratégica da Laura Soares.",
+          },
+        ],
+        "externalMembers": [
+          {
+            "name": "Harry Styles",
+            "role": "Mentor",
+            "organization": "PUC-Campinas",
+          },
+        ],
+        "demoVideos": [
+          "https: //notacerta-demo.com",
+        ],
+        "tags": [
+          "edtech",
+          "puc-campinas",
+          "mescla",
+        ],
       },
       {
-        "nome": "HealthVibe",
-        "descricao": "Aplicativo de telemedicina focado em saúde mental para estudantes.",
-        "estagio": "Nova",
-        "setor": "healthtech",
-        "capitalAportado": 50000.0,
-        "tokensEmitidos": 1000000,
-        "tokensDisponiveis": 200000,
-        "socios": ["Beatriz Fernandes Costa"],
-        "participacaoSocietaria": ["100%"],
-        "mentoresConselho": ["Dra. Helena Psicóloga"],
-        "videoDemo": "https://mescla.edu/healthvibe",
-        "dataCriacao": "2026-04-05T19:01:00Z",
-        "valorFixoTokens": 0.05,
-        "ofertasAtivas": [{}],
-        "status": "Ativa",
+        "name": "HealthVibe",
+        "stage": "nova",
+        "shortDescription": "Aplicativo de telemedicina focado em saúde mental para estudantes....",
+        "description": "Aplicativo de telemedicina focado em saúde mental para estudantes.",
+        "executiveSummary": "Startup do setor de healthtech focada em inovação e escalabilidade dentro do ecossistema Mescla.",
+        "capitalRaisedCents": 5000000,
+        "totalTokensIssued": 1000000,
+        "currentTokenPriceCents": 5,
+        "founders": [
+          {
+            "name": "Beatriz Fernandes Costa",
+            "role": "CEO",
+            "equityPercent": 100,
+            "bio": "Responsável pela liderança e visão estratégica da Beatriz Fernandes Costa.",
+          },
+        ],
+        "externalMembers": [
+          {
+            "name": "Dra. Helena Psicóloga",
+            "role": "Mentor",
+            "organization": "PUC-Campinas",
+          },
+        ],
+        "demoVideos": [
+          "https://mescla.edu/healthvibe",
+        ],
+        "tags": [
+          "healthtech",
+          "puc-campinas",
+          "mescla",
+        ],
       },
       {
-        "nome": "Metalive",
-        "descricao": "Ambiente de integração de realidade aumentada, focado na interação social pelo metaverso, incluindo uma inteligência artificial que cria avatares automáticos.",
-        "estagio": "Em operação",
-        "setor": "socialtech",
-        "capitalAportado": 89000.0,
-        "tokensEmitidos": 100000,
-        "tokensDisponiveis": 20000,
-        "socios": ["Moski Shimoji", "Abran Lincher; Erick Lujahini", "Emay Saltgate", "Truham Wilson", "Maly Salzburg"],
-        "participacaoSocietaria": ["25%", "25%", "20%", "15%", "15%"],
-        "mentoresConselho": ["Nicky Johan Shimoji"],
-        "videoDemo": "https://metaverselive/mescla/tech",
-        "dataCriacao": "2026-04-05T19:01:00Z",
-        "valorFixoTokens": 0.89,
-        "ofertasAtivas": [{}],
-        "status": "Ativa",
+        "name": "Metalive",
+        "stage": "em_operacao",
+        "shortDescription": "Ambiente de integração de realidade aumentada, focado na interação soc...",
+        "description": "Ambiente de integração de realidade aumentada, focado na interação social pelo metaverso, incluindo uma inteligencia artificial que cria avatares automáticos referenciando a foto de perfil da pessoa. ",
+        "executiveSummary": "Startup do setor de socialtech focada em inovação e escalabilidade dentro do ecossistema Mescla.",
+        "capitalRaisedCents": 8900000,
+        "totalTokensIssued": 100000,
+        "currentTokenPriceCents": 89,
+        "founders": [
+          {
+            "name": "Moski Shimoji",
+            "role": "CEO",
+            "equityPercent": 25,
+            "bio": "Responsável pela liderança e visão estratégica da Moski Shimoji.",
+          },
+          {
+            "name": "Erick Lujahini",
+            "role": "Sócio-Fundador",
+            "equityPercent": 15,
+            "bio": "Responsável pela liderança e visão estratégica da Erick Lujahini.",
+          },
+          {
+            "name": "Emay Saltgate",
+            "role": "Sócio-Fundador",
+            "equityPercent": 15,
+            "bio": "Responsável pela liderança e visão estratégica da Emay Saltgate.",
+          },
+        ],
+        "externalMembers": [
+          {
+            "name": "Nicky Johan Shimoji",
+            "role": "Mentor",
+            "organization": "PUC-Campinas",
+          },
+        ],
+        "demoVideos": [
+          "https://metaverselive/mescla/tech",
+        ],
+        "tags": [
+          "socialtech",
+          "puc-campinas",
+          "mescla",
+        ],
       },
       {
-        "nome": "CardVision",
-        "descricao": "Plataforma digital que utiliza inteligência artificial para analisar e estimar o valor de cartas colecionáveis.",
-        "estagio": "Nova",
-        "setor": "fintech",
-        "capitalAportado": 60000.0,
-        "tokensEmitidos": 500000,
-        "tokensDisponiveis": 100000,
-        "socios": ["Gabriela Silva", "Lucas Mendes"],
-        "participacaoSocietaria": ["50%", "50%"],
-        "mentoresConselho": ["Carlos Eduardo"],
-        "videoDemo": "https://cardvision-demo.com",
-        "dataCriacao": "2026-04-05T19:01:00Z",
-        "valorFixoTokens": 0.12,
-        "ofertasAtivas": [{}],
-        "status": "Ativa",
+        "name": "CardVision",
+        "stage": "nova",
+        "shortDescription": "Plataforma digital que utiliza inteligência artificial para analisar e...",
+        "description": "Plataforma digital que utiliza inteligência artificial para analisar e estimar o valor de cartas colecionáveis, como Pokémon, Yu-Gi-Oh e Magic: The Gathering. A ferramenta considera fatores como raridade, estado de conservação (via imagem), histórico de vendas e tendências de mercado para prever preços e auxiliar colecionadores e investidores.",
+        "executiveSummary": "Startup do setor de fintech focada em inovação e escalabilidade dentro do ecossistema Mescla.",
+        "capitalRaisedCents": 6000000,
+        "totalTokensIssued": 500000,
+        "currentTokenPriceCents": 12,
+        "founders": [
+          {
+            "name": "Gabriela Silva",
+            "role": "CEO",
+            "equityPercent": 50,
+            "bio": "Responsável pela liderança e visão estratégica da Gabriela Silva.",
+          },
+          {
+            "name": "Lucas Mendes",
+            "role": "Sócio-Fundador",
+            "equityPercent": 50,
+            "bio": "Responsável pela liderança e visão estratégica da Lucas Mendes.",
+          },
+        ],
+        "externalMembers": [
+          {
+            "name": "Carlos Eduardo",
+            "role": "Mentor",
+            "organization": "PUC-Campinas",
+          },
+        ],
+        "demoVideos": [
+          "https://cardvision-demo.com",
+        ],
+        "tags": [
+          "fintech",
+          "puc-campinas",
+          "mescla",
+        ],
       },
       {
-        "nome": "PetMatch",
-        "descricao": "Plataforma baseada em IA que cruza dados de abrigos de animais com o perfil comportamental de usuários para adoção.",
-        "estagio": "Em operação",
-        "setor": "pet tech",
-        "capitalAportado": 45000.0,
-        "tokensEmitidos": 50000,
-        "tokensDisponiveis": 10000,
-        "socios": ["Carla Ribeiro"],
-        "participacaoSocietaria": ["100%"],
-        "mentoresConselho": ["Luisa Schnider"],
-        "videoDemo": "https://petmatch.app/video",
-        "dataCriacao": "2026-04-05T19:01:00Z",
-        "valorFixoTokens": 0.90,
-        "ofertasAtivas": [{}],
-        "status": "Ativa",
+        "name": "PetMatch",
+        "stage": "em_operacao",
+        "shortDescription": "Plataforma baseada em IA que cruza dados de abrigos de animais com o p...",
+        "description": "Plataforma baseada em IA que cruza dados de abrigos de animais com o perfil comportamental e rotina de usuários para sugerir a adoção ideal.",
+        "executiveSummary": "Startup do setor de pet tech focada em inovação e escalabilidade dentro do ecossistema Mescla.",
+        "capitalRaisedCents": 4500000,
+        "totalTokensIssued": 50000,
+        "currentTokenPriceCents": 90,
+        "founders": [
+          {
+            "name": "Carla Ribeiro",
+            "role": "CEO",
+            "equityPercent": 100,
+            "bio": "Responsável pela liderança e visão estratégica da Carla Ribeiro.",
+          },
+        ],
+        "externalMembers": [
+          {
+            "name": "Luisa Schnider",
+            "role": "Mentor",
+            "organization": "PUC-Campinas",
+          },
+        ],
+        "demoVideos": [
+          "https://petmatch.app/video",
+        ],
+        "tags": [
+          "pet tech",
+          "puc-campinas",
+          "mescla",
+        ],
       },
       {
-        "nome": "AgroSense",
-        "descricao": "Sensores IoT para medição de umidade do solo em tempo real.",
-        "estagio": "Em expansão",
-        "setor": "agrotech",
-        "capitalAportado": 800000.0,
-        "tokensEmitidos": 500000,
-        "tokensDisponiveis": 0,
-        "socios": ["Marcos Pontes", "Fabio Luiz"],
-        "participacaoSocietaria": ["50%", "50%"],
-        "mentoresConselho": ["Dr. Arnaldo Terra"],
-        "videoDemo": "https://mescla.edu/agrosense",
-        "dataCriacao": "2026-04-05T19:01:00Z",
-        "valorFixoTokens": 1.60,
-        "ofertasAtivas": [{}],
-        "status": "Inativa",
+        "name": "AgroSense",
+        "stage": "em_expansao",
+        "shortDescription": "Sensores IoT para medição de umidade do solo em tempo real....",
+        "description": "Sensores IoT para medição de umidade do solo em tempo real.",
+        "executiveSummary": "Startup do setor de agrotech focada em inovação e escalabilidade dentro do ecossistema Mescla.",
+        "capitalRaisedCents": 80000000,
+        "totalTokensIssued": 500000,
+        "currentTokenPriceCents": 160,
+        "founders": [
+          {
+            "name": "Marcos Pontes",
+            "role": "CEO",
+            "equityPercent": 50,
+            "bio": "Responsável pela liderança e visão estratégica da Marcos Pontes.",
+          },
+          {
+            "name": "Fabio Luiz",
+            "role": "Sócio-Fundador",
+            "equityPercent": 50,
+            "bio": "Responsável pela liderança e visão estratégica da Fabio Luiz.",
+          },
+        ],
+        "externalMembers": [
+          {
+            "name": "Dr. Arnaldo Terra",
+            "role": "Mentor",
+            "organization": "PUC-Campinas",
+          },
+        ],
+        "demoVideos": [
+          "https://mescla.edu/agrosense",
+        ],
+        "tags": [
+          "agrotech",
+          "puc-campinas",
+          "mescla",
+        ],
       },
       {
-        "nome": "SafePay",
-        "descricao": "Gateway de pagamento simplificado para microempreendedores locais.",
-        "estagio": "Em operação",
-        "setor": "fintech",
-        "capitalAportado": 250000.0,
-        "tokensEmitidos": 150000,
-        "tokensDisponiveis": 30000,
-        "socios": ["Ricardo Mello", "Michele Campos"],
-        "participacaoSocietaria": ["60%", "40%"],
-        "mentoresConselho": ["Mentor Financeiro"],
-        "videoDemo": "https://mescla.edu/safepay",
-        "dataCriacao": "2026-04-05T19:01:00Z",
-        "valorFixoTokens": 1.67,
-        "ofertasAtivas": [{}],
-        "status": "Ativa",
+        "name": "SafePay",
+        "stage": "em_operacao",
+        "shortDescription": "Gateway de pagamento simplificado para microempreendedores locais....",
+        "description": "Gateway de pagamento simplificado para microempreendedores locais.",
+        "executiveSummary": "Startup do setor de fintech focada em inovação e escalabilidade dentro do ecossistema Mescla.",
+        "capitalRaisedCents": 25000000,
+        "totalTokensIssued": 150000,
+        "currentTokenPriceCents": 166,
+        "founders": [
+          {
+            "name": "Ricardo Mello",
+            "role": "CEO",
+            "equityPercent": 60,
+            "bio": "Responsável pela liderança e visão estratégica da Ricardo Mello.",
+          },
+          {
+            "name": "Michele Campos",
+            "role": "Sócio-Fundador",
+            "equityPercent": 40,
+            "bio": "Responsável pela liderança e visão estratégica da Michele Campos.",
+          },
+        ],
+        "externalMembers": [
+          {
+            "name": "Mentor Financeiro",
+            "role": "Mentor",
+            "organization": "PUC-Campinas",
+          },
+        ],
+        "demoVideos": [
+          "https://mescla.edu/safepay",
+        ],
+        "tags": [
+          "fintech",
+          "puc-campinas",
+          "mescla",
+        ],
       },
       {
-        "nome": "UrbanMob",
-        "descricao": "Sistema de compartilhamento de patinetes elétricos dentro de campi.",
-        "estagio": "Em operação",
-        "setor": "mobilidade",
-        "capitalAportado": 600000.0,
-        "tokensEmitidos": 300000,
-        "tokensDisponiveis": 0,
-        "socios": ["Pedro Vaz", "Clara Luz"],
-        "participacaoSocietaria": ["55%", "45%"],
-        "mentoresConselho": ["Eng. Jorge Santos"],
-        "videoDemo": "https://mescla.edu/urbanmob",
-        "dataCriacao": "2026-04-05T19:01:00Z",
-        "valorFixoTokens": 2.00,
-        "ofertasAtivas": [{}],
-        "status": "Inativa",
+        "name": "UrbanMob",
+        "stage": "em_operacao",
+        "shortDescription": "Sistema de compartilhamento de patinetes elétricos dentro de campi....",
+        "description": "Sistema de compartilhamento de patinetes elétricos dentro de campi.",
+        "executiveSummary": "Startup do setor de mobilidade focada em inovação e escalabilidade dentro do ecossistema Mescla.",
+        "capitalRaisedCents": 60000000,
+        "totalTokensIssued": 300000,
+        "currentTokenPriceCents": 200,
+        "founders": [
+          {
+            "name": "Pedro Vaz",
+            "role": "CEO",
+            "equityPercent": 55,
+            "bio": "Responsável pela liderança e visão estratégica da Pedro Vaz.",
+          },
+          {
+            "name": "Clara Luz",
+            "role": "Sócio-Fundador",
+            "equityPercent": 45,
+            "bio": "Responsável pela liderança e visão estratégica da Clara Luz.",
+          },
+        ],
+        "externalMembers": [
+          {
+            "name": "Eng. Jorge Santos",
+            "role": "Mentor",
+            "organization": "PUC-Campinas",
+          },
+        ],
+        "demoVideos": [
+          "https://mescla.edu/urbanmob",
+        ],
+        "tags": [
+          "mobilidade",
+          "puc-campinas",
+          "mescla",
+        ],
       },
     ];
     // Criando o batch para a operação em lote

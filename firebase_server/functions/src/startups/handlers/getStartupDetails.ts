@@ -1,79 +1,57 @@
-/* Autor: coloque seu nome aqui */
-
-import {onCall, HttpsError} from "firebase-functions/v2/https";
-import {getFirestore, Timestamp} from "firebase-admin/firestore";
-
-const db = getFirestore();
+import {HttpsError, onCall} from "firebase-functions/https";
+import {requireAuthenticatedUser} from "../shared/auth";
+import {normalizeString} from "../shared/validation";
+import {
+  getStartupById,
+  listPublicQuestions,
+  userIsInvestor,
+} from "../repositories/startupRepository";
 
 /**
- * Normaliza dados do Firestore para retorno seguro ao Flutter.
+ * Busca os dados completos de uma startup específica.
  *
- * @param {unknown} data dado recebido do Firestore
- * @return {unknown} dado normalizado
- */
-function normalizeFirestoreData(data: unknown): unknown {
-  if (data === null || data === undefined) {
-    return data;
-  }
-
-  if (data instanceof Timestamp) {
-    return data.toDate().toISOString();
-  }
-
-  if (Array.isArray(data)) {
-    return data.map((item) => normalizeFirestoreData(item));
-  }
-
-  if (typeof data === "object") {
-    const normalized: Record<string, unknown> = {};
-
-    for (const [key, value] of Object.entries(data)) {
-      normalized[key] = normalizeFirestoreData(value);
-    }
-
-    return normalized;
-  }
-
-  return data;
-}
-
+ * Esta Firebase Function é callable e deve ser chamada pelo app com:
+ *
+ * - `id`: identificador da startup no Firestore.
+ *
+ * A função exige autenticação e retorna a visão detalhada do item 5.2:
+ * sumário executivo, estrutura societária, membros externos, vídeos,
+ * perguntas públicas e flags de acesso para investidores.
+*/
 export const getStartupDetails = onCall(async (request) => {
-  const startupId = request.data?.startupId;
+  const user = requireAuthenticatedUser(request);
 
-  if (!startupId || typeof startupId !== "string") {
+  const startupId = normalizeString(request.data?.id);
+
+  if (!startupId) {
     throw new HttpsError(
       "invalid-argument",
-      "O campo startupId é obrigatório."
+      "Informe o parametro id da startup."
     );
   }
 
-  try {
-    const startupRef = db.collection("Startups").doc(startupId);
-    const startupSnapshot = await startupRef.get();
+  const startup = await getStartupById(startupId);
 
-    if (!startupSnapshot.exists) {
-      throw new HttpsError(
-        "not-found",
-        "Startup não encontrada."
-      );
-    }
-
-    const startupData = startupSnapshot.data() ?? {};
-
-    return normalizeFirestoreData({
-      id: startupSnapshot.id,
-      ...startupData,
-    });
-  } catch (error) {
-    console.error("Erro em getStartupDetails:", error);
-
-    if (error instanceof HttpsError) {
-      throw error;
-    }
-
-    throw new HttpsError(
-      "internal",
-      "Erro interno ao buscar detalhes da startup."
-    );
+  if (!startup) {
+    throw new HttpsError("not-found", "Startup nao encontrada.");
   }
+
+  const isInvestor = await userIsInvestor(startupId, user.uid);
+
+  const questions = await listPublicQuestions(startupId);
+
+  return {
+    data: {
+      id: startupId,
+      ...startup,
+      createdAt: startup.createdAt?.toDate().toISOString() ?? null,
+      updatedAt: startup.updatedAt?.toDate().toISOString() ?? null,
+      publicQuestions: questions,
+      access: {
+        isInvestor,
+        canTradeTokens: isInvestor,
+        canSendPrivateQuestions: isInvestor,
+      },
+    },
+  };
 });

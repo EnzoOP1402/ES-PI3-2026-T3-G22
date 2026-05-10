@@ -1,5 +1,6 @@
 /* eslint-disable require-jsdoc */
 import {FieldValue} from "firebase-admin/firestore";
+
 import {
   StartupDocument,
   StartupListItem,
@@ -170,6 +171,9 @@ export async function userIsInvestor(
   return investorSnapshot.exists;
 }
 
+// Função editada por: Enzo Olivato Pazian
+// Melhoria adicionada: busca na coleção de usuários para a obtenção
+// de dados relacionados a ele para exibi-los nas perguntas
 export async function listPublicQuestions(startupId: string) {
   const questionsSnapshot = await startupsCollection
     .doc(startupId)
@@ -178,16 +182,44 @@ export async function listPublicQuestions(startupId: string) {
     .limit(50)
     .get();
 
-  return questionsSnapshot.docs
-    .map((doc) => ({
-      id: doc.id,
-      text: doc.get("text"),
-      answer: doc.get("answer") ?? null,
-      answeredAt: doc.get("answeredAt")?.toDate?.()?.toISOString?.() ?? null,
-      createdAt: doc.get("createdAt")?.toDate?.()?.toISOString?.() ?? null,
-    }))
-    .sort((left, right) => String(right.createdAt ?? "")
-      .localeCompare(String(left.createdAt ?? "")));
+  // Usamos Promise.all para processar as buscas de usuário de forma assíncrona
+  const questionsWithUsers = await Promise.all(
+    questionsSnapshot.docs.map(async (doc) => {
+      const data = doc.data();
+      const authorId = data.authorUid;
+
+      let authorName = "Usuário";
+      let authorPhotoUrl = null;
+
+      if (authorId) {
+        try {
+          // Busca o documento do usuário na coleção "users" do Firestore
+          const userDoc = await db.collection("users").doc(authorId).get();
+          if (userDoc.exists) {
+            const userData = userDoc.data();
+            authorName = userData?.fullName || "Usuário";
+            authorPhotoUrl = userData?.profilePicture || null;
+          }
+        } catch (error) {
+          console.error(`Erro ao buscar usuário ${authorId}:`, error);
+        }
+      }
+
+      return {
+        id: doc.id,
+        text: data.text,
+        answer: data.answer ?? null,
+        answeredAt: data.answeredAt?.toDate?.()?.toISOString?.() ?? null,
+        createdAt: data.createdAt?.toDate?.()?.toISOString?.() ?? null,
+        authorName,
+        authorPhotoUrl,
+      };
+    })
+  );
+
+  return questionsWithUsers.sort((left, right) =>
+    String(right.createdAt ?? "").localeCompare(String(left.createdAt ?? ""))
+  );
 }
 
 export async function createQuestion(

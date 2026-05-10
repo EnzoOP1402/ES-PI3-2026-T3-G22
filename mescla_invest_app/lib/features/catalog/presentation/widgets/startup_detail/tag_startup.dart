@@ -15,22 +15,19 @@ class TagStartup extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 6,
+        horizontal: 8,
+        vertical: 4,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFF353988).withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: const Color(0xFF353988).withValues(alpha: 0.35),
-        ),
+        color: Color(0xFF9FCEFF),
+        borderRadius: BorderRadius.circular(7.5),
       ),
       child: Text(
         texto,
         style: GoogleFonts.montserrat(
-          color: const Color(0xFF353988),
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: Colors.black,
         ),
       ),
     );

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
-import 'package:mescla_invest_app/features/catalog/presentation/widgets/detailed_catalog_card_section.dart';
+import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/detailed_catalog_card_section.dart';
 
 class MoreAboutCard extends StatelessWidget {
   final Map<String, dynamic> startupData;
@@ -88,7 +88,7 @@ class MoreAboutCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sumario = _getTextField(
-      ['executiveSummary', 'sumarioExecutivo'],
+      ['executiveSummary'],
       'Sumário executivo não informado.',
     );
 
@@ -202,7 +202,7 @@ class _MoreAboutOption extends StatelessWidget {
                   ),
                 ),
                 const Icon(
-                  Icons.keyboard_arrow_up_rounded,
+                  Icons.arrow_forward_ios,
                   color: _primaryColor,
                   size: 22,
                 ),

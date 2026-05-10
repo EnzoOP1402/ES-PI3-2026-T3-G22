@@ -1,12 +1,18 @@
 /* Autor: Livia Lucizano */
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mescla_invest_app/core/utils/constants.dart';
+import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
+import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
+import 'package:mescla_invest_app/features/catalog/data/models/question_model.dart';
+import 'package:mescla_invest_app/features/catalog/data/models/startup_model.dart';
 
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/tag_startup.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/financial_panel_card.dart';
-import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/partners_card.dart';
+import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/founders_card.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/external_members_card.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/more_about_card.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/public_questions_card.dart';
@@ -27,10 +33,6 @@ class StartupDetailScreen extends StatefulWidget {
 class _StartupDetailScreenState extends State<StartupDetailScreen> {
   late final Future<Map<String, dynamic>> _startupDetailsFuture;
 
-  static const Color _primaryColor = Color(0xFF2F3192);
-  static const Color _accentColor = Color(0xFFE4007C);
-  static const Color _backgroundColor = Color(0xFFF5F5F5);
-
   @override
   void initState() {
     super.initState();
@@ -46,17 +48,17 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
       );
 
       final result = await callable.call(<String, dynamic>{
-        'startupId': widget.startupId,
+        'id': widget.startupId,
       });
 
       return Map<String, dynamic>.from(result.data);
     } on FirebaseFunctionsException catch (e) {
-      debugPrint('Erro Firebase Functions: ${e.code}');
-      debugPrint('Mensagem: ${e.message}');
-      debugPrint('Detalhes: ${e.details}');
+      // O backend lança HttpsError específicos (ex: 'invalid-argument', 'not-found')
+      // O FirebaseFunctionsException captura esses erros do onCall para podermos tratá-los no app
+      if (mounted) showErrorSnackBar(context, e.message ?? "Erro ao comunicar com o servidor.");
       rethrow;
     } catch (e) {
-      debugPrint('Erro inesperado ao buscar dados da startup: $e');
+      if (mounted) showErrorSnackBar(context, "Erro inesperado ao buscar dados da startup: ${e.toString()}.");
       rethrow;
     }
   }
@@ -151,24 +153,24 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _backgroundColor,
+      backgroundColor: backgroundColor,
 
       appBar: AppBar(
-        backgroundColor: _backgroundColor,
+        backgroundColor: backgroundColor,
         elevation: 0,
-        centerTitle: false,
+        centerTitle: true,
         title: Text(
           'Detalhes da Startup',
           style: GoogleFonts.montserrat(
-            color: _primaryColor,
-            fontSize: 18,
+            color: primaryColor,
+            fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
         ),
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new,
-            color: _primaryColor,
+            color: primaryColor,
             size: 20,
           ),
           onPressed: () {
@@ -183,7 +185,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(
-                color: _primaryColor,
+                color: primaryColor,
               ),
             );
           }
@@ -197,7 +199,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
                   textAlign: TextAlign.center,
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
-                    color: Colors.black87,
+                    color: Colors.black,
                   ),
                 ),
               ),
@@ -210,30 +212,31 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
                 'Startup não encontrada.',
                 style: GoogleFonts.montserrat(
                   fontSize: 14,
-                  color: Colors.black87,
+                  color: Colors.black,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             );
           }
 
-          final startupData = snapshot.data!;
+          final fullResponse = snapshot.data!;
+          final startupData = fullResponse['data'] as Map<String, dynamic>? ?? {};
 
           final nome = _getStringField(
             startupData,
-            ['nome', 'name'],
+            ['name'],
             'Nome da Startup',
           );
 
           final descricao = _getStringField(
             startupData,
-            ['shortDescription', 'description', 'descricao'],
+            ['description'],
             'Descrição da startup não informada.',
           );
 
           final estagio = _getStringField(
             startupData,
-            ['estagio', 'stage'],
+            ['stage'],
             'Em operação',
           );
 
@@ -242,38 +245,30 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
             ['tags'],
           );
 
-          final setor = tags.isNotEmpty
-              ? tags.first.toString()
-              : _getStringField(
-                  startupData,
-                  ['setor', 'sector'],
-                  'Setor não informado',
-                );
-
           final logoPath = _getStringField(
             startupData,
-            ['logoPath', 'logo', 'imagePath'],
-            'assets/images/logo_nota_certa.png',
+            ['profilePicture'],
+            '',
           );
 
           final socios = _getListField(
             startupData,
-            ['founders', 'socios', 'partners'],
+            ['founders'],
           );
 
           final membrosExternos = _getListField(
             startupData,
-            ['externalMembers', 'mentoresConselho', 'membrosExternos'],
+            ['externalMembers'],
           );
 
           final perguntasPublicas = _getListField(
             startupData,
-            ['perguntasPublicas', 'publicQuestions'],
+            ['publicQuestions'],
           );
 
           final perguntasPrivadas = _getListField(
             startupData,
-            ['perguntasPrivadas', 'privateQuestions'],
+            ['privateQuestions'],
           );
 
           return SingleChildScrollView(
@@ -287,7 +282,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
                     backgroundColor: Colors.white,
                     child: Padding(
                       padding: const EdgeInsets.all(12),
-                      child: Image.asset(
+                      child: Image.network(
                         logoPath,
                         width: 78,
                         height: 78,
@@ -295,7 +290,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
                         errorBuilder: (context, error, stackTrace) {
                           return const Icon(
                             Icons.business_rounded,
-                            color: _primaryColor,
+                            color: primaryColor,
                             size: 42,
                           );
                         },
@@ -309,7 +304,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
                 Text(
                   nome,
                   style: GoogleFonts.montserrat(
-                    color: _primaryColor,
+                    color: primaryColor,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
@@ -317,23 +312,47 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
 
                 const SizedBox(height: 8),
 
-                Wrap(
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: [
-                    TagStartup(texto: estagio),
-                    TagStartup(texto: setor),
-                  ],
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFC3C0FF),
+                          borderRadius: BorderRadius.circular(7.5),
+                        ),
+                        child: Text(
+                          StartupModel.formatStage(estagio),
+                          style: GoogleFonts.montserrat(
+                            fontSize: 16,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      ...tags.map(
+                        (tag) {
+                          return TagStartup(texto: tag.toString());
+                        }
+                      ),
+                    ],
+                  ),
                 ),
-
+                    
                 const SizedBox(height: 12),
 
                 Text(
                   descricao,
                   style: GoogleFonts.montserrat(
-                    fontSize: 13,
+                    fontSize: 16,
                     height: 1.45,
-                    color: Colors.black87,
+                    color: Colors.black,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -347,7 +366,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
                   },
                 ),
 
-                PartnersCard(
+                FoundersCard(
                   socios: socios,
                 ),
 
@@ -360,6 +379,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
                 ),
 
                 PublicQuestionsCard(
+                  startupId: widget.startupId,
                   perguntasPublicas: perguntasPublicas,
                 ),
 
@@ -388,9 +408,6 @@ class _DetailBottomMenu extends StatelessWidget {
     required this.selectedIndex,
     required this.onTap,
   });
-
-  static const Color _primaryColor = Color(0xFF2F3192);
-  static const Color _accentColor = Color(0xFFE4007C);
 
   @override
   Widget build(BuildContext context) {
@@ -461,12 +478,10 @@ class _BottomMenuItem extends StatelessWidget {
     required this.onTap,
   });
 
-  static const Color _primaryColor = Color(0xFF2F3192);
-  static const Color _accentColor = Color(0xFFE4007C);
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected ? _accentColor : _primaryColor;
+    final color = isSelected ? accentColor : primaryColor;
 
     return Expanded(
       child: InkWell(

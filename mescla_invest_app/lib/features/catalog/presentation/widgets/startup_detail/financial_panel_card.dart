@@ -2,7 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mescla_invest_app/features/catalog/presentation/widgets/detailed_catalog_card_section.dart';
+import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_catalog/mini_info.dart';
+import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/detailed_catalog_card_section.dart';
 
 class FinancialPanelCard extends StatelessWidget {
   final Map<String, dynamic> startupData;
@@ -47,16 +48,6 @@ class FinancialPanelCard extends StatelessWidget {
       startupData,
       [
         'totalTokensIssued',
-        'tokensEmitidos',
-        'totalTokensEmitidos',
-      ],
-    );
-
-    final tokensDisponiveis = _getNumberField(
-      startupData,
-      [
-        'tokensAvailable',
-        'tokensDisponiveis',
       ],
     );
 
@@ -69,12 +60,7 @@ class FinancialPanelCard extends StatelessWidget {
 
     final capitalAportado = capitalAportadoCents > 0
         ? capitalAportadoCents / 100
-        : _getNumberField(
-            startupData,
-            [
-              'capitalAportado',
-            ],
-          );
+        : capitalAportadoCents;
 
     final valorTokenCents = _getNumberField(
       startupData,
@@ -85,39 +71,34 @@ class FinancialPanelCard extends StatelessWidget {
 
     final valorToken = valorTokenCents > 0
         ? valorTokenCents / 100
-        : _getNumberField(
-            startupData,
-            [
-              'valorToken',
-              'valorFixoTokens',
-            ],
-          );
+        : valorTokenCents;
 
     return DetailedCatalogCardSection(
       title: 'Painel financeiro',
       children: [
-        _InfoRow(
-          label: 'Tokens emitidos',
+        MiniInfo(
+          label: 'Tokens emitidos:',
           value: tokensEmitidos.toStringAsFixed(0),
+          titleSize: 16,
+          contentSize: 24,
         ),
-        _InfoRow(
-          label: 'Tokens disponíveis',
-          value: tokensDisponiveis.toStringAsFixed(0),
-        ),
-        _InfoRow(
-          label: 'Capital aportado',
+        MiniInfo(
+          label: 'Capital aportado:',
           value: _formatCurrency(capitalAportado),
+          titleSize: 16,
+          contentSize: 24,
         ),
-        _InfoRow(
-          label: 'Valor do token',
+        MiniInfo(
+          label: 'Valor atual de um token:',
           value: _formatCurrency(valorToken),
+          titleSize: 16,
+          contentSize: 24,
         ),
 
         const SizedBox(height: 16),
 
         SizedBox(
           width: double.infinity,
-          height: 48,
           child: ElevatedButton(
             onPressed: onInvestPressed,
             style: ElevatedButton.styleFrom(
@@ -149,47 +130,6 @@ class FinancialPanelCard extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _InfoRow({
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: GoogleFonts.montserrat(
-                fontSize: 13,
-                color: Colors.black87,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            value,
-            style: GoogleFonts.montserrat(
-              fontSize: 13,
-              color: const Color(0xFF2F3192),
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

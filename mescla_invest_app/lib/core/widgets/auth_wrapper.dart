@@ -45,9 +45,9 @@ class AuthWrapper extends StatelessWidget {
         // Se não houver usuário logado, abre a tela de recepção.
         if (snapshot.hasData) {
           return const Catalogo();
+        } else {
+          return const WelcomeScreen();
         }
-
-        return const WelcomeScreen();
       },
     );
   }

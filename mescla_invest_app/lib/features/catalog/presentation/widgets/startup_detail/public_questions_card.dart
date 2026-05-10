@@ -1,157 +1,302 @@
-/* Autor: Livia Lucizano */
+/* Autor: Enzo Olivato Pazian */
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mescla_invest_app/features/catalog/presentation/widgets/detailed_catalog_card_section.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
+import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
+import 'package:mescla_invest_app/features/catalog/data/models/question_model.dart';
+import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/detailed_catalog_card_section.dart';
+import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/detailed_catalog_modal_layout.dart';
+import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/question_item_tile.dart';
 
-class PublicQuestionsCard extends StatelessWidget {
+class PublicQuestionsCard extends StatefulWidget {
+  final String startupId;
   final List<dynamic> perguntasPublicas;
 
   const PublicQuestionsCard({
     super.key,
+    required this.startupId,
     required this.perguntasPublicas,
   });
+
+  @override
+  State<PublicQuestionsCard> createState() => _PublicQuestionsCardState();
+}
+
+class _PublicQuestionsCardState extends State<PublicQuestionsCard> {
+  // Definindo a lista que recebe as perguntas públicas obtidas
+  late List<dynamic> _localQuestions;
+  final _modalPublicQuestionController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  // Variável controladora do carregamento dos dados da página
+  // Quando a página é acessada, el muda de valor e aciona a tela de carregamento,
+  // fazendo com que a tela com as informações só seja visível após todas estarem posicionadas
+  bool _isLoading = false;
+  // Variável controladora do carregamento de perguntas
+  // Quando uma pergunta é enviada, ela muda de valor e aciona a tela de carregamento,
+  // fazendo com que o usuário não consiga apertar múltiplas vezes o mesmo botão e enviar
+  // várias requisições ao Firebase
+  bool _isQuestionLoading = false;
+  // Variável para armazenar os dados do usuário ao enviar mensagens
+  Map<String, dynamic>? _currentUserProfile;
+
+  // Função para obter dados do usuário necessários para a exibição de uma
+  // mensagem recém enviada
+  Future<void> _loadCurrentUserProfile() async {
+    final uid = AuthRepository.instance.currentUser?.uid;
+    if (uid != null) {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists && mounted) {
+        setState(() => _currentUserProfile = doc.data());
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _localQuestions = List.from(widget.perguntasPublicas);
+    // Função de obtenção dos dados do usuário para o envio de mensagens
+    _loadCurrentUserProfile();
+  }
+
+  @override
+  void dispose() {
+    // Elimina os controladores
+    _modalPublicQuestionController.dispose();
+    // Elimina todas as variáveis usadas na página
+    super.dispose();
+  }
+
+  // Função responsável por acionar a Firebase Function de postagem da pergunta
+  Future<void> _handleCorePublicQuestionSending(String message) async {
+    try {
+      setState(() => _isQuestionLoading = true);
+      
+      // 1. Criamos uma instância temporária do modelo
+      // O authorId e authorEmail serão preenchidos pelo Firebase no backend (onCall),
+      // mas precisamos deles para instanciar a classe no Flutter.
+      final novaPergunta = QuestionModel(
+        authorId: AuthRepository.instance.currentUser?.uid ?? '', 
+        text: message,
+        visibility: QuestionVisibility.publica,
+        createdAt: Timestamp.now(), // Timestamp local apenas para o objeto
+      );
+
+      final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('createStartupQuestion');
+
+      // 2. Usamos o toMap() para garantir a estrutura correta!
+      // Adicionamos o startupId manualmente pois ele não faz parte do documento da pergunta,
+      // mas sim do caminho/parâmetro que a função espera.
+      final payload = novaPergunta.toCallableMap();
+      payload['startupId'] = widget.startupId; 
+
+      await callable.call(payload);
+
+      // Exibe uma mensagem de sucesso
+      if (mounted) {
+        // 3. Inserindo a pergunta recém criada na lista de perguntas sem precisar chamar a Function
+        final novaPerguntaLocal = {
+          'id': 'temp_${DateTime.now().millisecondsSinceEpoch}', // ID temporário
+          'authorName': _currentUserProfile?['fullName'] ?? 'Eu', // Busca o fullName do Firestore
+          'authorPhotoUrl': _currentUserProfile?['profilePicture'], // Busca a foto do Firestore
+          'text': message,
+          'createdAt': DateTime.now().toIso8601String(), // Data local para exibição imediata
+          'answer': null,
+          'answeredAt': null,
+        };
+
+        setState(() {
+          // Insere no início da lista (index 0) para aparecer no topo, 
+          // respeitando a ordenação por data do protótipo
+          _localQuestions.insert(0, novaPerguntaLocal);
+        });
+
+        // Emite uma mensagem de sucesso
+        showSuccessSnackBar(context, "Pergunta enviada com sucesso!");
+      }
+    } on FirebaseFunctionsException catch (e) {
+      // O backend lança HttpsError específicos (ex: 'invalid-argument', 'not-found')
+      // O FirebaseFunctionsException captura esses erros do onCall para podermos tratá-los no app
+      if (!mounted) return;
+      showErrorSnackBar(context, e.message ?? "Erro ao comunicar com o servidor.");
+    } catch (e) {
+      // Captura erros genéricos (ex: falta de internet)
+      if (!mounted) return;
+      showErrorSnackBar(context, "Erro inesperado: ${e.toString()}");
+    } finally {
+      if (mounted) setState(() => _isQuestionLoading = false);
+      _modalPublicQuestionController.clear();
+    }
+  }
+
+  void _abrirModalPergunta() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          
+          // Função o envio da pergunta através do modal
+          Future<void> onModalPublicQuestionSubmit(StateSetter setModalState) async {
+            if (_formKey.currentState?.validate() ?? false) {
+              // Sincroniza o loading no modal e na tela de fundo
+              setModalState(() => _isQuestionLoading = true);
+              
+              // Chama o envio passando o texto do controlador do MODAL
+              await _handleCorePublicQuestionSending(_modalPublicQuestionController.text.trim());
+              
+              if (mounted) {
+                setModalState(() => _isQuestionLoading = false);
+              }
+            }
+          }
+          
+          return DetailedCatalogModalLayout(
+            title: "Perguntas Públicas",
+            subtitle: "Quantidade de perguntas: ${_localQuestions.length.toString()}",
+            children: [
+              Expanded(
+                // Perguntas
+                child: _isQuestionLoading ?
+                const Center(child: CircularProgressIndicator(),)
+                : Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Column(
+                            children: [
+                              // RENDERIZANDO AS PERGUNTAS PÚBLICAS
+                              _isLoading 
+                                ? const Center(child: CircularProgressIndicator())
+                                : _localQuestions.isEmpty
+                                  ? Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 40.0),
+                                      child: Text(
+                                        "Essa startup ainda não possui nenhuma pergunta.",
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.montserrat(
+                                          fontSize: 14,
+                                          color: Colors.grey[700],
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  : ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      itemCount: _localQuestions.length,
+                                      itemBuilder: (context, index) {
+                                        // Cada item da lista é um Map contendo: 
+                                        // authorName, authorPhotoUrl, text, answer, etc.
+                                        return QuestionItemTile(
+                                          questionData: Map<String, dynamic>.from(_localQuestions[index]),
+                                        );
+                                      },
+                                    ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Rodapé do modal
+                    Container(
+                      // Posicionando o input na base da página
+                      padding: EdgeInsets.only(
+                        left: 16, 
+                        right: 16, 
+                        // Ajuste para o teclado
+                        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                        top: 16,
+                      ),
+                      // Mantendo o padrão do modal
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFD9D9D9), 
+                        border: Border(top: BorderSide(color: Color(0xFFA2A2A2), width: 1)),
+                      ),
+                      // Input
+                      child: Form(
+                        key: _formKey,
+                        child: TextFormField(
+                          // Configurações para o comportamento de textarea
+                          minLines: 1,      // Começa com uma linha
+                          maxLines: 5,      // Cresce até 5 linhas e depois habilita scroll interno
+                          keyboardType: TextInputType.multiline, // Permite o botão 'Enter' para pular linha
+                          controller: _modalPublicQuestionController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty || value.toString().trim().isEmpty) {
+                              return 'Informe a mensagem';
+                            }
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            hintText: "Faça sua pergunta...",
+                            // Configurando a cor de fundo
+                            filled: true,
+                            fillColor: Color(0xFFF4F4F4),
+                            border: OutlineInputBorder(
+                              // Deixando-o com as bordas arredondadas
+                              borderRadius: BorderRadius.all(Radius.circular(16)),
+                              // Removendo a borda padrão
+                              borderSide: BorderSide.none
+                            ),
+                            // Adicionando o ícone que funciona como botão de envio
+                            suffixIcon: IconButton(
+                              // Definindo a função acionada ao clicar no botão
+                              onPressed: () => onModalPublicQuestionSubmit(setModalState),
+                              // Definindo o ícone
+                              icon: const Icon(Icons.send_rounded, color: Colors.black,)
+                            ),
+                          ),
+                          // Permitindo que o formulário seja acionado ao clicar "Enter"
+                          onFieldSubmitted: (_) => onModalPublicQuestionSubmit(setModalState),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return DetailedCatalogCardSection(
       title: 'Perguntas públicas',
       children: [
-        if (perguntasPublicas.isEmpty)
-          Text(
-            'Nenhuma pergunta pública cadastrada.',
-            style: GoogleFonts.montserrat(
-              fontSize: 13,
-              color: Colors.black87,
-            ),
-          )
-        else
-          ...perguntasPublicas.map((pergunta) {
-            final data = Map<String, dynamic>.from(pergunta);
-
-            final textoPergunta = data['pergunta'] ??
-                data['question'] ??
-                data['texto'] ??
-                'Pergunta não informada';
-
-            final resposta = data['resposta'] ??
-                data['answer'] ??
-                'Ainda não respondida.';
-
-            final autor = data['autor'] ??
-                data['author'] ??
-                'Usuário';
-
-            return _QuestionItem(
-              pergunta: textoPergunta,
-              resposta: resposta,
-              autor: autor,
-              isPrivate: false,
-            );
-          }).toList(),
+        Text(
+          'Confira ou faça uma pergunta pública para essa startup',
+          style: GoogleFonts.montserrat(fontSize: 14, color: Colors.black),
+        ),
 
         const SizedBox(height: 12),
 
         SizedBox(
-          width: double.infinity,
+          height: 40,
           child: OutlinedButton.icon(
-            onPressed: () {
-              // Aqui depois você pode abrir modal ou navegar para tela de perguntas
-            },
+            onPressed: _abrirModalPergunta,
             icon: const Icon(Icons.add_comment_outlined),
             label: const Text('Fazer pergunta pública'),
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFF353988),
-              side: const BorderSide(
-                color: Color(0xFF353988),
-                width: 1.2,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              textStyle: GoogleFonts.montserrat(
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
-              ),
+              side: const BorderSide(color: Color(0xFF353988), width: 1.2),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              textStyle: GoogleFonts.montserrat(fontWeight: FontWeight.w600, fontSize: 16),
             ),
           ),
         ),
       ],
-    );
-  }
-}
-
-class _QuestionItem extends StatelessWidget {
-  final String pergunta;
-  final String resposta;
-  final String autor;
-  final bool isPrivate;
-
-  const _QuestionItem({
-    required this.pergunta,
-    required this.resposta,
-    required this.autor,
-    required this.isPrivate,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.55),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.6),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                isPrivate
-                    ? Icons.lock_outline
-                    : Icons.chat_bubble_outline,
-                color: const Color(0xFF353988),
-                size: 16,
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  autor,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF353988),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            pergunta,
-            style: GoogleFonts.montserrat(
-              fontSize: 13,
-              color: Colors.black87,
-              fontWeight: FontWeight.w600,
-              height: 1.3,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            resposta,
-            style: GoogleFonts.montserrat(
-              fontSize: 12,
-              color: Colors.black54,
-              height: 1.3,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

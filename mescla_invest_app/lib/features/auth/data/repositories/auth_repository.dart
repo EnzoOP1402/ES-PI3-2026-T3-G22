@@ -27,6 +27,9 @@ class AuthRepository {
   // Alimenta o AuthWrapper com o monitoramento do estado da autenticação
   Stream<User?> get authStateChange => _auth.authStateChanges();
 
+  // Getter para o acesso ao uid do usuário autenticado
+  User? get currentUser => _auth.currentUser;
+
   /// Método de login: responsável invocar o método de login do Firebase Auth através do
   /// [email] e da [password] fornecidos pelo usuário na interface
   Future<void> login(String email, String password) async {

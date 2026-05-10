@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mescla_invest_app/features/catalog/presentation/widgets/detailed_catalog_card_section.dart';
+import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/detailed_catalog_card_section.dart';
 class PrivateQuestionsCard extends StatelessWidget {
   final List<dynamic> perguntasPrivadas;
 

@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/core/utils/constants.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/detailed_catalog_card_section.dart';
+import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/detailed_catalog_modal_layout.dart';
 
-class ExternalMembersCard extends StatelessWidget {
-  final List<dynamic> membrosExternos;
+class FoundersCard extends StatelessWidget {
+  final List<dynamic> socios;
 
-  const ExternalMembersCard({
+  const FoundersCard({
     super.key,
-    required this.membrosExternos,
+    required this.socios,
   });
 
   String _getStringField(
@@ -29,22 +30,37 @@ class ExternalMembersCard extends StatelessWidget {
     return fallback;
   }
 
+  dynamic _getValueField(
+    Map<String, dynamic> data,
+    List<String> possibleKeys,
+  ) {
+    for (final key in possibleKeys) {
+      final value = data[key];
+
+      if (value != null && value.toString().trim().isNotEmpty) {
+        return value;
+      }
+    }
+
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return DetailedCatalogCardSection(
-      title: 'Membros externos',
-      children: membrosExternos.isEmpty
+      title: 'Sócios',
+      children: socios.isEmpty
           ? [
               Text(
-                'Nenhum membro externo cadastrado.',
+                'Nenhum sócio cadastrado.',
                 style: GoogleFonts.montserrat(
                   fontSize: 13,
                   color: Colors.black,
                 ),
               ),
             ]
-          : membrosExternos.map((membro) {
-              final data = Map<String, dynamic>.from(membro);
+          : socios.map((socio) {
+              final data = Map<String, dynamic>.from(socio);
 
               final nome = _getStringField(
                 data,
@@ -58,10 +74,15 @@ class ExternalMembersCard extends StatelessWidget {
                 'Cargo não informado',
               );
 
-              final organizacao = _getStringField(
+              final bio = _getStringField(
                 data,
-                ['organization'],
-                '',
+                ['bio'],
+                'Descrição não informada',
+              );
+
+              final participacao = _getValueField(
+                data,
+                ['equityPercent'],
               );
 
               return Container(
@@ -93,7 +114,7 @@ class ExternalMembersCard extends StatelessWidget {
                           Text(
                             nome,
                             style: GoogleFonts.montserrat(
-                              fontSize: 14,
+                              fontSize: 16,
                               fontWeight: FontWeight.w700,
                               color: Colors.black,
                             ),
@@ -104,18 +125,18 @@ class ExternalMembersCard extends StatelessWidget {
                           Text(
                             cargo,
                             style: GoogleFonts.montserrat(
-                              fontSize: 12,
+                              fontSize: 14,
                               color: Colors.black,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
 
-                          if (organizacao.isNotEmpty) ...[
-                            const SizedBox(height: 2),
+                          if (participacao != null) ...[
+                            const SizedBox(height: 4),
                             Text(
-                              organizacao,
+                              'Participação societária: $participacao%',
                               style: GoogleFonts.montserrat(
-                                fontSize: 12,
+                                fontSize: 14,
                                 color: Colors.black,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -124,6 +145,41 @@ class ExternalMembersCard extends StatelessWidget {
                         ],
                       ),
                     ),
+
+                    IconButton(
+                      onPressed: () {
+                        showModalBottomSheet<void>(
+                          isScrollControlled: true,
+                          context: context,
+                          builder: (BuildContext context) {
+                            return StatefulBuilder(
+                              builder: (BuildContext context, StateSetter setModalState) {
+
+                                return DetailedCatalogModalLayout(
+                                  title: nome,
+                                  subtitle: cargo,
+                                  // Conteúdo do modal
+                                  children: [
+                                    Expanded(
+                                      // Perguntas
+                                      child: Text(
+                                        bio,
+                                        style: GoogleFonts.montserrat(
+                                          fontSize: 14,
+                                          color: Colors.black,
+                                        ),
+                                      )
+                                    ),
+                                  ]
+                                );  
+                              },
+                            );
+                          },
+                        );
+                      },
+                      icon: Icon(Icons.arrow_forward_ios),
+                      color: primaryColor,
+                    )
                   ],
                 ),
               );
