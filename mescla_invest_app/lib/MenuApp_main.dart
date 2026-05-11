@@ -1,22 +1,26 @@
-/* Autor: Enzo Olivato Pazian */
+/* Autor: Bernardo Castro Brandão de Oliveira */
 
 // Importação das dependências
 import 'package:flutter/material.dart';
-import 'package:mescla_invest_app/TelaRecepcao.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mescla_invest_app/features/auth/presentation/screens/welcome_screen.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_options.dart';
 
-// Função principal: ponto de entrada da aplicação
+// Função principal
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  // Função responsável por executar a aplicação
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MesclaInvest());
 }
 
-// Widget que representa a aplicação
+// Widget principal
 class MesclaInvest extends StatelessWidget {
-  // Construtor da aplicação (herda o atributo key de sua superclasse)
   const MesclaInvest({super.key});
 
   @override
@@ -28,6 +32,7 @@ class MesclaInvest extends StatelessWidget {
   }
 }
 
+// Tela de Menu
 class TelaMenu extends StatefulWidget {
   const TelaMenu({super.key});
 
@@ -37,10 +42,11 @@ class TelaMenu extends StatefulWidget {
 
 class _TelaMenuState extends State<TelaMenu> {
   bool mostrarSaldo = false;
-  // Raiz da aplicação
+
   @override
   Widget build(BuildContext context) {
     const Color primaryBlue = Color(0xFF34379B);
+
     return Scaffold(
       backgroundColor: const Color(0xFFD9D9D9),
       body: SafeArea(
@@ -48,11 +54,13 @@ class _TelaMenuState extends State<TelaMenu> {
           child: Column(
             children: [
               const SizedBox(height: 4),
+
               // Card superior
               Container(
                 decoration: BoxDecoration(color: Colors.grey[300]),
                 child: Column(
                   children: [
+                    // Cabeçalho
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 18),
@@ -77,6 +85,7 @@ class _TelaMenuState extends State<TelaMenu> {
 
                     const SizedBox(height: 14),
 
+                    // Texto saldo
                     const Text(
                       'Saldo do Usuário:',
                       style: TextStyle(fontSize: 14, color: Colors.black87),
@@ -84,6 +93,7 @@ class _TelaMenuState extends State<TelaMenu> {
 
                     const SizedBox(height: 8),
 
+                    // Saldo
                     Text(
                       mostrarSaldo ? 'R\$15.670,98' : '— —',
                       style: const TextStyle(fontSize: 18, color: Colors.black),
@@ -91,6 +101,7 @@ class _TelaMenuState extends State<TelaMenu> {
 
                     const SizedBox(height: 7),
 
+                    // Mostrar/Ocultar saldo
                     GestureDetector(
                       onTap: () {
                         setState(() {
@@ -121,14 +132,14 @@ class _TelaMenuState extends State<TelaMenu> {
 
                     const SizedBox(height: 14),
 
-                    Divider(height: 1, thickness: 1, color: Colors.black),
+                    const Divider(height: 1, thickness: 1, color: Colors.black),
                   ],
                 ),
               ),
 
               const SizedBox(height: 28),
 
-              // Explore Mais
+              // Título
               const Text(
                 'Explore Mais:',
                 style: TextStyle(
@@ -140,11 +151,12 @@ class _TelaMenuState extends State<TelaMenu> {
 
               const SizedBox(height: 40),
 
-              // 6 Botões
+              // Botões
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30),
                 child: Column(
                   children: [
+                    // Primeira linha
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -153,11 +165,12 @@ class _TelaMenuState extends State<TelaMenu> {
                           label: 'Catálogo',
                           onTap: () {
                             Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const Catalogo(),
-                              ),
-                            );
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const Catalogo(),
+                                                  ),
+                                                );
                           },
                         ),
 
@@ -166,7 +179,9 @@ class _TelaMenuState extends State<TelaMenu> {
                         MenuButton(
                           icon: Icons.chair_alt_outlined,
                           label: 'Balcão',
-                          onTap: () {},
+                          onTap: () {
+                            // Navegação futura
+                          },
                         ),
 
                         const SizedBox(width: 10),
@@ -174,20 +189,25 @@ class _TelaMenuState extends State<TelaMenu> {
                         MenuButton(
                           icon: Icons.account_balance_wallet_outlined,
                           label: 'Carteira',
-                          onTap: () {},
+                          onTap: () {
+                            // Navegação futura
+                          },
                         ),
                       ],
                     ),
 
                     const SizedBox(height: 10),
 
+                    // Segunda linha
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         MenuButton(
                           icon: Icons.bar_chart,
                           label: 'Dashboards',
-                          onTap: () {},
+                          onTap: () {
+                            // Navegação futura
+                          },
                         ),
 
                         const SizedBox(width: 10),
@@ -195,7 +215,9 @@ class _TelaMenuState extends State<TelaMenu> {
                         MenuButton(
                           icon: Icons.person_outline,
                           label: 'Perfil',
-                          onTap: () {},
+                          onTap: () {
+                            // Navegação futura
+                          },
                         ),
 
                         const SizedBox(width: 10),
@@ -237,19 +259,18 @@ class _TelaMenuState extends State<TelaMenu> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceEvenly,
                                           children: [
-                                            // Botão SIM
+                                            // SIM
                                             GestureDetector(
                                               onTap: () {
                                                 Navigator.pop(context);
+
                                                 Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
                                                     builder: (context) =>
-                                                        const TelaRecepcao(),
+                                                        const WelcomeScreen(),
                                                   ),
                                                 );
-
-                                                // SUA LÓGICA DE LOGOUT AQUI
                                               },
                                               child: Container(
                                                 width: 100,
@@ -275,11 +296,10 @@ class _TelaMenuState extends State<TelaMenu> {
                                               ),
                                             ),
 
+                                            // NÃO
                                             GestureDetector(
                                               onTap: () {
                                                 Navigator.pop(context);
-
-                                                // Sua lógica aqui
                                               },
                                               child: Container(
                                                 width: 100,
@@ -327,6 +347,7 @@ class _TelaMenuState extends State<TelaMenu> {
   }
 }
 
+// Widget reutilizável dos botões
 class MenuButton extends StatelessWidget {
   final IconData icon;
   final String label;
