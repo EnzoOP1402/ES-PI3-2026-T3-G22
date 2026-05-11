@@ -12,6 +12,7 @@ import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_catalog/bottom_catalog_navigation.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_catalog/card_startup.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_catalog/catalog_filters.dart';
+import 'package:mescla_invest_app/features/wallet/screens/wallet_user.dart';
 
 class Catalogo extends StatefulWidget {
   const Catalogo({super.key});
@@ -21,7 +22,6 @@ class Catalogo extends StatefulWidget {
 }
 
 class _CatalogoState extends State<Catalogo> {
-
   final TextEditingController _searchController = TextEditingController();
 
   Future<List<StartupModel>>? _startupsFuture;
@@ -60,10 +60,8 @@ class _CatalogoState extends State<Catalogo> {
       final callable = functions.httpsCallable('listStartups');
 
       final result = await callable.call(<String, dynamic>{
-        if (search != null && search.trim().isNotEmpty)
-          'search': search.trim(),
-        if (stage != null && stage.trim().isNotEmpty)
-          'state': stage.trim(),
+        if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
+        if (stage != null && stage.trim().isNotEmpty) 'state': stage.trim(),
       });
 
       final resultData = Map<String, dynamic>.from(result.data);
@@ -80,10 +78,18 @@ class _CatalogoState extends State<Catalogo> {
     } on FirebaseFunctionsException catch (e) {
       // O backend lança HttpsError específicos (ex: 'invalid-argument', 'not-found')
       // O FirebaseFunctionsException captura esses erros do onCall para podermos tratá-los no app
-      if (mounted) showErrorSnackBar(context, e.message ?? "Erro ao comunicar com o servidor.");
+      if (mounted)
+        showErrorSnackBar(
+          context,
+          e.message ?? "Erro ao comunicar com o servidor.",
+        );
       rethrow;
     } catch (e) {
-      if (mounted) showErrorSnackBar(context, "Erro inesperado ao buscar startups: ${e.toString()}.");
+      if (mounted)
+        showErrorSnackBar(
+          context,
+          "Erro inesperado ao buscar startups: ${e.toString()}.",
+        );
       rethrow;
     }
   }
@@ -100,12 +106,9 @@ class _CatalogoState extends State<Catalogo> {
   void _onSearchChanged(String value) {
     _searchDebounce?.cancel();
 
-    _searchDebounce = Timer(
-      const Duration(milliseconds: 350),
-      () {
-        _applyFilters();
-      },
-    );
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      _applyFilters();
+    });
   }
 
   void _clearFilters() {
@@ -127,9 +130,7 @@ class _CatalogoState extends State<Catalogo> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => StartupDetailScreen(
-          startupId: startup.id,
-        ),
+        builder: (_) => StartupDetailScreen(startupId: startup.id),
       ),
     );
   }
@@ -140,6 +141,14 @@ class _CatalogoState extends State<Catalogo> {
     });
 
     if (index == 1) {
+      return;
+    }
+
+    if (index == 3) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const WalletUser()),
+      );
       return;
     }
 
@@ -179,9 +188,7 @@ class _CatalogoState extends State<Catalogo> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF353988),
-                    ),
+                    child: CircularProgressIndicator(color: Color(0xFF353988)),
                   );
                 }
 
