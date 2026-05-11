@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "185047983787",
+    "project_id": "es-pi3-2026-t3-g22",
+    "storage_bucket": "es-pi3-2026-t3-g22.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:185047983787:android:f429b85153849f5f3cf9ee",
+        "android_client_info": {
+          "package_name": "com.example.mescla_invest_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7QgHGkrk-2uDOLERsQ1AN9_Pbmchz1SI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:185047983787:android:e1542454cdf151b73cf9ee",
+        "android_client_info": {
+          "package_name": "com.example.mesclainvest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7QgHGkrk-2uDOLERsQ1AN9_Pbmchz1SI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
