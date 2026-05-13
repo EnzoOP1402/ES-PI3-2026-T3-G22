@@ -113,6 +113,7 @@ class BackgroundContainer extends StatelessWidget {
 }
 
 //Fundo
+// ignore: non_constant_identifier_names
 Widget header_text(String title, String subtitle) {
   return Container(
     width: double.infinity,
@@ -120,7 +121,6 @@ Widget header_text(String title, String subtitle) {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
         const SizedBox(height: 20),
         Text(title,
             style: const TextStyle(color: Colors.white, fontSize: 22)),

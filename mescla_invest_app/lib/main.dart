@@ -8,6 +8,11 @@ import 'package:mescla_invest_app/core/widgets/auth_wrapper.dart';
 import 'package:mescla_invest_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:mescla_invest_app/features/auth/presentation/screens/password_recovery_screen.dart';
 import 'package:mescla_invest_app/features/auth/presentation/screens/register_screen.dart';
+import 'package:mescla_invest_app/features/dashboard/presentation/screens/dashboard.dart';
+import 'package:mescla_invest_app/features/profile/presentation/screens/profile_screen.dart';
+import 'package:mescla_invest_app/features/home/presentation/screens/home_screen.dart';
+import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
+import 'package:mescla_invest_app/features/wallet/presentation/screens/wallet_screen.dart';
 import 'package:mescla_invest_app/routes/app_routes.dart';
 import 'firebase_options.dart';
 
@@ -64,7 +69,12 @@ class MesclaInvest extends StatelessWidget {
         AppRoutes.login: (_) => LoginScreen(),
         AppRoutes.register: (_) => RegisterScreen(),
         AppRoutes.recover: (_) => PasswordRecoveryScreen(),
-      },
+        AppRoutes.catalog: (_) => const Catalogo(),
+        AppRoutes.home: (_) => const HomeScreen(),
+        AppRoutes.profile: (_) => const ProfileScreen(),
+        AppRoutes.dashboard:(_) => const DashboardScreen(),
+        AppRoutes.wallet:(_) => const WalletScreen()
+        } ,
     );
   }
 }
