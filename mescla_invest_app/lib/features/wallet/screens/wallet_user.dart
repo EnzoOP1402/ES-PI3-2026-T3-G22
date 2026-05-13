@@ -1,6 +1,7 @@
 import 'package:mescla_invest_app/features/wallet/theme/background_wallet.dart';
 import 'package:flutter/material.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
+import 'package:mescla_invest_app/features/wallet/screens/write_value.dart';
 
 class MesclaInvest extends StatelessWidget {
   // Construtor da aplicação (herda o atributo key de sua superclasse)
@@ -20,7 +21,7 @@ class WalletUser extends StatefulWidget {
 }
 
 class _WalletUserState extends State<WalletUser> {
-  int? _selectedPayment; // 1 = Pix | 2 = TED
+  int? _selectedPayment;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +53,7 @@ class _WalletUserState extends State<WalletUser> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            Navigator.pop(context); // fecha dialog
+                            Navigator.pop(context);
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -229,11 +230,12 @@ class _WalletUserState extends State<WalletUser> {
                 onPressed: _selectedPayment == null
                     ? null
                     : () {
-                        if (_selectedPayment == 1) {
-                          // Pix
-                        } else if (_selectedPayment == 2) {
-                          // TED
-                        }
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const WriteValue(),
+                          ),
+                        );
                       },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _selectedPayment == null
