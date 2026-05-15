@@ -230,13 +230,24 @@ class _WalletUserState extends State<WalletUser> {
                 onPressed: _selectedPayment == null
                     ? null
                     : () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const WriteValue(),
-                          ),
-                        );
-                      },
+        if (_selectedPayment == 1) {
+          // PIX
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const WriteValue(),
+            ),
+          );
+        } else if (_selectedPayment == 2) {
+          // TED
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SuaTelaTed(),
+            ),
+          );
+        }
+      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _selectedPayment == null
                       ? Colors.grey

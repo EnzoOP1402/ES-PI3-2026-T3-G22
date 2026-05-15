@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mescla_invest_app/features/wallet/theme/background_wallet.dart';
-import 'package:mescla_invest_app/features/wallet/screens/qrcode_pay.dart';
+import 'package:mescla_invest_app/features/wallet/screens/qrcode_pix.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
 
 class WriteValue extends StatefulWidget {

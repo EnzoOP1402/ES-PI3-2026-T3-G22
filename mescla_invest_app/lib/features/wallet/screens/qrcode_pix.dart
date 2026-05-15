@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mescla_invest_app/features/wallet/theme/background_wallet.dart';
-import 'package:mescla_invest_app/features/wallet/screens/white_screen.dart';
+import 'package:mescla_invest_app/features/wallet/screens/pix_pay.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
 
 class Qrcode extends StatefulWidget {
