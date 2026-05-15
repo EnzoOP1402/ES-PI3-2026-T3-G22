@@ -1,15 +1,11 @@
 /* Autor: Livia Lucizano */
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/core/utils/constants.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
-import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
-import 'package:mescla_invest_app/features/catalog/data/models/question_model.dart';
 import 'package:mescla_invest_app/features/catalog/data/models/startup_model.dart';
-
+import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/tag_startup.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/financial_panel_card.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/founders_card.dart';
@@ -32,6 +28,7 @@ class StartupDetailScreen extends StatefulWidget {
 
 class _StartupDetailScreenState extends State<StartupDetailScreen> {
   late final Future<Map<String, dynamic>> _startupDetailsFuture;
+
 
   @override
   void initState() {
@@ -77,7 +74,6 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
 
     return <dynamic>[];
   }
-
   String _getStringField(
     Map<String, dynamic> data,
     List<String> possibleKeys,
@@ -105,411 +101,314 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
       },
     );
   }
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: backgroundColor,
 
-  void _onBottomMenuTap(int index) {
-    switch (index) {
-      case 0:
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/home',
-          (route) => false,
-        );
-        break;
-
-      case 1:
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/catalog',
-          (route) => false,
-        );
-        break;
-
-      case 2:
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/dashboard',
-          (route) => false,
-        );
-        break;
-
-      case 3:
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/carteira',
-          (route) => false,
-        );
-        break;
-
-      case 4:
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/conta',
-          (route) => false,
-        );
-        break;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+    appBar: AppBar(
       backgroundColor: backgroundColor,
-
-      appBar: AppBar(
-        backgroundColor: backgroundColor,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          'Detalhes da Startup',
-          style: GoogleFonts.montserrat(
-            color: primaryColor,
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new,
-            color: primaryColor,
-            size: 20,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+      elevation: 0,
+      centerTitle: true,
+      title: Text(
+        'Detalhes da Startup',
+        style: GoogleFonts.montserrat(
+          color: primaryColor,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
         ),
       ),
+      leading: IconButton(
+        icon: const Icon(
+          Icons.arrow_back_ios_new,
+          color: primaryColor,
+          size: 20,
+        ),
+        onPressed: () {
+          Navigator.pop(context);
+        },
+      ),
+    ),
 
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _startupDetailsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: primaryColor,
-              ),
-            );
-          }
+    body: FutureBuilder<Map<String, dynamic>>(
+      future: _startupDetailsFuture,
 
-          if (snapshot.hasError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(
-                  'Erro ao carregar dados da startup.\n\n${snapshot.error}',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 13,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-            );
-          }
+      builder: (context, snapshot) {
 
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(
+        if (snapshot.connectionState ==
+            ConnectionState.waiting) {
+
+          return const Center(
+            child: CircularProgressIndicator(
+              color: primaryColor,
+            ),
+          );
+        }
+
+        if (snapshot.hasError) {
+
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+
               child: Text(
-                'Startup não encontrada.',
+                'Erro ao carregar dados da startup.\n\n${snapshot.error}',
+
+                textAlign: TextAlign.center,
+
                 style: GoogleFonts.montserrat(
-                  fontSize: 14,
+                  fontSize: 13,
                   color: Colors.black,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
-            );
-          }
-
-          final fullResponse = snapshot.data!;
-          final startupData = fullResponse['data'] as Map<String, dynamic>? ?? {};
-
-          final nome = _getStringField(
-            startupData,
-            ['name'],
-            'Nome da Startup',
+            ),
           );
+        }
 
-          final descricao = _getStringField(
-            startupData,
-            ['description'],
-            'Descrição da startup não informada.',
+        if (!snapshot.hasData ||
+            snapshot.data!.isEmpty) {
+
+          return Center(
+            child: Text(
+              'Startup não encontrada.',
+
+              style: GoogleFonts.montserrat(
+                fontSize: 14,
+                color: Colors.black,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           );
+        }
+        final fullResponse = snapshot.data!;
+        final startupData =
+            Map<String, dynamic>.from(
+          fullResponse['data'] ?? {},
+        );
 
-          final estagio = _getStringField(
-            startupData,
-            ['stage'],
-            'Em operação',
-          );
+        final nome = _getStringField(
+          startupData,
+          ['name'],
+          'Nome da Startup',
+        );
 
-          final tags = _getListField(
-            startupData,
-            ['tags'],
-          );
+        final descricao = _getStringField(
+          startupData,
+          ['description'],
+          'Descrição da startup não informada.',
+        );
 
-          final logoPath = _getStringField(
-            startupData,
-            ['profilePicture'],
-            '',
-          );
+        final estagio = _getStringField(
+          startupData,
+          ['stage'],
+          'Em operação',
+        );
 
-          final socios = _getListField(
-            startupData,
-            ['founders'],
-          );
+        final tags = _getListField(
+          startupData,
+          ['tags'],
+        );
 
-          final membrosExternos = _getListField(
-            startupData,
-            ['externalMembers'],
-          );
+        final logoPath = _getStringField(
+          startupData,
+          ['profilePicture'],
+          '',
+        );
 
-          final perguntasPublicas = _getListField(
-            startupData,
-            ['publicQuestions'],
-          );
+        final socios = _getListField(
+          startupData,
+          ['founders'],
+        );
 
-          final perguntasPrivadas = _getListField(
-            startupData,
-            ['privateQuestions'],
-          );
+        final membrosExternos = _getListField(
+          startupData,
+          ['externalMembers'],
+        );
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 110),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: CircleAvatar(
-                    radius: 55,
-                    backgroundColor: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Image.network(
-                        logoPath,
-                        width: 78,
-                        height: 78,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(
-                            Icons.business_rounded,
-                            color: primaryColor,
-                            size: 42,
-                          );
-                        },
-                      ),
+        final perguntasPublicas = _getListField(
+          startupData,
+          ['publicQuestions'],
+        );
+
+        final perguntasPrivadas = _getListField(
+          startupData,
+          ['privateQuestions'],
+        );
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(
+            24,
+            12,
+            24,
+            110,
+          ),
+
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: CircleAvatar(
+                  radius: 55,
+
+                  backgroundColor:
+                      Colors.white,
+
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.all(12),
+
+                    child: Image.network(
+                      logoPath,
+
+                      width: 78,
+                      height: 78,
+
+                      fit: BoxFit.contain,
+
+                      errorBuilder: (
+                        context,
+                        error,
+                        stackTrace,
+                      ) {
+
+                        return const Icon(
+                          Icons.business_rounded,
+                          color: primaryColor,
+                          size: 42,
+                        );
+                      },
                     ),
                   ),
                 ),
+              ),
 
-                const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-                Text(
-                  nome,
-                  style: GoogleFonts.montserrat(
-                    color: primaryColor,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+              Text(
+                nome,
+
+                style:
+                    GoogleFonts.montserrat(
+                  color: primaryColor,
+                  fontSize: 22,
+                  fontWeight:
+                      FontWeight.bold,
                 ),
+              ),
 
-                const SizedBox(height: 8),
+              const SizedBox(height: 8),
 
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Wrap(
+              SingleChildScrollView(
+                scrollDirection:
+                    Axis.horizontal,
+
+                child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFC3C0FF),
-                          borderRadius: BorderRadius.circular(7.5),
-                        ),
-                        child: Text(
-                          StartupModel.formatStage(estagio),
-                          style: GoogleFonts.montserrat(
-                            fontSize: 16,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w500,
-                          ),
+                  children: [
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+
+                      decoration: BoxDecoration(
+                        color:
+                            const Color(0xFFC3C0FF),
+
+                        borderRadius:
+                            BorderRadius.circular(
+                          7.5,
                         ),
                       ),
-                      ...tags.map(
-                        (tag) {
-                          return TagStartup(texto: tag.toString());
-                        }
+
+                      child: Text(
+                        StartupModel.formatStage(
+                          estagio,
+                        ),
+
+                        style:
+                            GoogleFonts.montserrat(
+                          fontSize: 16,
+                          color: Colors.black,
+                          fontWeight:
+                              FontWeight.w500,
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+
+                    ...tags.map(
+                      (tag) {
+
+                        return TagStartup(
+                          texto: tag.toString(),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-                    
-                const SizedBox(height: 12),
-
-                Text(
-                  descricao,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 16,
-                    height: 1.45,
-                    color: Colors.black,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                FinancialPanelCard(
-                  startupData: startupData,
-                  onInvestPressed: () {
-                    _goToInvestScreen(startupData);
-                  },
-                ),
-
-                FoundersCard(
-                  socios: socios,
-                ),
-
-                ExternalMembersCard(
-                  membrosExternos: membrosExternos,
-                ),
-
-                MoreAboutCard(
-                  startupData: startupData,
-                ),
-
-                PublicQuestionsCard(
-                  startupId: widget.startupId,
-                  perguntasPublicas: perguntasPublicas,
-                ),
-
-                PrivateQuestionsCard(
-                  perguntasPrivadas: perguntasPrivadas,
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-
-      bottomNavigationBar: _DetailBottomMenu(
-        selectedIndex: 1,
-        onTap: _onBottomMenuTap,
-      ),
-    );
-  }
-}
-
-class _DetailBottomMenu extends StatelessWidget {
-  final int selectedIndex;
-  final ValueChanged<int> onTap;
-
-  const _DetailBottomMenu({
-    required this.selectedIndex,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 78,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 18,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _BottomMenuItem(
-              icon: Icons.home_outlined,
-              label: 'Início',
-              isSelected: selectedIndex == 0,
-              onTap: () => onTap(0),
-            ),
-            _BottomMenuItem(
-              icon: Icons.lightbulb_outline_rounded,
-              label: 'Catálogo',
-              isSelected: selectedIndex == 1,
-              onTap: () => onTap(1),
-            ),
-            _BottomMenuItem(
-              icon: Icons.bar_chart_rounded,
-              label: 'Dashboards',
-              isSelected: selectedIndex == 2,
-              onTap: () => onTap(2),
-            ),
-            _BottomMenuItem(
-              icon: Icons.account_balance_wallet_outlined,
-              label: 'Carteira',
-              isSelected: selectedIndex == 3,
-              onTap: () => onTap(3),
-            ),
-            _BottomMenuItem(
-              icon: Icons.person_outline_rounded,
-              label: 'Conta',
-              isSelected: selectedIndex == 4,
-              onTap: () => onTap(4),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _BottomMenuItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _BottomMenuItem({
-    required this.icon,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isSelected ? accentColor : primaryColor;
-
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                color: color,
-                size: 23,
               ),
-              const SizedBox(height: 4),
+
+              const SizedBox(height: 12),
+
               Text(
-                label,
-                style: GoogleFonts.montserrat(
-                  color: color,
-                  fontSize: 11,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                descricao,
+
+                style:
+                    GoogleFonts.montserrat(
+                  fontSize: 16,
+                  height: 1.45,
+                  color: Colors.black,
+                  fontWeight:
+                      FontWeight.w400,
                 ),
+              ),
+
+              const SizedBox(height: 16),
+
+              FinancialPanelCard(
+                startupData: startupData,
+
+                onInvestPressed: () {
+                  _goToInvestScreen(
+                    startupData,
+                  );
+                },
+              ),
+              FoundersCard(
+                socios: socios,
+              ),
+
+              ExternalMembersCard(
+                membrosExternos:
+                    membrosExternos,
+              ),
+              MoreAboutCard(
+                startupData: startupData,
+              ),
+
+              PublicQuestionsCard(
+                startupId:
+                    widget.startupId,
+
+                perguntasPublicas:
+                    perguntasPublicas,
+              ),
+
+              PrivateQuestionsCard(
+                perguntasPrivadas:
+                    perguntasPrivadas,
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
+        );
+      },
+    ),
+    bottomNavigationBar:
+    const AppBottomNavigation(
+    selectedIndex: 1,
+    )
+  );
+}}

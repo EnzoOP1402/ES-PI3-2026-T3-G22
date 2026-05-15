@@ -1,4 +1,4 @@
-/** Autor: Livia Lucizano */
+/* Autor: Livia Lucizano */
 
 class StartupModel {
   final String id;
