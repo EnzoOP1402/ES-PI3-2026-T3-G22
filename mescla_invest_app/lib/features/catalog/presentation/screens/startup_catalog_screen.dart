@@ -161,13 +161,10 @@ class _CatalogoState extends State<Catalogo> {
   void _clearFilters() {
 
     _searchDebounce?.cancel();
-
     _searchController.clear();
 
     setState(() {
-
       _selectedStage = 'todos';
-
       _startupsFuture = _getStartups();
     });
   }

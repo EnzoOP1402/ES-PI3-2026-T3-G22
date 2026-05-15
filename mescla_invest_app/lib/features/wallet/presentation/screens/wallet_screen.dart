@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
+import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
 
 class WalletScreen  extends StatelessWidget {
 
@@ -7,10 +8,8 @@ class WalletScreen  extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Carteira',
-        ),
+      appBar: CustomAppBar(
+        title: 'Carteira',
       ),
       body: const Center(
         child: Text(
@@ -19,7 +18,7 @@ class WalletScreen  extends StatelessWidget {
       ),
       bottomNavigationBar:
         const AppBottomNavigation(
-        selectedIndex: 3,
+        selectedIndex: 4,
       ),
     );
   }

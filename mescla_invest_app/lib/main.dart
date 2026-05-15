@@ -9,6 +9,7 @@ import 'package:mescla_invest_app/features/auth/presentation/screens/login_scree
 import 'package:mescla_invest_app/features/auth/presentation/screens/password_recovery_screen.dart';
 import 'package:mescla_invest_app/features/auth/presentation/screens/register_screen.dart';
 import 'package:mescla_invest_app/features/dashboard/presentation/screens/dashboard.dart';
+import 'package:mescla_invest_app/features/exchange/presentation/screens/exchange.dart';
 import 'package:mescla_invest_app/features/profile/presentation/screens/profile_screen.dart';
 import 'package:mescla_invest_app/features/home/presentation/screens/home_screen.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
@@ -73,7 +74,8 @@ class MesclaInvest extends StatelessWidget {
         AppRoutes.home: (_) => const HomeScreen(),
         AppRoutes.profile: (_) => const ProfileScreen(),
         AppRoutes.dashboard:(_) => const DashboardScreen(),
-        AppRoutes.wallet:(_) => const WalletScreen()
+        AppRoutes.wallet:(_) => const WalletScreen(),
+        AppRoutes.exchange:(_) => const ExchangeScreen()
         } ,
     );
   }

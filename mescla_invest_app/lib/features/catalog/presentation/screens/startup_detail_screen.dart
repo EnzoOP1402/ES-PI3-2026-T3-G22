@@ -237,18 +237,16 @@ Widget build(BuildContext context) {
 
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(
-            20,
+            24,
             12,
-            20,
+            24,
             110,
           ),
 
           child: Column(
             crossAxisAlignment:
                 CrossAxisAlignment.start,
-
             children: [
-
               Center(
                 child: CircleAvatar(
                   radius: 55,
@@ -308,9 +306,7 @@ Widget build(BuildContext context) {
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
-
                   children: [
-
                     Container(
                       padding:
                           const EdgeInsets.symmetric(
@@ -381,7 +377,6 @@ Widget build(BuildContext context) {
                   );
                 },
               ),
-
               FoundersCard(
                 socios: socios,
               ),
@@ -390,7 +385,6 @@ Widget build(BuildContext context) {
                 membrosExternos:
                     membrosExternos,
               ),
-
               MoreAboutCard(
                 startupData: startupData,
               ),

@@ -1,7 +1,6 @@
 /* Autor: Gabriela Sichiroli Ferrari */
 
 class AppRoutes {
-
   static const String login = '/login';
   static const String register = '/register';
   static const String recover = '/recover';
@@ -12,4 +11,5 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String dashboard = '/dashboard';
   static const String wallet = '/wallet';
+  static const String exchange = '/exchange';
 }
