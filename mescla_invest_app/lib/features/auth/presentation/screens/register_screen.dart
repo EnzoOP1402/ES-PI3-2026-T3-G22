@@ -96,6 +96,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           cpf: _cpfController.text.trim(),
           phone: _phoneController.text.trim(),
           createdAt: Timestamp.now(),
+          balance: 0.0,
         );
 
         // Executando o cadastro do usuário
