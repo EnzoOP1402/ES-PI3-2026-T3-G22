@@ -135,7 +135,7 @@ class _CatalogoState extends State<Catalogo> {
     );
   }
 
-  void _onBottomMenuTap(int index) {
+  Future<void> _onBottomMenuTap(int index) async {
     setState(() {
       _selectedBottomIndex = index;
     });
@@ -147,8 +147,9 @@ class _CatalogoState extends State<Catalogo> {
     if (index == 3) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const WalletUser()),
+        MaterialPageRoute(builder: (_) => const WalletUser(valor: '')),
       );
+
       return;
     }
 

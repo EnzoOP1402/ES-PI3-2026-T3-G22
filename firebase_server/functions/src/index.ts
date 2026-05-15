@@ -1,76 +1,139 @@
 import * as admin from "firebase-admin";
-import {setGlobalOptions} from "firebase-functions";
+import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { setGlobalOptions } from "firebase-functions/v2";
 
 admin.initializeApp();
+const db = admin.firestore();
 
-setGlobalOptions({maxInstances: 10});
+setGlobalOptions({ maxInstances: 10 });
 
 export * from "./startups";
 
-export const criarDepositoTED = functions.https.onCall(
-  async (data, context) => {
-    // Usuário precisa estar autenticado
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
-        "unauthenticated",
-        "Usuário não autenticado."
-      );
-    }
-
-    const uid = context.auth.uid;
-
-    const valor = Number(data.valor);
-    const comprovanteUrl = data.comprovanteUrl || null;
-    const metodo = "TED";
-
-    // Validação
-    if (!valor || valor <= 0) {
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        "Valor inválido para depósito."
-      );
-    }
-
-    try {
-      // Cria documento do depósito
-      const depositoRef = db.collection("depositos_ted").doc();
-
-      await depositoRef.set({
-        depositoId: depositoRef.id,
-        userId: uid,
-        valor,
-        comprovanteUrl,
-        metodo,
-        status: "pendente", // pendente | aprovado | rejeitado
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-
-      // Histórico opcional por usuário
-      await db
-        .collection("users")
-        .doc(uid)
-        .collection("historico_depositos")
-        .doc(depositoRef.id)
-        .set({
-          depositoId: depositoRef.id,
-          valor,
-          metodo,
-          status: "pendente",
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-
-      return {
-        success: true,
-        depositoId: depositoRef.id,
-        message: "Depósito TED registrado com sucesso.",
-      };
-    } catch (error) {
-      console.error("Erro ao criar depósito TED:", error);
-
-      throw new functions.https.HttpsError(
-        "internal",
-        "Erro interno ao processar depósito."
-      );
-    }
+// ==========================
+// CRIAR DEPÓSITO TED
+// ==========================
+export const criarDepositoTED = onCall(async (request) => {
+  // Usuário autenticado
+  if (!request.auth) {
+    throw new HttpsError(
+      "unauthenticated",
+      "Usuário não autenticado."
+    );
   }
-);
+
+  const uid = request.auth.uid;
+
+  const valor = Number(request.data.valor);
+
+  const comprovanteUrl =
+    typeof request.data.comprovanteUrl === "string"
+      ? request.data.comprovanteUrl
+      : null;
+
+  if (isNaN(valor) || valor <= 0) {
+    throw new HttpsError(
+      "invalid-argument",
+      "Valor inválido para depósito."
+    );
+  }
+
+  const depositoRef = db.collection("depositos_ted").doc();
+
+  await depositoRef.set({
+    depositoId: depositoRef.id,
+    userId: uid,
+    valor,
+    comprovanteUrl,
+    metodo: "TED",
+    status: "pendente",
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  await db
+    .collection("users")
+    .doc(uid)
+    .collection("historico_depositos")
+    .doc(depositoRef.id)
+    .set({
+      depositoId: depositoRef.id,
+      valor,
+      metodo: "TED",
+      status: "pendente",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+  return {
+    success: true,
+    depositoId: depositoRef.id,
+    message: "Depósito TED registrado com sucesso.",
+  };
+});
+
+// ==========================
+// APROVAR DEPÓSITO TED
+// ==========================
+export const aprovarDepositoTED = onCall(async (request) => {
+  const depositoId = request.data.depositoId;
+
+  if (!depositoId) {
+    throw new HttpsError(
+      "invalid-argument",
+      "ID do depósito é obrigatório."
+    );
+  }
+
+  const depositoRef = db.collection("depositos_ted").doc(depositoId);
+  const depositoSnap = await depositoRef.get();
+
+  if (!depositoSnap.exists) {
+    throw new HttpsError(
+      "not-found",
+      "Depósito não encontrado."
+    );
+  }
+
+  const deposito = depositoSnap.data();
+
+  if (deposito?.status !== "pendente") {
+    throw new HttpsError(
+      "failed-precondition",
+      "Depósito já processado."
+    );
+  }
+
+  const userRef = db.collection("users").doc(deposito.userId);
+
+  await db.runTransaction(async (transaction) => {
+    const userSnap = await transaction.get(userRef);
+
+    if (!userSnap.exists) {
+      throw new HttpsError(
+        "not-found",
+        "Usuário não encontrado."
+      );
+    }
+
+    const saldoAtual = Number(userSnap.data()?.balance || 0);
+
+    transaction.update(userRef, {
+      balance: saldoAtual + deposito.valor,
+    });
+
+    transaction.update(depositoRef, {
+      status: "aprovado",
+      approvedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    transaction.update(
+      userRef.collection("historico_depositos").doc(depositoId),
+      {
+        status: "aprovado",
+      }
+    );
+  });
+
+  return {
+    success: true,
+    message: "Depósito aprovado e saldo atualizado.",
+  };
+});

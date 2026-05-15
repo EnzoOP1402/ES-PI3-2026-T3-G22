@@ -62,78 +62,95 @@ class _QrcodeState extends State<Qrcode> {
         return Dialog(
           backgroundColor: Colors.transparent,
           child: Container(
-            width: 260,
-            height: 240,
+            width: 320,
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: const Color(0xFFDEDEDE),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(28),
             ),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Deseja cancelar seu\ndepósito?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 18, color: Colors.black87),
+                  'Cancelar investimento',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.black,
+                  ),
                 ),
-
-                const SizedBox(height: 40),
-
+                const SizedBox(height: 12),
+                const Text(
+                  'Se você sair, todos os dados preenchidos serão perdidos.',
+                  style: TextStyle(fontSize: 14, color: Colors.black87),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Tem certeza que deseja sair?',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 24),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment:
+                      MainAxisAlignment.end, // Alinha os botões à direita
                   children: [
+                    // Botão "Sim"
                     GestureDetector(
                       onTap: () {
-                        timer.cancel();
-
                         Navigator.pop(context);
-
-                        Navigator.pushAndRemoveUntil(
+                        Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => const Catalogo(),
-                          ),
-                          (route) => false,
+                          MaterialPageRoute(builder: (_) => const Catalogo()),
                         );
                       },
                       child: Container(
-                        width: 100,
-                        height: 50,
+                        width: 90,
+                        height: 44,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFDEDEDE),
-                          borderRadius: BorderRadius.circular(14),
+                          color: Colors.transparent,
+                          border: Border.all(
+                            color: const Color(0xFF353988),
+                            width: 3,
+                          ),
+                          borderRadius: BorderRadius.circular(22),
                         ),
                         child: const Center(
                           child: Text(
                             'Sim',
                             style: TextStyle(
-                              color: Color(0xFFDB0065),
-                              fontSize: 22,
-                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF353988),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
                       ),
                     ),
-
+                    const SizedBox(
+                      width: 12,
+                    ), // Espaço cirúrgico entre os dois botões
+                    // Botão "Não"
                     GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
+                      onTap: () => Navigator.pop(context),
                       child: Container(
-                        width: 100,
-                        height: 50,
+                        width: 90,
+                        height: 44,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF353988),
-                          borderRadius: BorderRadius.circular(14),
+                          color: const Color(0xFFDB0065),
+                          borderRadius: BorderRadius.circular(22),
                         ),
                         child: const Center(
                           child: Text(
                             'Não',
                             style: TextStyle(
-                              color: Color(0xFFDEDEDE),
-                              fontSize: 22,
-                              fontWeight: FontWeight.w400,
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
