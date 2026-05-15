@@ -10,6 +10,7 @@ import 'package:mescla_invest_app/features/auth/presentation/screens/password_re
 import 'package:mescla_invest_app/features/auth/presentation/screens/register_screen.dart';
 import 'package:mescla_invest_app/routes/app_routes.dart';
 import 'firebase_options.dart';
+import 'package:mescla_invest_app/features/catalog/presentation/screens/balcao/balcao_screen.dart';
 
 // Função principal: ponto de entrada da aplicação
 Future<void> main() async {
