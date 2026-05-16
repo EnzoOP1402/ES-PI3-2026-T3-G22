@@ -18,7 +18,6 @@ class _TelaBrancaState extends State<TelaBranca> {
   void initState() {
     super.initState();
 
-    // Espera 3 segundos e vai direto para confirmação
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
         Navigator.pushReplacement(

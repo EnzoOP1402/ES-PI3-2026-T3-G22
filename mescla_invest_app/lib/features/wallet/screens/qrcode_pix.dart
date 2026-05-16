@@ -15,7 +15,7 @@ class Qrcode extends StatefulWidget {
 }
 
 class _QrcodeState extends State<Qrcode> {
-  int tempoRestante = 600; // 10 minutos
+  int tempoRestante = 600; 
   late Timer timer;
   int qrVersion = 1;
 
@@ -97,7 +97,7 @@ class _QrcodeState extends State<Qrcode> {
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment:
-                      MainAxisAlignment.end, // Alinha os botões à direita
+                      MainAxisAlignment.end, 
                   children: [
                     // Botão "Sim"
                     GestureDetector(
@@ -133,8 +133,8 @@ class _QrcodeState extends State<Qrcode> {
                     ),
                     const SizedBox(
                       width: 12,
-                    ), // Espaço cirúrgico entre os dois botões
-                    // Botão "Não"
+                    ), 
+                    
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Container(
@@ -202,16 +202,15 @@ class _QrcodeState extends State<Qrcode> {
 
                 const SizedBox(height: 25),
 
-                // QR CODE
                 Container(
                   color: Colors.white,
                   padding: const EdgeInsets.all(12),
                   child: GestureDetector(
                     onTap: () async {
-                      // Pausa timer
+                    
                       timer.cancel();
 
-                      // Tela branca
+                      
                       await Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -219,10 +218,10 @@ class _QrcodeState extends State<Qrcode> {
                         ),
                       );
 
-                      // Novo QR após pagamento
+                    
                       gerarNovoQrCode();
 
-                      // Reinicia timer
+                 
                       iniciarTimer();
                     },
                     child: QrImageView(data: qrData, size: 200),
@@ -248,7 +247,7 @@ class _QrcodeState extends State<Qrcode> {
 
                 const SizedBox(height: 20),
 
-                // TROQUE apenas isso no final do código:
+            
                 GestureDetector(
                   onTap: mostrarDialogCancelar,
                   child: const Text(

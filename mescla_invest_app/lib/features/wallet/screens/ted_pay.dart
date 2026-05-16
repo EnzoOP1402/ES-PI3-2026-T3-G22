@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mescla_invest_app/features/wallet/screens/confirm.dart';
 import 'package:mescla_invest_app/features/wallet/theme/background_wallet.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
+import 'package:flutter/services.dart';
 
 class Tedpay extends StatefulWidget {
   final String valor;
@@ -22,9 +23,6 @@ class _TedpayState extends State<Tedpay> {
   }
 
   void _confirmarTed() {
-    // Aqui depois você pode integrar com Firebase Function
-    // criarDepositoTED(valor, comprovante)
-
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -77,10 +75,8 @@ class _TedpayState extends State<Tedpay> {
                     ),
                     const SizedBox(height: 24),
                     Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.end, // Alinha os botões à direita
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        // Botão "Sim"
                         GestureDetector(
                           onTap: () {
                             Navigator.pop(context);
@@ -114,10 +110,8 @@ class _TedpayState extends State<Tedpay> {
                             ),
                           ),
                         ),
-                        const SizedBox(
-                          width: 12,
-                        ), // Espaço cirúrgico entre os dois botões
-                        // Botão "Não"
+                        const SizedBox(width: 12),
+
                         GestureDetector(
                           onTap: () => Navigator.pop(context),
                           child: Container(
@@ -154,15 +148,17 @@ class _TedpayState extends State<Tedpay> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Título
             const Text(
               'Transfira o valor para a conta abaixo:',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 35,
+                fontWeight: FontWeight.w900,
+                color: Color(0xFF353988),
+              ),
             ),
 
             const SizedBox(height: 28),
 
-            // Dados bancários
             _infoCard(titulo: 'Banco', valor: '237 - Bradesco'),
 
             _infoCard(titulo: 'Agência', valor: '1234'),
@@ -176,10 +172,16 @@ class _TedpayState extends State<Tedpay> {
             const SizedBox(height: 30),
 
             const Text(
-              'Após realizar a TED no seu banco, informe o comprovante para agilizar a validação.',
-              style: TextStyle(color: Colors.black87, fontSize: 13),
+              'Após realizar a TED no seu banco, informe o comprovante para agilizar a validação:',
+              style: TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.w900,
+                fontSize: 14,
+              ),
             ),
-            // Comprovante
+
+            const SizedBox(height: 20),
+
             TextField(
               controller: _comprovanteController,
               decoration: InputDecoration(
@@ -194,7 +196,6 @@ class _TedpayState extends State<Tedpay> {
 
             const SizedBox(height: 35),
 
-            // Botão confirmar
             SizedBox(
               width: double.infinity,
               height: 56,
@@ -222,22 +223,60 @@ class _TedpayState extends State<Tedpay> {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
       decoration: BoxDecoration(
-        color: const Color(0xFFEAEAEA),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            titulo,
-            style: const TextStyle(fontSize: 14, color: Colors.grey),
+        color: Color(0xFFEAEAEA),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
-          const SizedBox(height: 4),
-          Text(
-            valor,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  titulo,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF8E8E8E),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+
+                Text(
+                  valor,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          IconButton(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: valor));
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('$titulo copiado (a) com sucesso!'),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+            icon: const Icon(Icons.copy_rounded, color: Color(0xFF353988)),
+            tooltip: 'Copiar $titulo',
           ),
         ],
       ),

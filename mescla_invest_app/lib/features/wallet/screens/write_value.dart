@@ -23,7 +23,7 @@ class _WriteValueState extends State<WriteValue> {
     super.dispose();
   }
 
-  /// Ex: 1000 -> 10,00
+ 
   void _formatCurrency(String value) {
     final numbersOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
 
@@ -55,7 +55,7 @@ class _WriteValueState extends State<WriteValue> {
       return;
     }
 
-    /// PIX
+
     if (widget.selectedPayment == 1) {
       Navigator.push(
         context,
@@ -64,7 +64,7 @@ class _WriteValueState extends State<WriteValue> {
       return;
     }
 
-    /// TED
+
     if (widget.selectedPayment == 2) {
       Navigator.push(
         context,
@@ -121,7 +121,7 @@ class _WriteValueState extends State<WriteValue> {
                       mainAxisAlignment:
                           MainAxisAlignment.end, // Alinha os botões à direita
                       children: [
-                        // Botão "Sim"
+                      
                         GestureDetector(
                           onTap: () {
                             Navigator.pop(context);
@@ -157,8 +157,8 @@ class _WriteValueState extends State<WriteValue> {
                         ),
                         const SizedBox(
                           width: 12,
-                        ), // Espaço cirúrgico entre os dois botões
-                        // Botão "Não"
+                        ), 
+                   
                         GestureDetector(
                           onTap: () => Navigator.pop(context),
                           child: Container(
