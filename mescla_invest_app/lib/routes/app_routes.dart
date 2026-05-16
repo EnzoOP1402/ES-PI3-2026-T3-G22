@@ -12,4 +12,7 @@ class AppRoutes {
   static const String dashboard = '/dashboard';
   static const String wallet = '/wallet';
   static const String exchange = '/exchange';
+  static const String ordemForm = '/ordem-form';
+  static const String ordemResumo = '/ordem-resumo';
+  static const String ordemSucesso = '/ordem-sucesso';
 }
