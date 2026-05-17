@@ -15,6 +15,7 @@ class WalletScreen  extends StatelessWidget {
       body: const Center(
         child: Text(
           'Tela Carteira',
+          style: TextStyle(fontSize: 24),
         ),
       ),
       bottomNavigationBar:
