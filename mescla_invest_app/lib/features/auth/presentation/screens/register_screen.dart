@@ -21,7 +21,7 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   // Variável controladora do carregamento da página
   // Quando o login entra em operação, ela muda de valor e aciona a tela de carregamento,
   // fazendo com que o usuário não consiga apertar múltiplas vezes o mesmo botão e enviar
@@ -39,7 +39,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   // Declarando o controlador do campo de senha
   final TextEditingController _passwordController = TextEditingController();
   // Declarando o controlador do campo de confirmação senha
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   final cpfMask = MaskTextInputFormatter(
     mask: '###.###.###-##',
@@ -87,7 +88,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       try {
         // Muda o estado para mudar o valor do indicador de carregamento e acionar
         // a renderização da tela de carregamento no Scaffold
-        setState( () => _isLoading = true,);
+        setState(() => _isLoading = true);
 
         // Obtendo os dados do usuário a partir dos valores armazenados nos controladores do formulário
         final newUser = UserModel(
@@ -97,28 +98,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
           cpf: _cpfController.text.trim(),
           phone: _phoneController.text.trim(),
           createdAt: Timestamp.now(),
+          balanceCents: 0,
         );
 
         // Executando o cadastro do usuário
         // Invoca a instância do repositório de autenticação e aciona o método de cadastro,
         // passando como parâmetro o objeto de usuário criado e a senha contida no controlador do input
-        await AuthRepository.instance.register(newUser, _confirmPasswordController.text.trim());
-        
+        await AuthRepository.instance.register(
+          newUser,
+          _confirmPasswordController.text.trim(),
+        );
+
         // Se a operação foi bem sucedida e o widget não foi destruído, volta para a base da pilha de telas,
         // permitindo que o AuthWrapper perceba o login e mostre a tela inicial
         if (mounted) {
           Navigator.of(context).popUntil((route) => route.isFirst);
         }
-      }
-      catch (e) {
+      } catch (e) {
         // Se o Widget foi destruído, encerra a função
-        if(!mounted) return;
+        if (!mounted) return;
         // Cas contrário, chama a função responsável por exibir erros na snackbar
         showErrorSnackBar(context, e.toString());
-      }
-      finally {
+      } finally {
         // Se deu certo e o widget não foi destruído, atualiza o controlador de carregamento
-        if (mounted) setState(() => _isLoading = false,);
+        if (mounted) setState(() => _isLoading = false);
       }
     }
   }
@@ -128,8 +131,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     // Se estiver carregando, ainda precisamos do AuthLayout para manter o fundo/estilo
     if (_isLoading) {
       return const AuthLayout(
-      title: "Crie sua conta",
-      subtitle: "e faça parte da melhor plataforma de investimentos.",
+        title: "Crie sua conta",
+        subtitle: "e faça parte da melhor plataforma de investimentos.",
         child: Center(child: CircularProgressIndicator()),
       );
     }
@@ -221,9 +224,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     });
                   },
                   icon: Icon(
-                    obscureText
-                        ? Icons.visibility
-                        : Icons.visibility_off,
+                    obscureText ? Icons.visibility : Icons.visibility_off,
                   ),
                 ),
                 validator: (value) {
@@ -271,9 +272,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       });
                     },
                     icon: Icon(
-                      obscureConfirm
-                          ? Icons.visibility
-                          : Icons.visibility_off,
+                      obscureConfirm ? Icons.visibility : Icons.visibility_off,
                     ),
                   ),
                   validator: (value) {
@@ -289,14 +288,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               const SizedBox(height: 20),
 
-              AuthButton(
-                text: "Cadastrar",
-                onPressed: _handleRegister,
-              ),
+              AuthButton(text: "Cadastrar", onPressed: _handleRegister),
             ],
           ),
         ),
-      ) 
+      ),
     );
   }
 }

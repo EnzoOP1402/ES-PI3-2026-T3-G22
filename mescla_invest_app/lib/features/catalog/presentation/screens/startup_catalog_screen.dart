@@ -13,6 +13,7 @@ import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_catalog/card_startup.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_catalog/catalog_filters.dart';
 import 'package:mescla_invest_app/features/wallet/screens/wallet_user.dart';
+import 'package:mescla_invest_app/features/wallet/screens/wallet_main.dart';
 
 class Catalogo extends StatefulWidget {
   const Catalogo({super.key});
@@ -147,7 +148,7 @@ class _CatalogoState extends State<Catalogo> {
     if (index == 3) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const WalletUser()),
+        MaterialPageRoute(builder: (_) => const WalletMainScreen()),
       );
       return;
     }
