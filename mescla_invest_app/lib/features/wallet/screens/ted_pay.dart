@@ -189,27 +189,39 @@ class _TedpayState extends State<Tedpay> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
+                filled: true,
+                fillColor: Color(0xFFF4F4F4),
               ),
             ),
 
             const SizedBox(height: 14),
 
             const SizedBox(height: 35),
-
             SizedBox(
               width: double.infinity,
               height: 56,
-              child: ElevatedButton(
-                onPressed: _confirmarTed,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF353988),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF5B5FEF),Color(0xFF353988)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
                   ),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Text(
-                  'Confirmar TED',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
+                child: ElevatedButton(
+                  onPressed: _confirmarTed,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    'Confirmar TED',
+                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  ),
                 ),
               ),
             ),
@@ -225,7 +237,7 @@ class _TedpayState extends State<Tedpay> {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
       decoration: BoxDecoration(
-        color: Color(0xFFEAEAEA),
+        color: Color(0xFFF4F4F4),
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
