@@ -1,3 +1,5 @@
+/* Autor: Rafael Henrique dos Santos Inácio */
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserTokenModel {

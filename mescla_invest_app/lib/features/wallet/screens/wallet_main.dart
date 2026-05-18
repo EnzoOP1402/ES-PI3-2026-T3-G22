@@ -1,9 +1,13 @@
+/* Autor: Rafael Henrique dos Santos Inácio */
+
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Certifique-se de ter o intl no pubspec.yaml para formatar moedas
+import 'package:intl/intl.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 import '../data/repositories/wallet_repository.dart';
 import '../data/models/wallet_model.dart';
-import 'wallet_user.dart'; // Import da tela de depósito (Pix/Ted)
+import '../data/models/token_model.dart';
+import 'wallet_user.dart';
+import 'my_offers_screen.dart'; // Importação da ecrã de Minhas Ofertas
 
 class WalletMainScreen extends StatefulWidget {
   const WalletMainScreen({Key? key}) : super(key: key);
@@ -16,20 +20,55 @@ class _WalletMainScreenState extends State<WalletMainScreen> {
   bool _isObscured = false;
   Future<WalletDetails>? _walletFuture;
 
-  final Color _primaryBlue = const Color(0xFF3B428B);
-  final Color _backgroundColor = const Color(0xFFEAEAEA);
-  final Color _cardColor = const Color(0xFFDFDFDF);
-  final Color _activeNavColor = const Color(0xFFE5006D);
+  // Paleta de cores do projeto
+  final Color _primaryBlue = const Color(0xFF353988);
+  final Color _backgroundColor = const Color(0xFFE6E6E6);
+  final Color _cardColor = const Color(0xFFD4D4D4);
+  final Color _activeNavColor = const Color(0xFFDB0065);
   final Color _inactiveNavColor = const Color(0xFF6B7280);
+
+  // Lista fixa de tokens local inserida diretamente no código (Passo 2)
+  final List<TokenModel> _meusTokens = [
+    TokenModel(
+      startupId: '1',
+      startupName: 'PetMatch',
+      tokenName: 'PMTK',
+      quantity: 790,
+    ),
+    TokenModel(
+      startupId: '2',
+      startupName: 'NotaCerta',
+      tokenName: 'NCTK',
+      quantity: 790,
+    ),
+    TokenModel(
+      startupId: '3',
+      startupName: 'HealthVibe',
+      tokenName: 'HVTK',
+      quantity: 790,
+    ),
+    TokenModel(
+      startupId: '4',
+      startupName: 'MetaLive',
+      tokenName: 'MLTK',
+      quantity: 790,
+    ),
+    TokenModel(
+      startupId: '5',
+      startupName: 'CardVision',
+      tokenName: 'CVTK',
+      quantity: 790,
+    ),
+  ];
 
   @override
   void initState() {
     super.initState();
-    // Dispara a busca dos dados do Firebase assim que a tela inicia
+    // Dispara a busca do saldo do utilizador logado no Firebase
     _walletFuture = WalletRepository.instance.getWalletData();
   }
 
-  // Função auxiliar para formatar em formato de moeda Real (R$)
+  // Função auxiliar para formatar valores em formato de moeda Real (R$)
   String _formatCurrency(double value) {
     return NumberFormat.simpleCurrency(locale: 'pt_BR').format(value);
   }
@@ -57,7 +96,6 @@ class _WalletMainScreenState extends State<WalletMainScreen> {
 
             final wallet = snapshot.data;
             final double saldoReal = wallet?.balance ?? 0.0;
-            final List<UserTokenModel> tokensAdquiridos = wallet?.tokens ?? [];
 
             return Column(
               children: [
@@ -109,51 +147,58 @@ class _WalletMainScreenState extends State<WalletMainScreen> {
                       vertical: 20,
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // 2. Seção de Saldo (Dinâmico)
+                        // 2. Seção de Saldo (Alinhado à Esquerda)
                         const Text(
-                          'Saldo do Usuário:',
+                          'Meu saldo:',
                           style: TextStyle(fontSize: 14, color: Colors.black87),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _isObscured ? '-- --' : _formatCurrency(saldoReal),
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
                         const SizedBox(height: 4),
-                        GestureDetector(
-                          onTap: () =>
-                              setState(() => _isObscured = !_isObscured),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                _isObscured
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                                size: 18,
-                                color: Colors.black87,
+                        Row(
+                          children: [
+                            Text(
+                              _isObscured
+                                  ? 'R\$ _ _'
+                                  : _formatCurrency(saldoReal),
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.black,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                _isObscured ? 'Mostrar' : 'Ocultar',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black87,
-                                ),
+                            ),
+                            const SizedBox(width: 16),
+                            GestureDetector(
+                              onTap: () =>
+                                  setState(() => _isObscured = !_isObscured),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    _isObscured
+                                        ? Icons.visibility_outlined
+                                        : Icons.visibility_off_outlined,
+                                    size: 18,
+                                    color: Colors.black87,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    _isObscured ? 'Mostrar' : 'Ocultar',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
 
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 16),
+                        Divider(color: Colors.grey[400], thickness: 1),
+                        const SizedBox(height: 16),
 
-                        // 3. Seção de Depósito (Ação Real)
+                        // 3. Seção de Depósito
                         const Text(
                           'Clique abaixo para depositar um\nvalor para seu saldo:',
                           textAlign: TextAlign.center,
@@ -164,59 +209,142 @@ class _WalletMainScreenState extends State<WalletMainScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        SizedBox(
-                          width: 160,
-                          height: 45,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              // Redireciona para a tela de escolha Pix/Ted (WalletUser)
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const WalletUser(),
+                        Center(
+                          child: SizedBox(
+                            width: 160,
+                            height: 45,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const WalletUser(),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: _primaryBlue,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _primaryBlue,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                elevation: 0,
                               ),
-                              elevation: 0,
-                            ),
-                            child: const Text(
-                              'Depositar',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
+                              child: const Text(
+                                'Depositar',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                           ),
                         ),
 
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 16),
+                        Divider(color: Colors.grey[400], thickness: 1),
+                        const SizedBox(height: 16),
 
-                        // 4. Seção de Lista de Tokens (Dinâmica)
-                        const Text(
-                          'Lista de Tokens adquiridos',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                        // 4. Botões de Ação (Navegação para Minhas Ofertas)
+                        Center(
+                          child: SizedBox(
+                            width: 250,
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const MyOffersScreen(),
+                                  ),
+                                );
+                              },
+                              icon: Icon(
+                                Icons.currency_exchange,
+                                color: _primaryBlue,
+                              ),
+                              label: Text(
+                                'Minhas ofertas',
+                                style: TextStyle(
+                                  color: _primaryBlue,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                side: BorderSide(
+                                  color: _primaryBlue,
+                                  width: 1.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Center(
+                          child: SizedBox(
+                            width: 250,
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                showErrorSnackBar(
+                                  context,
+                                  "Histórico de transações será carregado aqui.",
+                                );
+                              },
+                              icon: Icon(Icons.history, color: _primaryBlue),
+                              label: Text(
+                                'Histórico de compras',
+                                style: TextStyle(
+                                  color: _primaryBlue,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                side: BorderSide(
+                                  color: _primaryBlue,
+                                  width: 1.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+                        Divider(color: Colors.grey[400], thickness: 1),
+                        const SizedBox(height: 16),
+
+                        // 5. Seção de Lista de Tokens Adquiridos
+                        const Center(
+                          child: Text(
+                            'Lista de Tokens adquiridos',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
-                        Container(
-                          width: double.infinity,
-                          constraints: const BoxConstraints(minHeight: 220),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: _cardColor,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: _isObscured
-                              ? Column(
+
+                        _isObscured
+                            ? Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: _cardColor,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Column(
                                   children: List.generate(
                                     4,
                                     (index) => Container(
@@ -231,9 +359,20 @@ class _WalletMainScreenState extends State<WalletMainScreen> {
                                       ),
                                     ),
                                   ),
-                                )
-                              : tokensAdquiridos.isEmpty
-                              ? const Center(
+                                ),
+                              )
+                            // Operador ternário para verificação de lista vazia conforme as instruções
+                            : _meusTokens.isEmpty
+                            ? Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 40,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _cardColor,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Center(
                                   child: Text(
                                     'Você ainda não possui tokens.',
                                     style: TextStyle(
@@ -241,61 +380,61 @@ class _WalletMainScreenState extends State<WalletMainScreen> {
                                       color: Colors.black87,
                                     ),
                                   ),
-                                )
-                              : ListView.builder(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: tokensAdquiridos.length,
-                                  itemBuilder: (context, index) {
-                                    final token = tokensAdquiridos[index];
-                                    return ListTile(
+                                ),
+                              )
+                            : ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: _meusTokens.length,
+                                itemBuilder: (context, index) {
+                                  final token = _meusTokens[index];
+                                  // Retorna estritamente um Card com um ListTile dentro
+                                  return Card(
+                                    margin: const EdgeInsets.symmetric(
+                                      vertical: 6,
+                                    ),
+                                    elevation: 0,
+                                    color: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    child: ListTile(
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 4,
+                                          ),
+                                      leading: const Icon(
+                                        Icons.attach_money,
+                                        color: Colors.black,
+                                        size: 28,
+                                      ),
                                       title: Text(
-                                        token.startupName,
+                                        token.tokenName,
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        token.startupName,
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontSize: 12,
                                         ),
                                       ),
                                       trailing: Text(
-                                        '${token.quantity} Tokens',
-                                        style: TextStyle(
-                                          color: _primaryBlue,
-                                          fontWeight: FontWeight.bold,
+                                        '${token.quantity} tokens',
+                                        style: const TextStyle(
+                                          color: Colors.black87,
+                                          fontSize: 14,
                                         ),
                                       ),
-                                    );
-                                  },
-                                ),
-                        ),
+                                    ),
+                                  );
+                                },
+                              ),
 
-                        const SizedBox(height: 30),
-
-                        // 5. Botão Histórico de Compras
-                        OutlinedButton.icon(
-                          onPressed: () {
-                            showErrorSnackBar(
-                              context,
-                              "Histórico de transações será carregado aqui.",
-                            );
-                          },
-                          icon: Icon(Icons.history, color: _primaryBlue),
-                          label: Text(
-                            'Histórico de compras',
-                            style: TextStyle(
-                              color: _primaryBlue,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            side: const BorderSide(color: Colors.black26),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                        ),
                         const SizedBox(height: 20),
                       ],
                     ),
