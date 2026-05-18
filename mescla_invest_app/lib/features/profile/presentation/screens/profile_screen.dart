@@ -4,6 +4,7 @@ import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
 import 'package:mescla_invest_app/features/auth/data/models/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mescla_invest_app/features/profile/presentation/screens/camera_screen.dart';
 
 Future<UserModel?> getCurrentUserData() async {
   final user = FirebaseAuth.instance.currentUser;
@@ -33,6 +34,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   UserModel? _userData;
   bool _isLoading = true;
+  bool _isUpdatingPhoto = false;
 
   @override
   void initState() {
@@ -51,6 +53,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  Future<void> _alterarFotoPerfil() async {
+    if (_isUpdatingPhoto) return;
+
+    setState(() {
+      _isUpdatingPhoto = true;
+    });
+
+    try {
+      final imageUrl = await Navigator.push<String>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const CameraScreen(),
+        ),
+      );
+
+      if (imageUrl == null || imageUrl.isEmpty) return;
+
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .set({
+            'photoUrl': imageUrl,
+          }, SetOptions(merge: true));
+
+      await _loadUserData();
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Foto de perfil atualizada com sucesso!'),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao atualizar foto: $e'),
+        ),
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isUpdatingPhoto = false;
+      });
+    }
+  }
+
   String get nome => _userData?.fullName ?? 'Usuário';
   String get email => _userData?.email ?? 'usuario@gmail.com';
   String get cpf => _userData?.cpf ?? '000.000.000-00';
@@ -65,6 +117,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final String photoUrl = _userData?.photoUrl ?? '';
+
     return Scaffold(
       backgroundColor: const Color(0xFFE9E9E9),
       appBar: AppBar(
@@ -93,42 +147,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 6),
-
                       Center(
                         child: CircleAvatar(
                           radius: 62,
                           backgroundColor: const Color(0xFF8A8A8A),
-                          child: Text(
-                            inicial,
-                            style: GoogleFonts.montserrat(
-                              color: Colors.white,
-                              fontSize: 56,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
+                          backgroundImage: photoUrl.isNotEmpty
+                              ? NetworkImage(photoUrl)
+                              : null,
+                          child: photoUrl.isNotEmpty
+                              ? null
+                              : Text(
+                                  inicial,
+                                  style: GoogleFonts.montserrat(
+                                    color: Colors.white,
+                                    fontSize: 56,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
                         ),
                       ),
-
                       const SizedBox(height: 18),
-
                       Center(
                         child: SizedBox(
                           width: 240,
                           height: 40,
                           child: OutlinedButton.icon(
-                            onPressed: () => _showMessage('Alterar foto de perfil'),
-                            icon: const Icon(
-                              Icons.camera_alt_outlined,
-                              size: 20,
-                              color: Color(0xFF3F3D99),
-                            ),
+                            onPressed: _isUpdatingPhoto
+                                ? null
+                                : _alterarFotoPerfil,
+                            icon: _isUpdatingPhoto
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Color(0xFF3F3D99),
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.camera_alt_outlined,
+                                    size: 20,
+                                    color: Color(0xFF3F3D99),
+                                  ),
                             label: Text(
-                              'Alterar foto de perfil',
+                              _isUpdatingPhoto
+                                  ? 'Atualizando...'
+                                  : 'Alterar foto de perfil',
                               style: GoogleFonts.montserrat(
                                 fontSize: 14,
                                 color: const Color(0xFF3F3D99),
@@ -137,19 +209,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             style: OutlinedButton.styleFrom(
                               backgroundColor: const Color(0xFFF4F4F4),
-                              side: const BorderSide(color: Color(0xFF3F3D99)),
+                              side: const BorderSide(
+                                color: Color(0xFF3F3D99),
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
-                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                              ),
                             ),
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 18),
-                      const Divider(color: Color(0xFFC9C9C9), thickness: 1),
-
+                      const Divider(
+                        color: Color(0xFFC9C9C9),
+                        thickness: 1,
+                      ),
                       const SizedBox(height: 10),
                       _InfoItem(label: 'Nome:', value: nome),
                       const SizedBox(height: 12),
@@ -158,12 +235,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _InfoItem(label: 'CPF:', value: cpf),
                       const SizedBox(height: 12),
                       _InfoItem(label: 'Telefone:', value: phone),
-
                       const SizedBox(height: 18),
-                      const Divider(color: Color(0xFFC9C9C9), thickness: 1),
-
+                      const Divider(
+                        color: Color(0xFFC9C9C9),
+                        thickness: 1,
+                      ),
                       const SizedBox(height: 30),
-
                       Center(
                         child: _ActionButton(
                           icon: Icons.history,
@@ -171,9 +248,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () => _showMessage('Histórico de compras'),
                         ),
                       ),
-
                       const SizedBox(height: 12),
-
                       Center(
                         child: _ActionButton(
                           icon: Icons.logout_outlined,
