@@ -207,11 +207,12 @@ class _QrcodeState extends State<Qrcode> {
                   padding: const EdgeInsets.all(12),
                   child: GestureDetector(
                     onTap: () async {
+                      
                     
                       timer.cancel();
-
                       
                       await Navigator.push(
+                        
                         context,
                         MaterialPageRoute(
                           builder: (context) => TelaBranca(valor: widget.valor),

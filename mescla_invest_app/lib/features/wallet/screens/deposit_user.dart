@@ -1,11 +1,11 @@
 // Importa o pacote principal do Flutter com widgets visuais(Text, Collumn, etc)
 import 'package:flutter/material.dart';
 
-// Importa formatadores de entrada de texto, usado para verificar se o 
+// Importa formatadores de entrada de texto, usado para verificar se o
 //usuario digitou números no campo de valor a ser deposistado.
 import 'package:flutter/services.dart';
 
-// Importa a tela de catálogo/startups 
+// Importa a tela de catálogo/startups
 import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
 
 // Importa o widget de background/layout base da carteira,
@@ -17,9 +17,10 @@ import 'package:mescla_invest_app/features/wallet/screens/ted_pay.dart';
 // Importa a tela de pagamento via QR Code PIX.
 import 'package:mescla_invest_app/features/wallet/screens/qrcode_pix.dart';
 
+import 'package:mescla_invest_app/features/wallet/data/repositories/wallet_repository.dart';
+
 // StatefulWidget porque a interface muda dinamicamente
 class WalletUser extends StatefulWidget {
-  
   // Valor recebido da tela anterior.
   final String valor;
 
@@ -33,7 +34,6 @@ class WalletUser extends StatefulWidget {
 
 // Classe de estado da tela WalletUser.
 class _WalletUserState extends State<WalletUser> {
-  
   // Armazena qual método de pagamento foi escolhido (Pix ou Ted)
   int? _selectedPayment;
 
@@ -41,16 +41,13 @@ class _WalletUserState extends State<WalletUser> {
   @override
   Widget build(BuildContext context) {
     return BackgroundWallet(
-      
       // Função executada ao clicar no botão de voltar.
       onBackPressed: () {
-        
         // Exibe diálogo de confirmação para evitar perda de dados.
         showDialog(
           context: context,
           builder: (context) {
             return Dialog(
-              
               // Remove fundo padrão branco.
               backgroundColor: Colors.transparent,
 
@@ -71,7 +68,6 @@ class _WalletUserState extends State<WalletUser> {
                   crossAxisAlignment: CrossAxisAlignment.start,
 
                   children: [
-                    
                     // Título do modal.
                     const Text(
                       'Cancelar investimento',
@@ -87,10 +83,7 @@ class _WalletUserState extends State<WalletUser> {
                     // Aviso de perda de dados.
                     const Text(
                       'Se você sair, todos os dados preenchidos serão perdidos.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.black87,
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.black87),
                     ),
 
                     const SizedBox(height: 4),
@@ -111,11 +104,9 @@ class _WalletUserState extends State<WalletUser> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        
                         // Botão Sim
                         GestureDetector(
                           onTap: () {
-                            
                             // Fecha o diálogo.
                             Navigator.pop(context);
 
@@ -203,7 +194,6 @@ class _WalletUserState extends State<WalletUser> {
           crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-            
             // Título principal
             const Text(
               'Escolha a forma de pagamento',
@@ -216,11 +206,9 @@ class _WalletUserState extends State<WalletUser> {
 
             const SizedBox(height: 45),
 
-
             // Opção PIX
             GestureDetector(
               onTap: () {
-                
                 // Atualiza visualmente a opção selecionada.
                 setState(() {
                   _selectedPayment = 1;
@@ -249,20 +237,14 @@ class _WalletUserState extends State<WalletUser> {
 
                   child: Row(
                     children: [
-                      
                       // Logo do PIX
-                      Image.asset(
-                        'images/pix_logo.png',
-                        width: 50,
-                      ),
+                      Image.asset('images/pix_logo.png', width: 50),
 
                       const SizedBox(width: 10),
 
                       // Texto expansível
                       const Expanded(
-                        child: Text(
-                          "Pix powered by Banco Central",
-                        ),
+                        child: Text("Pix powered by Banco Central"),
                       ),
                     ],
                   ),
@@ -272,9 +254,7 @@ class _WalletUserState extends State<WalletUser> {
 
             const SizedBox(height: 18),
 
-
             // Opção TED
-        
             GestureDetector(
               onTap: () {
                 setState(() {
@@ -303,19 +283,13 @@ class _WalletUserState extends State<WalletUser> {
 
                   child: const Row(
                     children: [
-                      
                       // Ícone de transferência
-                      Icon(
-                        Icons.compare_arrows_rounded,
-                        size: 34,
-                      ),
+                      Icon(Icons.compare_arrows_rounded, size: 34),
 
                       SizedBox(width: 14),
 
                       Expanded(
-                        child: Text(
-                          "Transferência Eletrônica Disponível",
-                        ),
+                        child: Text("Transferência Eletrônica Disponível"),
                       ),
                     ],
                   ),
@@ -331,23 +305,18 @@ class _WalletUserState extends State<WalletUser> {
               height: 58,
 
               child: Container(
-                
                 // Gradiente só aparece se houver seleção.
                 decoration: BoxDecoration(
                   gradient: _selectedPayment == null
                       ? null
                       : const LinearGradient(
-                          colors: [
-                            Color(0xFF5B5FEF),
-                            Color(0xFF353988),
-                          ],
+                          colors: [Color(0xFF5B5FEF), Color(0xFF353988)],
                         ),
 
                   borderRadius: BorderRadius.circular(16),
                 ),
 
                 child: ElevatedButton(
-                  
                   // Desabilita se nada foi escolhido.
                   onPressed: _selectedPayment == null
                       ? null
@@ -383,18 +352,14 @@ class _WalletUserState extends State<WalletUser> {
 
   // Modal para digitar o valor a ser depositado
   void _showValueModal() {
-    
     // Controla texto digitado.
-    final TextEditingController valueController =
-        TextEditingController();
+    final TextEditingController valueController = TextEditingController();
 
     // Função que verifica se é número.
 
     void formatCurrency(String value) {
-      
       // Remove tudo que não for número.
-      final numbersOnly =
-          value.replaceAll(RegExp(r'[^0-9]'), '');
+      final numbersOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
 
       // Se vazio, limpa.
       if (numbersOnly.isEmpty) {
@@ -406,21 +371,18 @@ class _WalletUserState extends State<WalletUser> {
       }
 
       // Divide por 100 para centavos.
-      final number =
-          double.parse(numbersOnly) / 100;
+      final number = double.parse(numbersOnly) / 100;
 
       // Formata decimal.
-      final formatted =
-          number.toStringAsFixed(2).replaceAll('.', ',');
+      final formatted = number.toStringAsFixed(2).replaceAll('.', ',');
 
       // Atualiza campo.
       valueController.value = TextEditingValue(
         text: formatted,
-        selection: TextSelection.collapsed(
-          offset: formatted.length
-        ),
+        selection: TextSelection.collapsed(offset: formatted.length),
       );
     }
+
     //Estilo do modal
     showModalBottomSheet(
       context: context,
@@ -449,12 +411,12 @@ class _WalletUserState extends State<WalletUser> {
 
                 const SizedBox(height: 22),
 
-              //Mecanismo que muda o texto do modal
+                //Mecanismo que muda o texto do modal
                 Text(
                   _selectedPayment == 1
-                  //Texto ser for PIX
+                      //Texto ser for PIX
                       ? 'Digite o valor do PIX'
-                  //Texto ser for TED
+                      //Texto ser for TED
                       : 'Digite o valor da TED',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
@@ -468,9 +430,9 @@ class _WalletUserState extends State<WalletUser> {
 
                 Text(
                   _selectedPayment == 1
-                  //Texto ser for PIX
+                      //Texto ser for PIX
                       ? 'Informe quanto deseja depositar via PIX'
-                  //Texto ser for TED
+                      //Texto ser for TED
                       : 'Informe quanto deseja depositar via TED',
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 15, color: Colors.black54),
@@ -547,7 +509,7 @@ class _WalletUserState extends State<WalletUser> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         final valor = valueController.text.trim();
 
                         //Verifica se o valor é válido
@@ -563,10 +525,20 @@ class _WalletUserState extends State<WalletUser> {
                           );
                           return;
                         }
+                        final double valorDigitado =
+                            double.tryParse(
+                              valor.replaceAll('.', '').replaceAll(',', '.'),
+                            ) ??
+                            0.0;
+
+                        // Aqui você usa:
+                        await WalletRepository.instance.adicionarSaldo(
+                          valorDigitado,
+                        );
 
                         Navigator.pop(modalContext);
 
-                        //Verifica o tippo de pagamento escolhido para ir ao 
+                        //Verifica o tippo de pagamento escolhido para ir ao
                         //proceso específico de pagamento para cada tipo.
                         if (_selectedPayment == 1) {
                           //Se escolheu PIX
