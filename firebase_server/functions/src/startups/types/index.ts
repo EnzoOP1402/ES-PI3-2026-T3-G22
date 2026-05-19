@@ -93,6 +93,7 @@ export type StartupDocument = {
  pitchDeckUrl?: string;
  coverImageUrl?: string;
  tags: string[];
+ tokenName: string;
  createdAt?: Timestamp;
  updatedAt?: Timestamp;
 };

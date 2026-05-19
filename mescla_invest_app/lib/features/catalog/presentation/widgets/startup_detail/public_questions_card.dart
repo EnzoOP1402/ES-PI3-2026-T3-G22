@@ -85,7 +85,7 @@ class _PublicQuestionsCardState extends State<PublicQuestionsCard> {
         createdAt: Timestamp.now(), // Timestamp local apenas para o objeto
       );
 
-      final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('createStartupQuestion');
+      final HttpsCallable callable = FirebaseFunctions.instanceFor(region: 'southamerica-east1').httpsCallable('createStartupQuestion');
 
       // 2. Usamos o toMap() para garantir a estrutura correta!
       // Adicionamos o startupId manualmente pois ele não faz parte do documento da pergunta,

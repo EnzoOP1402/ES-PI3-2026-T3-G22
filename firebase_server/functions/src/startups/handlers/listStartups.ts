@@ -1,9 +1,9 @@
 import {HttpsError, onCall} from "firebase-functions/https";
 import {allowedStages} from "../shared/constants";
-import {requireAuthenticatedUser} from "../shared/auth";
-import {normalizeString} from "../shared/validation";
 import {listStartupItems} from "../repositories/startupRepository";
 import {StartupStage} from "../types";
+import {normalizeString} from "../../shared/validation";
+import {requireAuthenticatedUser} from "../../shared/auth";
 
 export const listStartups = onCall(async (request) => {
   requireAuthenticatedUser(request);

@@ -1,6 +1,6 @@
 /* eslint-disable require-jsdoc */
 import {CallableRequest, HttpsError} from "firebase-functions/https";
-import {AuthenticatedUser} from "../types";
+import {AuthenticatedUser} from "../exchange/types";
 
 export function requireAuthenticatedUser(
   request: CallableRequest

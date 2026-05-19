@@ -6,7 +6,7 @@ import {
   StartupListItem,
   StartupQuestionDocument,
 } from "../types";
-import {db} from "../shared/firebase";
+import {db} from "../../shared/firebase";
 
 const startupsCollection = db.collection("Startups");
 
@@ -52,6 +52,7 @@ const demoStartups: Array<StartupDocument & {id: string}> = [
     coverImageUrl: "https://images.unsplash.com/photo-" +
  "1581093458791-9d15482442f6",
     tags: ["healthtech", "iot", "educacao"],
+    tokenName: "BCTK",
   },
   {
     id: "rota-verde",
@@ -85,6 +86,7 @@ const demoStartups: Array<StartupDocument & {id: string}> = [
     coverImageUrl: "https://images.unsplash.com/photo-" +
  "1500530855697-b586d89ba3ee",
     tags: ["logtech", "sustentabilidade", "mobilidade"],
+    tokenName: "RVTK",
   },
   {
     id: "mentorai",
@@ -121,6 +123,7 @@ const demoStartups: Array<StartupDocument & {id: string}> = [
     pitchDeckUrl: "https://example.com/decks/mentorai.pdf",
     coverImageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978",
     tags: ["edtech", "ia", "mentoria"],
+    tokenName: "MAITK",
   },
 ];
 
