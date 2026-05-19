@@ -27,6 +27,7 @@ class StartupDetailScreen extends StatefulWidget {
 }
 
 class _StartupDetailScreenState extends State<StartupDetailScreen> {
+
   late final Future<Map<String, dynamic>> _startupDetailsFuture;
 
 
@@ -39,15 +40,12 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
   Future<Map<String, dynamic>> getStartupDetails() async {
     try {
       final functions = FirebaseFunctions.instance;
-
       final HttpsCallable callable = functions.httpsCallable(
         'getStartupDetails',
       );
-
       final result = await callable.call(<String, dynamic>{
         'id': widget.startupId,
       });
-
       return Map<String, dynamic>.from(result.data);
     } on FirebaseFunctionsException catch (e) {
       // O backend lança HttpsError específicos (ex: 'invalid-argument', 'not-found')
@@ -66,12 +64,10 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
   ) {
     for (final key in possibleKeys) {
       final value = data[key];
-
       if (value is List) {
         return value;
       }
     }
-
     return <dynamic>[];
   }
   String _getStringField(
@@ -167,11 +163,9 @@ Widget build(BuildContext context) {
 
         if (!snapshot.hasData ||
             snapshot.data!.isEmpty) {
-
           return Center(
             child: Text(
               'Startup não encontrada.',
-
               style: GoogleFonts.montserrat(
                 fontSize: 14,
                 color: Colors.black,
@@ -214,7 +208,6 @@ Widget build(BuildContext context) {
           ['profilePicture'],
           '',
         );
-
         final socios = _getListField(
           startupData,
           ['founders'],

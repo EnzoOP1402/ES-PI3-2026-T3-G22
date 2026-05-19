@@ -25,7 +25,6 @@ class ExternalMembersCard extends StatelessWidget {
         return value.toString();
       }
     }
-
     return fallback;
   }
 

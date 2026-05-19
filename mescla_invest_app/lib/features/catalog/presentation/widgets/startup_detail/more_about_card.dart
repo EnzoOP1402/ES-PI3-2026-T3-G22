@@ -2,9 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
-
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/detailed_catalog_card_section.dart';
+import 'startup_video_player.dart';
 
 class MoreAboutCard extends StatelessWidget {
   final Map<String, dynamic> startupData;
@@ -22,7 +21,6 @@ class MoreAboutCard extends StatelessWidget {
         return value.toString();
       }
     }
-
     return fallback;
   }
 
@@ -79,7 +77,7 @@ class MoreAboutCard extends StatelessWidget {
       builder: (_) {
         return _MoreAboutBottomSheet(
           title: 'Vídeo demo',
-          child: _VideoDemoPlayer(videoUrl: videoUrl),
+          child: VideoDemoPlayer(videoUrl: videoUrl),
         );
       },
     );
@@ -306,90 +304,6 @@ class _MoreAboutBottomSheet extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _VideoDemoPlayer extends StatefulWidget {
-  final String videoUrl;
-
-  const _VideoDemoPlayer({
-    required this.videoUrl,
-  });
-
-  @override
-  State<_VideoDemoPlayer> createState() => _VideoDemoPlayerState();
-}
-
-class _VideoDemoPlayerState extends State<_VideoDemoPlayer> {
-  YoutubePlayerController? _controller;
-
-  @override
-  void initState() {
-    super.initState();
-
-    final videoId = YoutubePlayerController.convertUrlToId(widget.videoUrl);
-
-    if (videoId != null && videoId.isNotEmpty) {
-      _controller = YoutubePlayerController.fromVideoId(
-        videoId: videoId,
-        autoPlay: false,
-        params: const YoutubePlayerParams(
-          showControls: true,
-          showFullscreenButton: true,
-          enableCaption: false,
-          strictRelatedVideos: true,
-        ),
-      );
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller?.close();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_controller == null) {
-      return Column(
-        children: [
-          Container(
-            height: 190,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: const Center(
-              child: Icon(
-                Icons.play_circle_fill_rounded,
-                color: Colors.white,
-                size: 58,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Não foi possível carregar o vídeo nesta tela.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.montserrat(
-              fontSize: 12,
-              color: Colors.black54,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      );
-    }
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: YoutubePlayer(
-        controller: _controller!,
-        aspectRatio: 16 / 9,
-      ),
     );
   }
 }
