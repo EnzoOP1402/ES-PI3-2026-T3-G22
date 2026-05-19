@@ -18,10 +18,7 @@ Future<UserModel?> getCurrentUserData() async {
 
   if (!doc.exists || doc.data() == null) return null;
 
-  return UserModel.fromMap({
-    ...doc.data()!,
-    'uid': doc.id,
-  });
+  return UserModel.fromMap({...doc.data()!, 'uid': doc.id});
 }
 
 class ProfileScreen extends StatefulWidget {
@@ -63,9 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final imageUrl = await Navigator.push<String>(
         context,
-        MaterialPageRoute(
-          builder: (_) => const CameraScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const CameraScreen()),
       );
 
       if (imageUrl == null || imageUrl.isEmpty) return;
@@ -73,28 +68,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .set({
-            'photoUrl': imageUrl,
-          }, SetOptions(merge: true));
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'photoUrl': imageUrl,
+      }, SetOptions(merge: true));
 
       await _loadUserData();
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Foto de perfil atualizada com sucesso!'),
-        ),
+        const SnackBar(content: Text('Foto de perfil atualizada com sucesso!')),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao atualizar foto: $e'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro ao atualizar foto: $e')));
     } finally {
       if (!mounted) return;
       setState(() {
@@ -110,9 +98,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String get inicial => nome.isNotEmpty ? nome[0].toUpperCase() : '?';
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -157,21 +145,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 6),
                       Center(
                         child: CircleAvatar(
-                          radius: 62,
-                          backgroundColor: const Color(0xFF8A8A8A),
+                          radius: 60,
                           backgroundImage: photoUrl.isNotEmpty
                               ? NetworkImage(photoUrl)
                               : null,
-                          child: photoUrl.isNotEmpty
-                              ? null
-                              : Text(
-                                  inicial,
-                                  style: GoogleFonts.montserrat(
-                                    color: Colors.white,
-                                    fontSize: 56,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
+                          child: photoUrl.isEmpty
+                              ? const Icon(Icons.person, size: 60)
+                              : null,
                         ),
                       ),
                       const SizedBox(height: 18),
@@ -209,9 +189,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             style: OutlinedButton.styleFrom(
                               backgroundColor: const Color(0xFFF4F4F4),
-                              side: const BorderSide(
-                                color: Color(0xFF3F3D99),
-                              ),
+                              side: const BorderSide(color: Color(0xFF3F3D99)),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
@@ -223,10 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       const SizedBox(height: 18),
-                      const Divider(
-                        color: Color(0xFFC9C9C9),
-                        thickness: 1,
-                      ),
+                      const Divider(color: Color(0xFFC9C9C9), thickness: 1),
                       const SizedBox(height: 10),
                       _InfoItem(label: 'Nome:', value: nome),
                       const SizedBox(height: 12),
@@ -236,10 +211,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 12),
                       _InfoItem(label: 'Telefone:', value: phone),
                       const SizedBox(height: 18),
-                      const Divider(
-                        color: Color(0xFFC9C9C9),
-                        thickness: 1,
-                      ),
+                      const Divider(color: Color(0xFFC9C9C9), thickness: 1),
                       const SizedBox(height: 30),
                       Center(
                         child: _ActionButton(
@@ -261,9 +233,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
       ),
-      bottomNavigationBar: const AppBottomNavigation(
-        selectedIndex: 4,
-      ),
+      bottomNavigationBar: const AppBottomNavigation(selectedIndex: 4),
     );
   }
 }
@@ -272,10 +242,7 @@ class _InfoItem extends StatelessWidget {
   final String label;
   final String value;
 
-  const _InfoItem({
-    required this.label,
-    required this.value,
-  });
+  const _InfoItem({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -322,11 +289,7 @@ class _ActionButton extends StatelessWidget {
       height: 40,
       child: OutlinedButton.icon(
         onPressed: onTap,
-        icon: Icon(
-          icon,
-          size: 24,
-          color: const Color(0xFF3F3D99),
-        ),
+        icon: Icon(icon, size: 24, color: const Color(0xFF3F3D99)),
         label: Text(
           label,
           style: GoogleFonts.montserrat(
@@ -337,9 +300,7 @@ class _ActionButton extends StatelessWidget {
         ),
         style: OutlinedButton.styleFrom(
           backgroundColor: const Color(0xFFF4F4F4),
-          side: const BorderSide(
-            color: Color(0xFF3F3D99),
-          ),
+          side: const BorderSide(color: Color(0xFF3F3D99)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
