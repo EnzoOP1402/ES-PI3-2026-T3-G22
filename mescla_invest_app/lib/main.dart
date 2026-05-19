@@ -16,7 +16,7 @@ import 'package:mescla_invest_app/features/wallet/presentation/screens/wallet_sc
 import 'package:mescla_invest_app/routes/app_routes.dart';
 import 'firebase_options.dart';
 
-// Função principal: ponto de entrada da aplicação
+// Função principal:++ ponto de entrada da aplicação
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(

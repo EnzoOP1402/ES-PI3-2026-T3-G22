@@ -14,6 +14,8 @@ class CameraScreen extends StatefulWidget {
 }
 
 class _CameraScreenState extends State<CameraScreen> {
+  CameraLensDirection _currentDirection = CameraLensDirection.back;
+  List<CameraDescription>? _cameras;
   CameraController? _controller;
   XFile? _imageFile;
   bool _isLoadingCamera = true;
@@ -31,11 +33,8 @@ class _CameraScreenState extends State<CameraScreen> {
 
   Future<void> _initializeCamera() async {
     try {
-      debugPrint('Buscando câmeras...');
-
       final cameras = await availableCameras();
-
-      debugPrint('Câmeras encontradas: ${cameras.length}');
+      _cameras = cameras;
 
       if (cameras.isEmpty) {
         setState(() {
@@ -45,9 +44,10 @@ class _CameraScreenState extends State<CameraScreen> {
         return;
       }
 
-      final camera = cameras.first;
-
-      debugPrint('Inicializando controller...');
+      final camera = cameras.firstWhere(
+        (cam) => cam.lensDirection == _currentDirection,
+        orElse: () => cameras.first,
+      );
 
       _controller = CameraController(
         camera,
@@ -57,16 +57,12 @@ class _CameraScreenState extends State<CameraScreen> {
 
       await _controller!.initialize();
 
-      debugPrint('Câmera inicializada!');
-
       if (!mounted) return;
 
       setState(() {
         _isLoadingCamera = false;
       });
     } catch (e) {
-      debugPrint('ERRO CAMERA: $e');
-
       if (!mounted) return;
 
       setState(() {
@@ -74,6 +70,33 @@ class _CameraScreenState extends State<CameraScreen> {
         _isLoadingCamera = false;
       });
     }
+  }
+
+  Future<void> _switchCamera() async {
+    if (_cameras == null || _cameras!.isEmpty) return;
+
+    final newDirection = _currentDirection == CameraLensDirection.back
+        ? CameraLensDirection.front
+        : CameraLensDirection.back;
+
+    final newCamera = _cameras!.firstWhere(
+      (cam) => cam.lensDirection == newDirection,
+      orElse: () => _cameras!.first,
+    );
+
+    await _controller?.dispose();
+
+    _controller = CameraController(
+      newCamera,
+      ResolutionPreset.high,
+      enableAudio: false,
+    );
+
+    await _controller!.initialize();
+
+    setState(() {
+      _currentDirection = newDirection;
+    });
   }
 
   Future<void> _takePicture() async {
@@ -198,7 +221,18 @@ class _CameraScreenState extends State<CameraScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Tirar foto')),
+      backgroundColor: Color(0xFF363636),
+      appBar: AppBar(
+        title: const Text(
+          'Tirar foto',
+          style: TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+        ),),
+        backgroundColor: Color(0xFF363636),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: Column(
         children: [
           Expanded(
@@ -216,57 +250,113 @@ class _CameraScreenState extends State<CameraScreen> {
                     width: double.infinity,
                   ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                if (_imageFile == null) ...[
-                  ElevatedButton(
-                    onPressed: _isTakingPicture ? null : _takePicture,
-                    child: _isTakingPicture
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Tirar foto'),
-                  ),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (_imageFile == null) ...[
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 15,
+                          vertical: 16,
+                        ),
+                        textStyle: const TextStyle(fontSize: 12),
+                        minimumSize: const Size(0, 32),
+                      ),
+                      onPressed: _pickImageFromGallery,
+                      child: const Text('Galeria'),
+                    ),
 
-                  ElevatedButton(
-                    onPressed: _pickImageFromGallery,
-                    child: const Text('Escolher da galeria'),
-                  ),
-                ] else ...[
-                  ElevatedButton(
-                    onPressed: _isUploading
-                        ? null
-                        : () async {
-                            setState(() {
-                              _imageFile = null;
-                              _isLoadingCamera = true;
-                            });
+                    SizedBox(width: 20),
 
-                            await _controller?.dispose();
+                    GestureDetector(
+                      onTap: _isTakingPicture ? null : _takePicture,
+                      child: Container(
+                        width: 78,
+                        height: 78,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: _isTakingPicture
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.black,
+                                  ),
+                                )
+                              : Container(
+                                  width: 60,
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.black,
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
 
-                            _controller = null;
+                    SizedBox(width: 20),
 
-                            await _initializeCamera();
-                          },
-                    child: const Text('Tirar outra'),
-                  ),
-                  ElevatedButton(
-                    onPressed: _isUploading ? null : _uploadImage,
-                    child: _isUploading
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Usar foto'),
-                  ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
+                        textStyle: const TextStyle(fontSize: 12),
+                        minimumSize: const Size(0, 32),
+                      ),
+                      onPressed: _switchCamera,
+                      child: Text(
+                        _currentDirection == CameraLensDirection.back
+                            ? 'Frontal'
+                            : 'Traseira',
+                      ),
+                    ),
+                  ] else ...[
+                    ElevatedButton(
+                      onPressed: _isUploading
+                          ? null
+                          : () async {
+                              setState(() {
+                                _imageFile = null;
+                                _isLoadingCamera = true;
+                              });
+
+                              await _controller?.dispose();
+
+                              _controller = null;
+
+                              await _initializeCamera();
+                            },
+                      child: const Text('Tirar outra'),
+                    ),
+
+                    ElevatedButton(
+                      onPressed: _isUploading ? null : _uploadImage,
+                      child: _isUploading
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Usar foto'),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ],
