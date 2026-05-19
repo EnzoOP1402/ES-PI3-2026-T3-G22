@@ -1,5 +1,5 @@
 /* eslint-disable require-jsdoc */
-import {FieldValue} from "firebase-admin/firestore";
+import {FieldValue, Transaction} from "firebase-admin/firestore";
 
 import {
   StartupDocument,
@@ -53,6 +53,7 @@ const demoStartups: Array<StartupDocument & {id: string}> = [
  "1581093458791-9d15482442f6",
     tags: ["healthtech", "iot", "educacao"],
     tokenName: "BCTK",
+    purchaseAvailableTokens: 100000,
   },
   {
     id: "rota-verde",
@@ -87,6 +88,7 @@ const demoStartups: Array<StartupDocument & {id: string}> = [
  "1500530855697-b586d89ba3ee",
     tags: ["logtech", "sustentabilidade", "mobilidade"],
     tokenName: "RVTK",
+    purchaseAvailableTokens: 250000,
   },
   {
     id: "mentorai",
@@ -124,6 +126,7 @@ const demoStartups: Array<StartupDocument & {id: string}> = [
     coverImageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978",
     tags: ["edtech", "ia", "mentoria"],
     tokenName: "MAITK",
+    purchaseAvailableTokens: 500000,
   },
 ];
 
@@ -254,4 +257,47 @@ export async function seedDemoStartups(): Promise<string[]> {
   await batch.commit();
 
   return demoStartups.map((startup) => startup.id);
+}
+
+// Função criada por: Enzo Olivato Pazian
+/**
+ * Obtém os dados de saldo um usuário dentro de uma
+ * transação ativa.
+ *
+ * É usada na criação de ordens de compra e venda,
+ * sendo uma parte essencial das verificações de
+ * viabilidade da abertura de ordens.
+ *
+ * @param {Transaction} transaction -
+ * Representa a transação em andamento;
+ * @param {string} startupId - O startup que terá os dados
+ * obtidos
+ */
+export async function getStartupByIdInTransaction(
+  transaction: Transaction,
+  startupId: string
+) {
+  // Obtemos o objeto com os dados do documento da
+  // startup através da operação de busca atômica
+  // gerada pela transaction
+  const startupDoc = await transaction.get(startupsCollection.doc(startupId));
+
+  // Se o documento não trouxer dados de uma startup
+  // existente, retorna null (que será interceptado
+  // pela transação principal)
+  if (!startupDoc.exists) {
+    return null;
+  }
+
+  // Extraindo os dados do documento
+  const data = startupDoc.data();
+
+  // Retornando os dados obtidos
+  return {
+    // Retornando a referência para que ela possa ser
+    // acessada pelo próximo update
+    ref: startupsCollection.doc(startupId),
+    // Retornando os dados da startup
+    data: data as StartupDocument,
+  };
 }

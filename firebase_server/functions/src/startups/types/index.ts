@@ -1,5 +1,3 @@
-/* eslint-disable linebreak-style */
-
 // Importação das dependências
 import {FieldValue, Timestamp} from "firebase-admin/firestore";
 
@@ -94,6 +92,7 @@ export type StartupDocument = {
  coverImageUrl?: string;
  tags: string[];
  tokenName: string;
+ purchaseAvailableTokens: number;
  createdAt?: Timestamp;
  updatedAt?: Timestamp;
 };

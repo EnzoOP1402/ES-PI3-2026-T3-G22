@@ -175,12 +175,10 @@ Como os smart contracts reais fogem do escopo, simularemos suas ações via lóg
 3. Altera o status da ordem para `"canceled"`.
 
 
-4. 
-**Se for uma ordem de compra (Estorno):** Calcula o valor correspondente a $\text{remainingQuantity} \times \text{price}$, retira esse valor do `balanceFrozen` e o devolve para o `balanceAvailable`.
+4. **Se for uma ordem de compra (Estorno):** Calcula o valor correspondente a $\text{remainingQuantity} \times \text{price}$, retira esse valor do `balanceFrozen` e o devolve para o `balanceAvailable`.
 
 
-5. 
-**Se for uma ordem de venda (Estorno):** Devolve a quantidade contida em `remainingQuantity` de volta para o saldo disponível (`availableQuantity`) da wallet do usuário.
+5. **Se for uma ordem de venda (Estorno):** Devolve a quantidade contida em `remainingQuantity` de volta para o saldo disponível (`availableQuantity`) da wallet do usuário.
 
 
 6. Encerra a transação e lança as devidas exceções em caso de falha.

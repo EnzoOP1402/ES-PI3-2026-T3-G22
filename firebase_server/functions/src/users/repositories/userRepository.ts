@@ -1,7 +1,7 @@
 /* Autor: Enzo Olivato Pazian */
 
-import admin from "firebase-admin";
 import {db} from "../../shared/firebase";
+import {Transaction} from "firebase-admin/firestore";
 
 // Criando um acesso rápido à coleção de usuários
 const userCollection = db.collection("users");
@@ -30,23 +30,26 @@ export async function cpfExists(
  * Obtém os dados de saldo um usuário dentro de uma
  * transação ativa.
  *
- * É usada na criação de ordens de compra e venda,
- * sendo uma parte essencial das verificações de
+ * É usada na criação de ordens de compra, sendo
+ * uma parte essencial das verificações de
  * viabilidade da abertura de ordens.
  *
- * @param {admin.firestore.Transaction} transaction -
+ * @param {Transaction} transaction -
  * Representa a transação em andamento;
  * @param {string} userId - O UID do usuário a ter os
  * dados de saldo buscados
  */
 export async function getUserBalanceForUpdate(
-  transaction: admin.firestore.Transaction,
+  transaction: Transaction,
   userId: string
 ) {
+  // Criando uma referência ao documento do usuário
+  const userRef = userCollection.doc(userId);
+
   // Obtemos o objeto com os dados do documento do
   // usuário através da operação de busca atômica
   // gerada pela transaction
-  const userDoc = await transaction.get(userCollection.doc(userId));
+  const userDoc = await transaction.get(userRef);
 
   // Se o documento não trouxer dados de um usuário
   // existente, retorna null (que será interceptado
@@ -62,10 +65,64 @@ export async function getUserBalanceForUpdate(
   return {
     // Retornando a referência para que ela possa ser
     // acessada pelo próximo update
-    ref: userCollection.doc(userId),
+    ref: userRef,
     // Retornando o saldo disponível
-    balanceAvailable: data?.balanceAvailable || 0,
+    balanceAvailable: data?.balanceAvailable || 0 as number,
     // Retornando o saldo congelado
-    balanceFrozen: data?.balanceFrozen || 0,
+    balanceFrozen: data?.balanceFrozen || 0 as number,
+  };
+}
+
+/**
+ * Obtém os dados da carteira de um usuário dentro de uma
+ * transação ativa.
+ *
+ * É usada na criação de ordens de venda,
+ * sendo uma parte essencial das verificações de
+ * viabilidade da abertura de ordens.
+ *
+ * @param {Transaction} transaction -
+ * Representa a transação em andamento;
+ * @param {string} userId - O UID do usuário a ter os
+ * dados da carteira buscados
+ * @param {string} startupId - O UID da startup da qual
+ * o usuário possui tokens
+ */
+export async function getUserWalletStartupForUpdate(
+  transaction: Transaction,
+  userId: string,
+  startupId: string
+) {
+  // Criando uma referência ao documento da carteira do usuário
+  // referentes à startup indicada
+  const walletRef = userCollection
+    .doc(userId)
+    .collection("wallet")
+    .doc(startupId);
+
+  // Obtemos o objeto com os dados do documento do
+  // usuário através da operação de busca atômica
+  // gerada pela transaction
+  const walletDoc = await transaction.get(walletRef);
+
+  // Se o documento não trouxer dados de uma startup
+  // existente na carteira, retorna null (que será
+  // interceptado pela transação principal)
+  if (!walletDoc.exists) {
+    return null;
+  }
+
+  // Extraindo os dados do documento
+  const data = walletDoc.data();
+
+  // Retornando os dados obtidos
+  return {
+    // Retornando a referência para que ela possa ser
+    // acessada pelo próximo update
+    ref: walletRef,
+    // Retornando os dados da carteira do usuário
+    // referentes à startup indicada
+    availableQuantity: data?.availableQuantity as number,
+    lockedQuantity: data?.lockedQuantity as number,
   };
 }

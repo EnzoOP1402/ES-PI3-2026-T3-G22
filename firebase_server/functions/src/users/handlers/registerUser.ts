@@ -118,7 +118,7 @@ export const registerUser = onCall( async (request) => {
         uid: createdUid,
       },
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Se houver algum erro com o Firestore ai tentarmos criar o
     // usuário, removemos ele do Authentication
     if (createdUid) {
@@ -142,8 +142,11 @@ export const registerUser = onCall( async (request) => {
     }
 
     // Tratando erros específicos do próprio Firebase Auth Admin
-    // (ex: E-mail já em uso)
-    if (error.code === "auth/email-already-exists") {
+    // (ex: E-mail já em uso), fazendo uma asserção segura e
+    // dizendo que o objeto possui uma string 'code'
+    const firebaseError = error as { code?: string };
+
+    if (firebaseError.code === "auth/email-already-exists") {
       throw new HttpsError(
         "already-exists",
         "Este endereço de e-mail já está sendo usado por outra conta."

@@ -29,3 +29,16 @@ export async function createOrderOnTransaction(
   // Retorna o id do novo documento criado
   return newOfferRef.id;
 }
+
+/**
+ * Função responsável por obter os dados de uma ordem através de
+ * seu ID.
+ *
+ * @param {string} orderId - O ID da ordem a ser buscada
+ * @return {OfferDocument} - Um objeto contendo os dados da ordem
+ */
+export async function getOrderById(
+  orderId: string
+) {
+  // Obtendo o documento referente à ordem
+}

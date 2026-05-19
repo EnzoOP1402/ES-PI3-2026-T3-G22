@@ -7,9 +7,9 @@ import {OfferDocument, OrderStatus, OrderType} from "../types";
 import {getStartupById} from "../../startups";
 import {FieldValue} from "firebase-admin/firestore";
 import {logger} from "firebase-functions";
-import admin from "firebase-admin";
 import {getUserBalanceForUpdate} from "../../users/repositories/userRepository";
 import {createOrderOnTransaction} from "../repositories/exchangeRepository";
+import {db} from "../../shared/firebase";
 
 /**
  * Firebase Function responsável pela criação de uma ordem de compra.
@@ -48,6 +48,14 @@ export const createBuyOrder = onCall(
       );
     }
 
+    // Verificando se o preço e a quantidade são maiores que 0
+    if (quantity <= 0 || priceCents <= 0) {
+      throw new HttpsError(
+        "invalid-argument",
+        "priceCents e quantity devem ser maiores que 0.",
+      );
+    }
+
     try {
       // Obtendo os dados da startup a partir de seu ID para o
       // preenchimento correto das outras informações advindas
@@ -65,15 +73,11 @@ export const createBuyOrder = onCall(
 
       // ETAPA 2: A lógica atômica da criação de oferta
 
-      // Instanciando o firebase-admin para permitir a criação
-      // da transaction responsável pela atomicidade das próximas
-      // verificações
-      const db = admin.firestore();
-
       // Pré declarando a variável local que armazenará o id da
       // ordem criada
       let offerId = "";
 
+      // Iniciando a transação atômica
       await db.runTransaction(async (transaction) => {
         // Obtendo o saldo do usuário
         const userBalance = await getUserBalanceForUpdate(
@@ -81,7 +85,7 @@ export const createBuyOrder = onCall(
           user.uid
         );
 
-        // Se o retorno for nuo, significa que o usuário não
+        // Se o retorno for nulo, significa que o usuário não
         // foi encontrado no banco de dados, então lança um erro
         if (!userBalance) {
           throw new HttpsError(
@@ -112,7 +116,8 @@ export const createBuyOrder = onCall(
           balanceFrozen: userBalance.balanceFrozen + totalCost,
         });
 
-        // Depois das verificações de saldo, criamos a ordem
+        // Depois das verificações e operações com o saldo,
+        // criamos a ordem
 
         // Criando um objeto do tipo OfferDocument com os dados
         // obtidos para inseri-los no Firestore
