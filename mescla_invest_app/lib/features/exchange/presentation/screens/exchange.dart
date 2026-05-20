@@ -5,6 +5,7 @@ import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
 import 'package:mescla_invest_app/routes/app_routes.dart';
 
+import '../../data/models/board_order_model.dart';
 import '../../data/services/exchange_service.dart';
 import '../../widgets/exchange_model.dart';
 
@@ -16,17 +17,30 @@ class ExchangeScreen extends StatefulWidget {
 }
 
 class _ExchangeScreenState extends State<ExchangeScreen> {
-  // Service responsável por buscar e criar ordens no Firestore/Functions.
   final ExchangeService _exchangeService = ExchangeService();
 
-  // Cores seguindo o padrão visual do projeto.
+  Future<Map<String, List<BoardOrderModel>>>? _boardFuture;
+
   static const Color _primaryColor = Color(0xFF353988);
   static const Color _accentColor = Color(0xFFDB0065);
   static const Color _backgroundColor = Color(0xFFE8E9EB);
   static const Color _sectionBackground = Color(0xFFD7D7D7);
   static const Color _cardBackground = Color(0xFFF7F7F7);
 
-  // Abre a tela de formulário da ordem.
+  @override
+  void initState() {
+    super.initState();
+    _boardFuture = _exchangeService.buscarQuadroBalcao();
+  }
+
+  Future<void> _recarregarBalcao() async {
+    setState(() {
+      _boardFuture = _exchangeService.buscarQuadroBalcao();
+    });
+
+    await _boardFuture;
+  }
+
   Future<void> _abrirFormularioOrdem({
     required TipoOrdem tipo,
     required ModoOrdem modo,
@@ -40,6 +54,8 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
           'modo': modo.value,
         },
       );
+
+      await _recarregarBalcao();
     } catch (_) {
       if (!mounted) return;
 
@@ -53,7 +69,6 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
     }
   }
 
-  // Modal aberto quando o usuário clica em Investir.
   void _abrirModalTipoInvestimento() {
     ModoOrdem modoSelecionado = ModoOrdem.mercado;
 
@@ -86,47 +101,27 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-
-                    const Row(
-                      children: [
-                        Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          color: _primaryColor,
-                          size: 28,
-                        ),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Como você quer investir?',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: _primaryColor,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              SizedBox(height: 2),
-                              Text(
-                                'Selecione a opção desejada',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.black54,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                    const Text(
+                      'Como você quer investir?',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: _primaryColor,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
-
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Selecione a opção desejada',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontSize: 11,
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     const Divider(height: 1, color: Colors.black12),
                     const SizedBox(height: 10),
-
                     _OpcaoInvestimentoRadio(
                       titulo: 'Ordem a mercado',
                       descricao:
@@ -139,7 +134,6 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                         });
                       },
                     ),
-
                     _OpcaoInvestimentoRadio(
                       titulo: 'Ordem limitada',
                       descricao:
@@ -152,9 +146,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                         });
                       },
                     ),
-
                     const SizedBox(height: 12),
-
                     SizedBox(
                       width: 180,
                       height: 42,
@@ -194,8 +186,8 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
     );
   }
 
-  // Formata preço para padrão brasileiro.
-  String _formatarPreco(double valor) {
+  String _formatarPrecoCentavos(int priceCents) {
+    final valor = priceCents / 100;
     return 'R\$ ${valor.toStringAsFixed(2).replaceAll('.', ',')} / token';
   }
 
@@ -203,72 +195,96 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _backgroundColor,
-
-      appBar: const CustomAppBar(
-        title: 'Balcão',
-      ),
-
+      appBar: const CustomAppBar(title: 'Balcão'),
       body: SafeArea(
         top: false,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(18, 16, 18, 20),
-          children: [
-            _buildSecaoOrdens(
-              titulo: 'Ordens de Venda',
-              descricao:
-                  'Confira todas as ofertas de venda de tokens disponíveis atualmente no MesclaInvest.',
-              stream: _exchangeService.buscarOrdensDeVenda(),
-            ),
+        child: FutureBuilder<Map<String, List<BoardOrderModel>>>(
+          future: _boardFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(color: _primaryColor),
+              );
+            }
 
-            const SizedBox(height: 16),
-
-            _buildSecaoOrdens(
-              titulo: 'Ordens de Compra',
-              descricao:
-                  'Confira todas as ofertas de compra de tokens disponíveis atualmente no MesclaInvest.',
-              stream: _exchangeService.buscarOrdensDeCompra(),
-            ),
-
-            const SizedBox(height: 22),
-
-            Row(
-              children: [
-                Expanded(
-                  child: _buildBotaoAcao(
-                    texto: 'Investir',
-                    cor: _primaryColor,
-                    onPressed: _abrirModalTipoInvestimento,
+            if (snapshot.hasError) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(22),
+                  child: Text(
+                    'Erro ao carregar ordens: ${snapshot.error}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: _buildBotaoAcao(
-                    texto: 'Vender',
-                    cor: _accentColor,
-                    onPressed: () {
-                      _abrirFormularioOrdem(
-                        tipo: TipoOrdem.venda,
-                        modo: ModoOrdem.limitada,
-                      );
-                    },
+              );
+            }
+
+            final sellOrders = snapshot.data?['sellOrders'] ?? [];
+            final buyOrders = snapshot.data?['buyOrders'] ?? [];
+
+            return RefreshIndicator(
+              color: _primaryColor,
+              onRefresh: _recarregarBalcao,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(18, 16, 18, 20),
+                children: [
+                  _buildSecaoOrdens(
+                    titulo: 'Ordens de Venda',
+                    descricao:
+                        'Confira todas as ofertas de venda de tokens disponíveis atualmente no MesclaInvest.',
+                    orders: sellOrders,
                   ),
-                ),
-              ],
-            ),
-          ],
+                  const SizedBox(height: 16),
+                  _buildSecaoOrdens(
+                    titulo: 'Ordens de Compra',
+                    descricao:
+                        'Confira todas as ofertas de compra de tokens disponíveis atualmente no MesclaInvest.',
+                    orders: buyOrders,
+                  ),
+                  const SizedBox(height: 22),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildBotaoAcao(
+                          texto: 'Investir',
+                          cor: _primaryColor,
+                          onPressed: _abrirModalTipoInvestimento,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: _buildBotaoAcao(
+                          texto: 'Vender',
+                          cor: _accentColor,
+                          onPressed: () {
+                            _abrirFormularioOrdem(
+                              tipo: TipoOrdem.venda,
+                              modo: ModoOrdem.limitada,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ),
-
-      bottomNavigationBar: const AppBottomNavigation(
-        selectedIndex: 2,
-      ),
+      bottomNavigationBar: const AppBottomNavigation(selectedIndex: 2),
     );
   }
 
   Widget _buildSecaoOrdens({
     required String titulo,
     required String descricao,
-    required Stream<List<OfertaBalcao>> stream,
+    required List<BoardOrderModel> orders,
   }) {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
@@ -291,9 +307,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
               height: 1,
             ),
           ),
-
           const SizedBox(height: 5),
-
           Text(
             descricao,
             style: const TextStyle(
@@ -302,41 +316,9 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
               height: 1.18,
             ),
           ),
-
           const SizedBox(height: 12),
-
-          StreamBuilder<List<OfertaBalcao>>(
-            stream: stream,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: _primaryColor,
-                    ),
-                  ),
-                );
-              }
-
-              if (snapshot.hasError) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  child: Text(
-                    'Erro ao carregar ordens: ${snapshot.error}',
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                );
-              }
-
-              final ofertas = snapshot.data ?? [];
-
-              if (ofertas.isEmpty) {
-                return const Padding(
+          orders.isEmpty
+              ? const Padding(
                   padding: EdgeInsets.symmetric(vertical: 14),
                   child: Text(
                     'Nenhuma ordem disponível no momento.',
@@ -345,21 +327,19 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                       fontSize: 12,
                     ),
                   ),
-                );
-              }
-
-              return Column(
-                children: ofertas.map(_buildCardOferta).toList(),
-              );
-            },
-          ),
+                )
+              : Column(
+                  children: orders.map(_buildCardOferta).toList(),
+                ),
         ],
       ),
     );
   }
 
-  Widget _buildCardOferta(OfertaBalcao oferta) {
-    final bool isAlta = oferta.emAlta;
+  Widget _buildCardOferta(BoardOrderModel order) {
+    final bool isAlta = order.appreciated;
+    final Color indicatorColor =
+        isAlta ? Colors.green.shade700 : Colors.red.shade700;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 9),
@@ -387,21 +367,21 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(9),
             ),
-            child: const Icon(
-              Icons.attach_money_rounded,
+            child: Icon(
+              order.type == 'sell'
+                  ? Icons.sell_rounded
+                  : Icons.shopping_cart_rounded,
               color: Colors.black,
-              size: 21,
+              size: 19,
             ),
           ),
-
           const SizedBox(width: 9),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  oferta.startupNome,
+                  order.startupName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -410,11 +390,9 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-
                 const SizedBox(height: 2),
-
                 Text(
-                  '${oferta.quantidadeTokens} tokens',
+                  '${order.remainingQuantity} tokens • ${order.tokenName}',
                   style: const TextStyle(
                     color: Colors.black54,
                     fontSize: 10.5,
@@ -424,25 +402,21 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
               ],
             ),
           ),
-
           const SizedBox(width: 8),
-
           Text(
-            _formatarPreco(oferta.precoUnitario),
+            _formatarPrecoCentavos(order.priceCents),
             style: TextStyle(
-              color: isAlta ? Colors.green.shade700 : Colors.red.shade700,
+              color: indicatorColor,
               fontSize: 10.5,
               fontWeight: FontWeight.w800,
             ),
           ),
-
           const SizedBox(width: 3),
-
           Icon(
             isAlta
                 ? Icons.arrow_upward_rounded
                 : Icons.arrow_downward_rounded,
-            color: isAlta ? Colors.green.shade700 : Colors.red.shade700,
+            color: indicatorColor,
             size: 16,
           ),
         ],
@@ -517,9 +491,7 @@ class _OpcaoInvestimentoRadio extends StatelessWidget {
                 }
               },
             ),
-
             const SizedBox(width: 2),
-
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -533,9 +505,7 @@ class _OpcaoInvestimentoRadio extends StatelessWidget {
                           selecionado ? FontWeight.w800 : FontWeight.w600,
                     ),
                   ),
-
                   const SizedBox(height: 2),
-
                   Text(
                     descricao,
                     style: const TextStyle(
