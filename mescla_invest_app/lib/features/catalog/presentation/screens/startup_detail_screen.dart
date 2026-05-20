@@ -39,7 +39,9 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
 
   Future<Map<String, dynamic>> getStartupDetails() async {
     try {
-      final functions = FirebaseFunctions.instance;
+      final functions = FirebaseFunctions.instanceFor(
+            region: 'southamerica-east1'
+          );
       final HttpsCallable callable = functions.httpsCallable(
         'getStartupDetails',
       );
