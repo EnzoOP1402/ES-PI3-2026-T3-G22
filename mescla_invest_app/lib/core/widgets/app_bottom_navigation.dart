@@ -25,41 +25,37 @@ class AppBottomNavigation
     switch (index) {
 
       case 0:
-
         Navigator.pushReplacementNamed(
           context,
           AppRoutes.home,
         );
-
         break;
 
       case 1:
-
         Navigator.pushReplacementNamed(
           context,
           AppRoutes.catalog,
         );
-
         break;
 
       case 2:
+        Navigator.pushReplacementNamed(
+          context,
+          AppRoutes.exchange,
+        );
+        break;
+
+      case 3:
         Navigator.pushReplacementNamed(
           context,
           AppRoutes.dashboard,
         );
         break;
 
-      case 3:
-
-        Navigator.pushReplacementNamed(
-          context,
-          AppRoutes.wallet,
-        );
-        break;
       case 4:
         Navigator.pushReplacementNamed(
           context,
-          AppRoutes.profile,
+          AppRoutes.wallet,
         );
         break;
     }
@@ -68,11 +64,10 @@ class AppBottomNavigation
   @override
   Widget build(BuildContext context) {
 
-    return NavigationBar(
+  return NavigationBar(
+  height: 75,
   backgroundColor: const Color(0xFFE8E9EB),
-
   indicatorColor: const Color(0xFFDB0065),
-
   selectedIndex: selectedIndex,
 
   labelTextStyle:
@@ -84,12 +79,14 @@ class AppBottomNavigation
       )) {
 
         return const TextStyle(
+          fontSize: 13,
           color: Color(0xFFDB0065),
           fontWeight: FontWeight.bold,
         );
       }
 
       return const TextStyle(
+        fontSize: 12,
         color: Color(0xFF353988),
       );
     },
@@ -120,12 +117,11 @@ class AppBottomNavigation
 
     NavigationDestination(
       selectedIcon: Icon(
-        Icons.business_center_rounded,
+        Icons.lightbulb_outline,
         color: Color(0xFFE8E9EB),
       ),
-
       icon: Icon(
-        Icons.business_center_rounded,
+        Icons.lightbulb_outline,
         color: Color(0xFF353988),
       ),
 
@@ -134,10 +130,22 @@ class AppBottomNavigation
 
     NavigationDestination(
       selectedIcon: Icon(
-        Icons.bar_chart_rounded,
+        Icons.attach_money,
         color: Color(0xFFE8E9EB),
       ),
 
+      icon: Icon(
+        Icons.attach_money,
+        color: Color(0xFF353988),
+      ),
+      label: 'Balcão',
+    ),
+
+    NavigationDestination(
+      selectedIcon: Icon(
+        Icons.bar_chart_rounded,
+        color: Color(0xFFE8E9EB),
+      ),
       icon: Icon(
         Icons.bar_chart_rounded,
         color: Color(0xFF353988),
@@ -145,33 +153,17 @@ class AppBottomNavigation
 
       label: 'Dashboard',
     ),
-
     NavigationDestination(
       selectedIcon: Icon(
         Icons.account_balance_wallet_rounded,
         color: Color(0xFFE8E9EB),
       ),
-
       icon: Icon(
         Icons.account_balance_wallet_rounded,
         color: Color(0xFF353988),
       ),
 
       label: 'Carteira',
-    ),
-
-    NavigationDestination(
-      selectedIcon: Icon(
-        Icons.person_rounded,
-        color: Color(0xFFE8E9EB),
-      ),
-
-      icon: Icon(
-        Icons.person_rounded,
-        color: Color(0xFF353988),
-      ),
-
-      label: 'Perfil',
     ),
   ],
 );

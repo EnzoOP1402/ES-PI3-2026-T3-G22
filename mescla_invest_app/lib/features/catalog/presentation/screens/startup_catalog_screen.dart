@@ -64,8 +64,9 @@ class _CatalogoState extends State<Catalogo> {
     try {
 
       final functions =
-          FirebaseFunctions.instance;
-
+          FirebaseFunctions.instanceFor(
+            region: 'southamerica-east1'
+          );
       final callable =
           functions.httpsCallable(
         'listStartups',
@@ -161,13 +162,10 @@ class _CatalogoState extends State<Catalogo> {
   void _clearFilters() {
 
     _searchDebounce?.cancel();
-
     _searchController.clear();
 
     setState(() {
-
       _selectedStage = 'todos';
-
       _startupsFuture = _getStartups();
     });
   }

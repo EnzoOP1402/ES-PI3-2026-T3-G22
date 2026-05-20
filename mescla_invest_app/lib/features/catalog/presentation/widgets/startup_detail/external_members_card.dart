@@ -25,7 +25,6 @@ class ExternalMembersCard extends StatelessWidget {
         return value.toString();
       }
     }
-
     return fallback;
   }
 
@@ -78,7 +77,7 @@ class ExternalMembersCard extends StatelessWidget {
                       radius: 18,
                       backgroundColor: primaryColor,
                       child: Icon(
-                        Icons.person_outline,
+                        Icons.groups_2_outlined,
                         color: backgroundColor,
                         size: 20,
                       ),

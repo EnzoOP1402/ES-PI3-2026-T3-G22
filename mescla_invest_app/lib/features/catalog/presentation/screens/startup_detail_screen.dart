@@ -27,6 +27,7 @@ class StartupDetailScreen extends StatefulWidget {
 }
 
 class _StartupDetailScreenState extends State<StartupDetailScreen> {
+
   late final Future<Map<String, dynamic>> _startupDetailsFuture;
 
 
@@ -38,16 +39,15 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
 
   Future<Map<String, dynamic>> getStartupDetails() async {
     try {
-      final functions = FirebaseFunctions.instance;
-
+      final functions = FirebaseFunctions.instanceFor(
+            region: 'southamerica-east1'
+          );
       final HttpsCallable callable = functions.httpsCallable(
         'getStartupDetails',
       );
-
       final result = await callable.call(<String, dynamic>{
         'id': widget.startupId,
       });
-
       return Map<String, dynamic>.from(result.data);
     } on FirebaseFunctionsException catch (e) {
       // O backend lança HttpsError específicos (ex: 'invalid-argument', 'not-found')
@@ -66,12 +66,10 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
   ) {
     for (final key in possibleKeys) {
       final value = data[key];
-
       if (value is List) {
         return value;
       }
     }
-
     return <dynamic>[];
   }
   String _getStringField(
@@ -167,11 +165,9 @@ Widget build(BuildContext context) {
 
         if (!snapshot.hasData ||
             snapshot.data!.isEmpty) {
-
           return Center(
             child: Text(
               'Startup não encontrada.',
-
               style: GoogleFonts.montserrat(
                 fontSize: 14,
                 color: Colors.black,
@@ -214,7 +210,6 @@ Widget build(BuildContext context) {
           ['profilePicture'],
           '',
         );
-
         final socios = _getListField(
           startupData,
           ['founders'],
@@ -237,18 +232,16 @@ Widget build(BuildContext context) {
 
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(
-            20,
+            24,
             12,
-            20,
+            24,
             110,
           ),
 
           child: Column(
             crossAxisAlignment:
                 CrossAxisAlignment.start,
-
             children: [
-
               Center(
                 child: CircleAvatar(
                   radius: 55,
@@ -308,9 +301,7 @@ Widget build(BuildContext context) {
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
-
                   children: [
-
                     Container(
                       padding:
                           const EdgeInsets.symmetric(
@@ -381,7 +372,6 @@ Widget build(BuildContext context) {
                   );
                 },
               ),
-
               FoundersCard(
                 socios: socios,
               ),
@@ -390,7 +380,6 @@ Widget build(BuildContext context) {
                 membrosExternos:
                     membrosExternos,
               ),
-
               MoreAboutCard(
                 startupData: startupData,
               ),
