@@ -35,7 +35,6 @@ class _CameraScreenState extends State<CameraScreen> {
     try {
       final cameras = await availableCameras();
       _cameras = cameras;
-
       if (cameras.isEmpty) {
         setState(() {
           _errorMessage = 'Nenhuma câmera encontrada.';
@@ -48,7 +47,6 @@ class _CameraScreenState extends State<CameraScreen> {
         (cam) => cam.lensDirection == _currentDirection,
         orElse: () => cameras.first,
       );
-
       _controller = CameraController(
         camera,
         ResolutionPreset.high,
@@ -74,11 +72,9 @@ class _CameraScreenState extends State<CameraScreen> {
 
   Future<void> _switchCamera() async {
     if (_cameras == null || _cameras!.isEmpty) return;
-
     final newDirection = _currentDirection == CameraLensDirection.back
         ? CameraLensDirection.front
         : CameraLensDirection.back;
-
     final newCamera = _cameras!.firstWhere(
       (cam) => cam.lensDirection == newDirection,
       orElse: () => _cameras!.first,
