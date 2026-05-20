@@ -12,7 +12,6 @@ class CameraScreen extends StatefulWidget {
   @override
   State<CameraScreen> createState() => _CameraScreenState();
 }
-
 class _CameraScreenState extends State<CameraScreen> {
   CameraLensDirection _currentDirection = CameraLensDirection.back;
   List<CameraDescription>? _cameras;

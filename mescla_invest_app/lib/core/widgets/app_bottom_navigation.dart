@@ -3,9 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:mescla_invest_app/routes/app_routes.dart';
 
-class AppBottomNavigation
-    extends StatelessWidget {
-
+class AppBottomNavigation extends StatelessWidget {
   final int selectedIndex;
 
   const AppBottomNavigation({
@@ -17,20 +15,16 @@ class AppBottomNavigation
     BuildContext context,
     int index,
   ) {
-
     if (index == selectedIndex) {
       return;
     }
-
     switch (index) {
-
       case 0:
         Navigator.pushReplacementNamed(
           context,
           AppRoutes.home,
         );
         break;
-
       case 1:
         Navigator.pushReplacementNamed(
           context,

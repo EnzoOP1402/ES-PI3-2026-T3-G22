@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
+import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
 import 'package:mescla_invest_app/features/auth/data/models/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mescla_invest_app/routes/app_routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mescla_invest_app/features/profile/presentation/screens/camera_screen.dart';
 
@@ -109,26 +111,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFE9E9E9),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF3F3D99),
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new,
-            color: Colors.white,
-            size: 18,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Conta',
-          style: GoogleFonts.montserrat(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+      appBar: CustomAppBar(
+        title: 'Conta',
       ),
       body: SafeArea(
         child: _isLoading
@@ -225,18 +209,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: _ActionButton(
                           icon: Icons.logout_outlined,
                           label: 'Sair da conta',
-                          onTap: () => _showMessage('Saindo da conta...'),
-                        ),
+                          onTap: () async {
+                            await AuthRepository.instance.logout();
+                            Navigator.pushReplacementNamed(
+                              context,
+                              AppRoutes.login,
+                              );
+                            }
+                          )
+                          )
+                    ]
                       ),
-                    ],
                   ),
                 ),
               ),
-      ),
-      bottomNavigationBar: const AppBottomNavigation(selectedIndex: 4),
-    );
-  }
-}
+      );
+}}
 
 class _InfoItem extends StatelessWidget {
   final String label;
