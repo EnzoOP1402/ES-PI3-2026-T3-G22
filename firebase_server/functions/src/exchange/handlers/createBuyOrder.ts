@@ -100,7 +100,7 @@ export const createBuyOrder = onCall(
         // Verificando se o usuário possui saldo disponível suficiente
         // para realizar a compra dos tokens
         // Se ele não tiver, lança um erro de pré condição inválida
-        if (userBalance.balanceAvailable < totalCost) {
+        if (userBalance.balanceAvailableCents < totalCost) {
           throw new HttpsError(
             "failed-precondition",
             "O usuário não tem saldo suficiente para a abertura da ordem."
@@ -112,8 +112,8 @@ export const createBuyOrder = onCall(
         // O valor total da ordem é removido do saldo disponível
         // do usuário e é movido para o saldo congelado
         transaction.update(userBalance.ref, {
-          balanceAvailable: userBalance.balanceAvailable - totalCost,
-          balanceFrozen: userBalance.balanceFrozen + totalCost,
+          balanceAvailableCents: userBalance.balanceAvailableCents - totalCost,
+          balanceFrozenCents: userBalance.balanceFrozenCents + totalCost,
         });
 
         // Depois das verificações e operações com o saldo,
@@ -138,7 +138,6 @@ export const createBuyOrder = onCall(
         // criação de ordens/ofertas
         offerId = await createOrderOnTransaction(transaction, order);
       });
-
 
       // Registrando no Logger da Function a mensagem de sucesso
       // após a conclusão da transação

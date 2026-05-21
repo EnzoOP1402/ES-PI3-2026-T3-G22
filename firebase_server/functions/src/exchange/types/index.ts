@@ -57,3 +57,21 @@ export type OfferDocument = {
     createdAt: FieldValue
 };
 
+
+/**
+ * Documento de Transação armazenado na coleção trades do Firestore.
+ *
+ * Cada propriedade representa um campo no documento que representa uma
+ * transação no Firebase.
+ */
+export type TradeDocument = {
+    buyerId: string,
+    sellerId?: string,
+    startupId: string,
+    quantity: number,
+    unitPriceCents: number,
+    totalPriceCents: number,
+    buyOrderId: string,
+    sellOrderId: string,
+    registeredAt: FieldValue
+}

@@ -39,6 +39,54 @@ export async function createOrderOnTransaction(
  */
 export async function getOrderById(
   orderId: string
-) {
+): Promise<OfferDocument | undefined> {
   // Obtendo o documento referente à ordem
+  const orderSnapshot = await offersCollection.doc(orderId).get();
+
+  // Se ele estiver vazio, retorna undefined
+  if (!orderSnapshot.exists) {
+    return undefined;
+  }
+
+  // Senão, retorna o objeto com os dados da ordem
+  return orderSnapshot.data() as OfferDocument;
+}
+
+/**
+ * Função responsável por obter os dados de uma ordem através de
+ * seu ID dentro de uma Transaction.
+ *
+ * @param {admin.firestore.Transaction} transaction -
+ * Representa a transação em andamento;
+ * @param {string} orderId - O ID da ordem a ser buscada
+ * @return {OfferDocument} - Um objeto contendo os dados da ordem
+ */
+export async function getOrderByIdInTransaction(
+  transaction: admin.firestore.Transaction,
+  orderId: string
+) {
+  // Criando uma referência ao documento da ordem
+  const orderRef = offersCollection.doc(orderId);
+
+  // Obtendo o objeto com os dados da ordem através da
+  // operação de busca atômica gerada pela Transaction
+  const orderDoc = await transaction.get(orderRef);
+
+  // Se o documento não existir, retorna null (que será
+  // interceptado pela transação principal)
+  if (!orderDoc) {
+    return null;
+  }
+
+  // Extraindo os dados do documento
+  const data = orderDoc.data() as OfferDocument;
+
+  // Retornando os dados obtidos
+  return {
+    // Retornando a referência para que ela possa ser
+    // acessada pelo próximo update
+    ref: orderRef,
+    // Retornando os dados do documento
+    data: data as OfferDocument,
+  };
 }

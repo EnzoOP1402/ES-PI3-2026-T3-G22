@@ -25,3 +25,14 @@ export interface UserWithId extends UserDocument {
   // usamos Timestamp
   createdAt: Timestamp;
 }
+
+// Definindo o tipo que representa o documento da Wallet
+// de um usuário
+export type WalletDocument = {
+  startupId: string,
+  startupName: string,
+  tokenName: string,
+  availableQuantity: number,
+  lockedQuantity: number,
+  totalQuantity: number,
+}

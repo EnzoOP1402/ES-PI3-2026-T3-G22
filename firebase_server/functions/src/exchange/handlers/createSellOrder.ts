@@ -78,8 +78,8 @@ export const createSellOrder = onCall(
 
       // Iniciando a transação atômica
       await db.runTransaction(async (transaction) => {
-      // Obtendo os dados da carteira do usuário referente à startup
-      // da qual ele venderá os tokens+
+        // Obtendo os dados da carteira do usuário referente à startup
+        // da qual ele venderá os tokens+
         const userWalletStartup = await getUserWalletStartupForUpdate(
           transaction,
           user.uid,
@@ -147,9 +147,9 @@ export const createSellOrder = onCall(
         },
       };
     } catch (error: unknown) {
-    // Se o erro capturado já for um HttpsError que nós mesmos
-    // lançamos lá dentro, nós apenas repassamos ele para o
-    // Flutter ler a mensagem amigável
+      // Se o erro capturado já for um HttpsError que nós mesmos
+      // lançamos lá dentro, nós apenas repassamos ele para o
+      // Flutter ler a mensagem amigável
       if (error instanceof HttpsError) {
         throw error;
       }

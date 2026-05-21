@@ -84,7 +84,7 @@ export const buyFromStartupMarket = onCall(async (request) => {
       // Verificando se o usuário possui saldo disponível suficiente
       // para realizar a compra dos tokens
       // Se ele não tiver, lança um erro de pré condição inválida
-      if (userBalance.balanceAvailable < totalCost) {
+      if (userBalance.balanceAvailableCents < totalCost) {
         throw new HttpsError(
           "failed-precondition",
           "O usuário não tem saldo suficiente para a abertura da ordem.",
@@ -96,7 +96,7 @@ export const buyFromStartupMarket = onCall(async (request) => {
       // O valor total da ordem é removido do saldo disponível
       // do usuário
       transaction.update(userBalance.ref, {
-        balanceAvailable: userBalance.balanceAvailable - totalCost,
+        balanceAvailable: userBalance.balanceAvailableCents - totalCost,
       });
 
       // Depois das verificações de saldo, fazemos as operações

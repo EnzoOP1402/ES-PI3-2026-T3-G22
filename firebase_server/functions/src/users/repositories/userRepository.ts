@@ -2,6 +2,7 @@
 
 import {db} from "../../shared/firebase";
 import {Transaction} from "firebase-admin/firestore";
+import {UserDocument, WalletDocument} from "../types";
 
 // Criando um acesso rápido à coleção de usuários
 const userCollection = db.collection("users");
@@ -12,14 +13,9 @@ const userCollection = db.collection("users");
  * @param {string} cpf - O CPF que está tentando ser cadastrado
  * @return {boolean} - Retorna se o CPF existe ou não.
  */
-export async function cpfExists(
-  cpf: string
-) {
+export async function cpfExists(cpf: string) {
   // Obtém a lista de documentos que possuem o CPF indicado
-  const cpfCheck = await userCollection
-    .where("cpf", "==", cpf)
-    .limit(1)
-    .get();
+  const cpfCheck = await userCollection.where("cpf", "==", cpf).limit(1).get();
 
   // Se a lista estiver vazia, retorna false (não existe),
   // se não, retorna true (existe)
@@ -41,7 +37,7 @@ export async function cpfExists(
  */
 export async function getUserBalanceForUpdate(
   transaction: Transaction,
-  userId: string
+  userId: string,
 ) {
   // Criando uma referência ao documento do usuário
   const userRef = userCollection.doc(userId);
@@ -59,7 +55,7 @@ export async function getUserBalanceForUpdate(
   }
 
   // Extraindo os dados do documento
-  const data = userDoc.data();
+  const data = userDoc.data() as UserDocument;
 
   // Retornando os dados obtidos
   return {
@@ -67,9 +63,9 @@ export async function getUserBalanceForUpdate(
     // acessada pelo próximo update
     ref: userRef,
     // Retornando o saldo disponível
-    balanceAvailable: data?.balanceAvailable || 0 as number,
+    balanceAvailableCents: data?.balanceAvailableCents || 0,
     // Retornando o saldo congelado
-    balanceFrozen: data?.balanceFrozen || 0 as number,
+    balanceFrozenCents: data?.balanceFrozenCents || 0,
   };
 }
 
@@ -91,8 +87,13 @@ export async function getUserBalanceForUpdate(
 export async function getUserWalletStartupForUpdate(
   transaction: Transaction,
   userId: string,
-  startupId: string
+  startupId: string,
 ) {
+  if (!userId || !startupId) {
+    throw new Error(
+      "userId e startupId são obrigatórios para buscar a carteira.",
+    );
+  }
   // Criando uma referência ao documento da carteira do usuário
   // referentes à startup indicada
   const walletRef = userCollection
@@ -113,7 +114,7 @@ export async function getUserWalletStartupForUpdate(
   }
 
   // Extraindo os dados do documento
-  const data = walletDoc.data();
+  const data = walletDoc.data() as WalletDocument;
 
   // Retornando os dados obtidos
   return {
@@ -122,7 +123,7 @@ export async function getUserWalletStartupForUpdate(
     ref: walletRef,
     // Retornando os dados da carteira do usuário
     // referentes à startup indicada
-    availableQuantity: data?.availableQuantity as number,
-    lockedQuantity: data?.lockedQuantity as number,
+    availableQuantity: data?.availableQuantity,
+    lockedQuantity: data?.lockedQuantity,
   };
 }
