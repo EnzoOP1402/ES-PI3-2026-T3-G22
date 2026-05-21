@@ -1,7 +1,9 @@
 import * as admin from "firebase-admin";
-import {setGlobalOptions} from "firebase-functions";
+import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { setGlobalOptions } from "firebase-functions/v2";
 
 admin.initializeApp();
+const db = admin.firestore();
 
 setGlobalOptions({
   maxInstances: 10,
@@ -9,3 +11,4 @@ setGlobalOptions({
 });
 
 export * from "./startups";
+export * from "./users";

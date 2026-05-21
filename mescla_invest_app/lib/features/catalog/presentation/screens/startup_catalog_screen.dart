@@ -15,7 +15,6 @@ import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_
 
 class Catalogo extends StatefulWidget {
   const Catalogo({super.key});
-
   @override
   State<Catalogo> createState() => _CatalogoState();
 }
@@ -163,7 +162,6 @@ class _CatalogoState extends State<Catalogo> {
 
     _searchDebounce?.cancel();
     _searchController.clear();
-
     setState(() {
       _selectedStage = 'todos';
       _startupsFuture = _getStartups();
@@ -188,9 +186,7 @@ class _CatalogoState extends State<Catalogo> {
       context,
 
       MaterialPageRoute(
-        builder: (_) => StartupDetailScreen(
-          startupId: startup.id,
-        ),
+        builder: (_) => StartupDetailScreen(startupId: startup.id),
       ),
     );
   }
@@ -214,14 +210,11 @@ class _CatalogoState extends State<Catalogo> {
     return Scaffold(
       backgroundColor:
           const Color(0xFFE2E2E2),
-
       appBar: CustomAppBar(
         title: 'Catálogo',
       ),
-
       body: Column(
         children: [
-
           Padding(
             padding:
                 const EdgeInsets.fromLTRB(
@@ -433,11 +426,9 @@ class _CatalogoState extends State<Catalogo> {
                 return RefreshIndicator(
                   onRefresh:
                       _refreshStartups,
-
                   child: ListView.builder(
                     physics:
                         const AlwaysScrollableScrollPhysics(),
-
                     padding:
                         const EdgeInsets.fromLTRB(
                       16,

@@ -279,16 +279,14 @@ Widget build(BuildContext context) {
               ),
 
               const SizedBox(height: 20),
-
               Text(
                 nome,
-
                 style:
-                    GoogleFonts.montserrat(
-                  color: primaryColor,
-                  fontSize: 22,
-                  fontWeight:
-                      FontWeight.bold,
+                  GoogleFonts.montserrat(
+                    color: primaryColor,
+                    fontSize: 22,
+                    fontWeight:
+                    FontWeight.bold,
                 ),
               ),
 
