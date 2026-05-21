@@ -16,6 +16,7 @@ class UserModel {
   final String phone;
   // final bool twoFAOn;
   final Timestamp? createdAt;
+  final String? photoUrl;
 
   // Definindo o construtor da classe com parâmetros nomeados
   UserModel({
@@ -26,6 +27,7 @@ class UserModel {
     required this.phone,
     // required this.twoFAOn,
     required this.createdAt,
+    required this.photoUrl,
   });
 
   /// Método toMap() - Retorna um Map/objeto contendo as informações de um usuário
@@ -37,6 +39,7 @@ class UserModel {
       'cpf': cpf,
       'phone': phone,
       'createdAt': createdAt,
+      'photoUrl': photoUrl,
     };
   }
 
@@ -51,7 +54,8 @@ class UserModel {
       email: map['email'] ?? '',
       cpf: map['cpf'] ?? '',
       phone: map['phone'] ?? '',
-      createdAt: map['createdAt'] as Timestamp?
+      createdAt: map['createdAt'] as Timestamp?,
+      photoUrl: map['photoUrl'] ?? ''
     );
   }
 
@@ -64,6 +68,7 @@ class UserModel {
     String? cpf,
     String? phone,
     Timestamp? createdAt,
+    String? photoUrl,
   }) {
     return UserModel(
       uid: uid ?? this.uid,
@@ -72,6 +77,7 @@ class UserModel {
       cpf: cpf ?? this.cpf,
       phone: phone ?? this.phone,
       createdAt: createdAt ?? this.createdAt,
+      photoUrl: photoUrl ?? this.photoUrl,
     );
   }
 }
