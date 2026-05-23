@@ -1,5 +1,6 @@
 /* Autor: livia */
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
@@ -21,6 +22,10 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
 
   Future<Map<String, List<BoardOrderModel>>>? _boardFuture;
 
+  String? _startupFiltroId;
+  String? _startupFiltroNome;
+  bool _argumentosCarregados = false;
+
   static const Color _primaryColor = Color(0xFF353988);
   static const Color _accentColor = Color(0xFFDB0065);
   static const Color _backgroundColor = Color(0xFFE8E9EB);
@@ -33,6 +38,81 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
     _boardFuture = _exchangeService.buscarQuadroBalcao();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _carregarArgumentosFiltro();
+  }
+
+  void _carregarArgumentosFiltro() {
+    if (_argumentosCarregados) return;
+
+    final args = ModalRoute.of(context)?.settings.arguments;
+
+    if (args is Map<String, dynamic>) {
+      _startupFiltroId = args['startupId']?.toString();
+      _startupFiltroNome = args['startupName']?.toString();
+
+      final startupData = args['startupData'];
+
+      if ((_startupFiltroNome == null || _startupFiltroNome!.trim().isEmpty) &&
+          startupData is Map<String, dynamic>) {
+        _startupFiltroNome = startupData['name']?.toString();
+      }
+    }
+
+    _argumentosCarregados = true;
+  }
+
+  String _normalizarTexto(String? valor) {
+    if (valor == null) return '';
+
+    return valor
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'\s+'), ' ');
+  }
+
+  String _normalizarParaComparacao(String? valor) {
+    return _normalizarTexto(valor).replaceAll(RegExp(r'[^a-z0-9]'), '');
+  }
+
+  List<BoardOrderModel> _filtrarOrdensPorStartup(
+    List<BoardOrderModel> orders,
+  ) {
+    final filtroId = _startupFiltroId?.trim();
+    final filtroNome = _startupFiltroNome?.trim();
+
+    final temFiltroId = filtroId != null && filtroId.isNotEmpty;
+    final temFiltroNome = filtroNome != null && filtroNome.isNotEmpty;
+
+    if (!temFiltroId && !temFiltroNome) {
+      return orders;
+    }
+
+    final filtroIdNormalizado = _normalizarTexto(filtroId);
+    final filtroNomeNormalizado = _normalizarTexto(filtroNome);
+    final filtroNomeComparacao = _normalizarParaComparacao(filtroNome);
+
+    return orders.where((order) {
+      final orderStartupIdNormalizado = _normalizarTexto(order.startupId);
+      final orderStartupNameNormalizado = _normalizarTexto(order.startupName);
+      final orderStartupNameComparacao =
+          _normalizarParaComparacao(order.startupName);
+
+      final idConfere = temFiltroId &&
+          orderStartupIdNormalizado == filtroIdNormalizado;
+
+      final nomeConfere = temFiltroNome &&
+          orderStartupNameNormalizado == filtroNomeNormalizado;
+
+      final nomeConfereSemEspacos = temFiltroNome &&
+          orderStartupNameComparacao == filtroNomeComparacao;
+
+      return idConfere || nomeConfere || nomeConfereSemEspacos;
+    }).toList();
+  }
+
   Future<void> _recarregarBalcao() async {
     setState(() {
       _boardFuture = _exchangeService.buscarQuadroBalcao();
@@ -41,12 +121,194 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
     await _boardFuture;
   }
 
+  void _mostrarMensagemSaldoInsuficiente() {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.35),
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 24,
+          ),
+          child: Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(
+              maxWidth: 420,
+            ),
+            padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.20),
+                  blurRadius: 22,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: _accentColor.withOpacity(0.10),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _accentColor.withOpacity(0.25),
+                      width: 1,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.account_balance_wallet_outlined,
+                    color: _accentColor,
+                    size: 36,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Saldo insuficiente',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: _primaryColor,
+                    fontSize: 21,
+                    fontWeight: FontWeight.w900,
+                    height: 1,
+                  ),
+                ),
+                const SizedBox(height: 9),
+                const Text(
+                  'Você não possui saldo suficiente para abrir esta ordem no momento.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontSize: 12.5,
+                    height: 1.35,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Abra sua carteira para adicionar fundos e tentar novamente.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black54,
+                    fontSize: 11.5,
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: _primaryColor,
+                          side: BorderSide(
+                            color: _primaryColor.withOpacity(0.25),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.of(dialogContext).pop();
+                        },
+                        child: const Text(
+                          'Agora não',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _primaryColor,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.of(dialogContext).pop();
+
+                          if (!mounted) return;
+
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.wallet,
+                          );
+                        },
+                        child: const Text(
+                          'Abrir carteira',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  bool _erroEhSaldoInsuficiente(Object erro) {
+    final textoErro = erro.toString().toLowerCase();
+
+    if (erro is FirebaseFunctionsException) {
+      final codigo = erro.code.toLowerCase();
+      final mensagem = erro.message?.toLowerCase() ?? '';
+
+      return codigo == 'failed-precondition' &&
+          (mensagem.contains('saldo insuficiente') ||
+              mensagem.contains('saldo suficiente') ||
+              mensagem.contains('saldo_insuficiente') ||
+              mensagem.contains('insufficient balance') ||
+              textoErro.contains('saldo insuficiente') ||
+              textoErro.contains('saldo suficiente') ||
+              textoErro.contains('saldo_insuficiente') ||
+              textoErro.contains('insufficient balance'));
+    }
+
+    return textoErro.contains('failed-precondition') &&
+        (textoErro.contains('saldo insuficiente') ||
+            textoErro.contains('saldo suficiente') ||
+            textoErro.contains('saldo_insuficiente') ||
+            textoErro.contains('insufficient balance'));
+  }
+
   Future<void> _abrirFormularioOrdem({
     required TipoOrdem tipo,
     required ModoOrdem modo,
   }) async {
     try {
-      await Navigator.pushNamed(
+      final resultado = await Navigator.pushNamed(
         context,
         AppRoutes.ordemForm,
         arguments: {
@@ -55,14 +317,28 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
         },
       );
 
-      await _recarregarBalcao();
-    } catch (_) {
       if (!mounted) return;
 
+      if (resultado == 'saldo_insuficiente') {
+        _mostrarMensagemSaldoInsuficiente();
+        return;
+      }
+
+      await _recarregarBalcao();
+    } catch (erro) {
+      if (!mounted) return;
+
+      if (_erroEhSaldoInsuficiente(erro)) {
+        _mostrarMensagemSaldoInsuficiente();
+        return;
+      }
+
+      ScaffoldMessenger.of(context).clearSnackBars();
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text(
-            'Rota ${AppRoutes.ordemForm} ainda não configurada no main.dart.',
+            'Não foi possível abrir a ordem. Tente novamente.',
           ),
         ),
       );
@@ -224,8 +500,16 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
               );
             }
 
-            final sellOrders = snapshot.data?['sellOrders'] ?? [];
-            final buyOrders = snapshot.data?['buyOrders'] ?? [];
+            final todasSellOrders = snapshot.data?['sellOrders'] ?? [];
+            final todasBuyOrders = snapshot.data?['buyOrders'] ?? [];
+
+            final sellOrders = _filtrarOrdensPorStartup(
+              todasSellOrders,
+            );
+
+            final buyOrders = _filtrarOrdensPorStartup(
+              todasBuyOrders,
+            );
 
             return RefreshIndicator(
               color: _primaryColor,
@@ -238,6 +522,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                     descricao:
                         'Confira todas as ofertas de venda de tokens disponíveis atualmente no MesclaInvest.',
                     orders: sellOrders,
+                    isVenda: true,
                   ),
                   const SizedBox(height: 16),
                   _buildSecaoOrdens(
@@ -245,6 +530,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                     descricao:
                         'Confira todas as ofertas de compra de tokens disponíveis atualmente no MesclaInvest.',
                     orders: buyOrders,
+                    isVenda: false,
                   ),
                   const SizedBox(height: 22),
                   Row(
@@ -285,6 +571,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
     required String titulo,
     required String descricao,
     required List<BoardOrderModel> orders,
+    required bool isVenda,
   }) {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
@@ -329,14 +616,24 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                   ),
                 )
               : Column(
-                  children: orders.map(_buildCardOferta).toList(),
+                  children: orders
+                      .map(
+                        (order) => _buildCardOferta(
+                          order,
+                          isVenda: isVenda,
+                        ),
+                      )
+                      .toList(),
                 ),
         ],
       ),
     );
   }
 
-  Widget _buildCardOferta(BoardOrderModel order) {
+  Widget _buildCardOferta(
+    BoardOrderModel order, {
+    required bool isVenda,
+  }) {
     final bool isAlta = order.appreciated;
     final Color indicatorColor =
         isAlta ? Colors.green.shade700 : Colors.red.shade700;
@@ -368,8 +665,8 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
               borderRadius: BorderRadius.circular(9),
             ),
             child: Icon(
-              order.type == 'sell'
-                  ? Icons.sell_rounded
+              isVenda
+                  ? Icons.attach_money_rounded
                   : Icons.shopping_cart_rounded,
               color: Colors.black,
               size: 19,

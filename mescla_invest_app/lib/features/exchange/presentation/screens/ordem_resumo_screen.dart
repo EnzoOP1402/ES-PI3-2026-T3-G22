@@ -1,5 +1,6 @@
 /* Autor: livia */
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
@@ -26,6 +27,31 @@ class _OrdemResumoScreenState extends State<OrdemResumoScreen> {
 
   String _formatarMoeda(double valor) {
     return 'R\$ ${valor.toStringAsFixed(2).replaceAll('.', ',')}';
+  }
+
+  bool _erroEhSaldoInsuficiente(Object erro) {
+    final textoErro = erro.toString().toLowerCase();
+
+    if (erro is FirebaseFunctionsException) {
+      final codigo = erro.code.toLowerCase();
+      final mensagem = erro.message?.toLowerCase() ?? '';
+
+      return codigo == 'failed-precondition' &&
+          (mensagem.contains('saldo insuficiente') ||
+              mensagem.contains('saldo suficiente') ||
+              mensagem.contains('saldo_insuficiente') ||
+              mensagem.contains('insufficient balance') ||
+              textoErro.contains('saldo insuficiente') ||
+              textoErro.contains('saldo suficiente') ||
+              textoErro.contains('saldo_insuficiente') ||
+              textoErro.contains('insufficient balance'));
+    }
+
+    return textoErro.contains('failed-precondition') &&
+        (textoErro.contains('saldo insuficiente') ||
+            textoErro.contains('saldo suficiente') ||
+            textoErro.contains('saldo_insuficiente') ||
+            textoErro.contains('insufficient balance'));
   }
 
   Future<void> _abrirOrdem(_ResumoOrdemArgs args) async {
@@ -59,6 +85,13 @@ class _OrdemResumoScreenState extends State<OrdemResumoScreen> {
     } catch (erro) {
       if (!mounted) return;
 
+      if (_erroEhSaldoInsuficiente(erro)) {
+        Navigator.pop(context, 'saldo_insuficiente');
+        return;
+      }
+
+      ScaffoldMessenger.of(context).clearSnackBars();
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Erro ao abrir ordem: $erro'),
@@ -79,11 +112,9 @@ class _OrdemResumoScreenState extends State<OrdemResumoScreen> {
 
     return Scaffold(
       backgroundColor: _backgroundColor,
-
       appBar: const CustomAppBar(
         title: 'Balcão',
       ),
-
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(
@@ -99,9 +130,7 @@ class _OrdemResumoScreenState extends State<OrdemResumoScreen> {
                   fontWeight: FontWeight.w900,
                 ),
               ),
-
               const SizedBox(height: 4),
-
               const Text(
                 'Revise os dados da ordem antes de confirmar a operação.',
                 style: TextStyle(
@@ -110,9 +139,7 @@ class _OrdemResumoScreenState extends State<OrdemResumoScreen> {
                   height: 1.25,
                 ),
               ),
-
               const SizedBox(height: 18),
-
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
@@ -132,9 +159,7 @@ class _OrdemResumoScreenState extends State<OrdemResumoScreen> {
                           color: _primaryColor,
                           size: 26,
                         ),
-
                         SizedBox(width: 8),
-
                         Expanded(
                           child: Column(
                             children: [
@@ -147,9 +172,7 @@ class _OrdemResumoScreenState extends State<OrdemResumoScreen> {
                                   fontWeight: FontWeight.w900,
                                 ),
                               ),
-
                               SizedBox(height: 2),
-
                               Text(
                                 'Revise com atenção antes de prosseguir',
                                 textAlign: TextAlign.center,
@@ -163,53 +186,42 @@ class _OrdemResumoScreenState extends State<OrdemResumoScreen> {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 16),
-
                     _linhaResumo(
                       titulo: 'Tipo de ordem',
                       valor: args.tipo.label,
                     ),
-
                     _linhaResumo(
                       titulo: 'Modo da ordem',
                       valor: args.modo.label,
                     ),
-
                     _linhaResumo(
                       titulo: 'Startup selecionada',
                       valor: args.startupNome,
                     ),
-
                     _linhaResumo(
                       titulo: 'Símbolo',
                       valor: args.simbolo,
                     ),
-
                     _linhaResumo(
                       titulo: 'Quantidade de tokens escolhida',
                       valor: '${args.quantidadeTokens} tokens',
                     ),
-
                     _linhaResumo(
                       titulo: 'Valor unitário de cada token',
                       valor: _formatarMoeda(args.precoUnitario),
                     ),
-
                     _linhaResumo(
                       titulo: args.tipo == TipoOrdem.compra
                           ? 'Valor total a ser investido'
                           : 'Valor total a ser arrecadado',
                       valor: _formatarMoeda(args.valorTotal),
                     ),
-
                     _linhaResumo(
                       titulo: 'Status inicial da ordem',
                       valor: 'Aberta',
                     ),
-
                     const SizedBox(height: 18),
-
                     SizedBox(
                       width: 160,
                       height: 42,
@@ -248,9 +260,7 @@ class _OrdemResumoScreenState extends State<OrdemResumoScreen> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 18),
-
               Center(
                 child: TextButton(
                   onPressed: () {
@@ -269,7 +279,6 @@ class _OrdemResumoScreenState extends State<OrdemResumoScreen> {
           ),
         ),
       ),
-
       bottomNavigationBar: const AppBottomNavigation(
         selectedIndex: 2,
       ),
@@ -302,9 +311,7 @@ class _OrdemResumoScreenState extends State<OrdemResumoScreen> {
               fontWeight: FontWeight.w800,
             ),
           ),
-
           const SizedBox(height: 2),
-
           Text(
             valor,
             style: const TextStyle(
