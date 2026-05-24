@@ -20,11 +20,9 @@ class OrdemSucessoScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: _backgroundColor,
-
       appBar: const CustomAppBar(
         title: 'Balcão',
       ),
-
       body: SafeArea(
         top: false,
         child: Center(
@@ -155,7 +153,6 @@ class OrdemSucessoScreen extends StatelessWidget {
           ),
         ),
       ),
-
       bottomNavigationBar: const AppBottomNavigation(
         selectedIndex: 2,
       ),
@@ -177,16 +174,16 @@ class _SucessoArgs {
   });
 
   String get mensagemPrincipal {
-  if (tipo == TipoOrdem.venda) {
-    return 'Sua ordem de venda foi aberta com sucesso.';
-  }
+    if (tipo == TipoOrdem.venda) {
+      return 'Sua ordem de venda foi aberta com sucesso.';
+    }
 
-  if (modo == ModoOrdem.mercado) {
-    return 'Sua ordem de compra foi aberta com sucesso.';
-  }
+    if (modo == ModoOrdem.mercado) {
+      return 'Sua ordem de compra foi aberta com sucesso.';
+    }
 
-  return 'Sua ordem de compra limitada foi aberta com sucesso.';
- }
+    return 'Sua ordem de compra limitada foi aberta com sucesso.';
+  }
 
   String get mensagemSecundaria {
     if (tipo == TipoOrdem.venda) {

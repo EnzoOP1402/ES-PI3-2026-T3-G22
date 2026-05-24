@@ -1,18 +1,16 @@
 /* Autor: livia */
 
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:mescla_invest_app/features/exchange/data/models/board_order_model.dart';
 import 'package:mescla_invest_app/features/exchange/widgets/exchange_model.dart';
 
 class ExchangeService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseFunctions _functions = FirebaseFunctions.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  CollectionReference<Map<String, dynamic>> get _ofertasCollection {
-    return _firestore.collection('balcao_ofertas');
-  }
 
   CollectionReference<Map<String, dynamic>> get _startupsCollection {
     return _firestore.collection('Startups');
@@ -20,6 +18,38 @@ class ExchangeService {
 
   CollectionReference<Map<String, dynamic>> get _usuariosCollection {
     return _firestore.collection('usuarios');
+  }
+
+  Future<Map<String, List<BoardOrderModel>>> buscarQuadroBalcao() async {
+    final result = await FirebaseFunctions.instanceFor(
+      region: 'southamerica-east1',
+    ).httpsCallable('getExchangeBoard').call();
+
+    final resultData = Map<String, dynamic>.from(result.data);
+
+    final data = resultData['data'] is Map
+        ? Map<String, dynamic>.from(resultData['data'])
+        : resultData;
+
+    final sellRaw = (data['sellOrders'] ?? []) as List;
+    final buyRaw = (data['buyOrders'] ?? []) as List;
+
+    return {
+      'sellOrders': sellRaw
+          .map(
+            (item) => BoardOrderModel.fromMap(
+              Map<String, dynamic>.from(item),
+            ),
+          )
+          .toList(),
+      'buyOrders': buyRaw
+          .map(
+            (item) => BoardOrderModel.fromMap(
+              Map<String, dynamic>.from(item),
+            ),
+          )
+          .toList(),
+    };
   }
 
   Stream<List<StartupExchangeOption>> buscarStartupsParaOrdem({
@@ -35,9 +65,7 @@ class ExchangeService {
   Stream<List<StartupExchangeOption>> _buscarTodasStartups() {
     return _startupsCollection.snapshots().map((snapshot) {
       final startups = snapshot.docs.map(_startupFromDoc).toList();
-
       startups.sort((a, b) => a.nome.compareTo(b.nome));
-
       return startups;
     });
   }
@@ -53,15 +81,12 @@ class ExchangeService {
 
     return usuarioRef.snapshots().asyncMap((usuarioSnapshot) async {
       final Set<String> startupIdsComTokens = {};
-
       final usuarioData = usuarioSnapshot.data();
-
       final tokensMap = usuarioData?['tokens'];
 
       if (tokensMap is Map) {
         tokensMap.forEach((startupId, quantidade) {
           final qtd = _toDouble(quantidade);
-
           if (qtd > 0) {
             startupIdsComTokens.add(startupId.toString());
           }
@@ -122,6 +147,7 @@ class ExchangeService {
     final String simbolo = _pegarTextoStartup(
       data,
       [
+        'tokenName',
         'simbolo',
         'ticker',
         'tag',
@@ -140,7 +166,79 @@ class ExchangeService {
     );
   }
 
+  Future<String> abrirOrdem({
+    required String startupId,
+    required String startupNome,
+    required String simbolo,
+    required TipoOrdem tipo,
+    required ModoOrdem modo,
+    required int quantidadeTokens,
+    required double precoUnitario,
+  }) async {
+    late final HttpsCallable callable;
+    late final Map<String, dynamic> payload;
+
+    if (tipo == TipoOrdem.compra && modo == ModoOrdem.mercado) {
+      callable = FirebaseFunctions.instanceFor(
+        region: 'southamerica-east1',
+      ).httpsCallable('buyFromStartupMarket');
+
+      payload = {
+        'startupId': startupId,
+        'quantity': quantidadeTokens,
+      };
+    } else if (tipo == TipoOrdem.compra) {
+      callable = FirebaseFunctions.instanceFor(
+        region: 'southamerica-east1',
+      ).httpsCallable('createBuyOrder');
+
+      payload = {
+        'startupId': startupId,
+        'priceCents': (precoUnitario * 100).round(),
+        'quantity': quantidadeTokens,
+      };
+    } else {
+      callable = FirebaseFunctions.instanceFor(
+        region: 'southamerica-east1',
+      ).httpsCallable('createSellOrder');
+
+      payload = {
+        'startupId': startupId,
+        'priceCents': (precoUnitario * 100).round(),
+        'quantity': quantidadeTokens,
+      };
+    }
+
+    final response = await callable.call(payload);
+    final data = Map<String, dynamic>.from(response.data);
+
+    final responseData = data['data'] is Map
+        ? Map<String, dynamic>.from(data['data'])
+        : data;
+
+    return responseData['id']?.toString() ??
+        responseData['orderId']?.toString() ??
+        responseData['ordemId']?.toString() ??
+        '';
+  }
+
+  Future<void> cancelarOrdem(String ordemId) async {
+    final callable = FirebaseFunctions.instanceFor(
+      region: 'southamerica-east1',
+    ).httpsCallable('cancelOrder');
+
+    await callable.call({
+      'orderId': ordemId,
+    });
+  }
+
   double _pegarValorToken(Map<String, dynamic> data) {
+    final valorEmCentavos = data['currentTokenPriceCents'];
+
+    if (valorEmCentavos is num && valorEmCentavos > 0) {
+      return valorEmCentavos / 100;
+    }
+
     final valorDireto = _pegarNumeroStartup(
       data,
       [
@@ -193,140 +291,7 @@ class ExchangeService {
       return capitalAportado / tokensEmitidos;
     }
 
-    final mapasPossiveis = [
-      data['financialPanel'],
-      data['painelFinanceiro'],
-      data['financeiro'],
-      data['financial'],
-      data['dadosFinanceiros'],
-      data['finances'],
-    ];
-
-    for (final mapa in mapasPossiveis) {
-      if (mapa is Map) {
-        final valorDiretoNoMapa = _pegarNumeroEmMap(
-          mapa,
-          [
-            'valorToken',
-            'valorFixoTokens',
-            'tokenValue',
-            'precoToken',
-            'precoUnitario',
-            'valorAtualToken',
-            'valorAtualDeUmToken',
-            'valorAtualUmToken',
-            'valorUnitarioToken',
-            'currentTokenValue',
-            'tokenPrice',
-          ],
-        );
-
-        if (valorDiretoNoMapa > 0) {
-          return valorDiretoNoMapa;
-        }
-
-        final tokensEmitidosNoMapa = _pegarNumeroEmMap(
-          mapa,
-          [
-            'tokensEmitidos',
-            'totalTokensEmitidos',
-            'tokensIssued',
-            'totalTokensIssued',
-            'issuedTokens',
-            'totalTokens',
-            'tokens',
-          ],
-        );
-
-        final capitalAportadoNoMapa = _pegarNumeroEmMap(
-          mapa,
-          [
-            'capitalAportado',
-            'capitalInvestido',
-            'capitalInvested',
-            'investedCapital',
-            'capitalRaised',
-            'volumeCaptado',
-            'simulatedCapital',
-            'capital',
-          ],
-        );
-
-        if (tokensEmitidosNoMapa > 0 && capitalAportadoNoMapa > 0) {
-          return capitalAportadoNoMapa / tokensEmitidosNoMapa;
-        }
-      }
-    }
-
     return 0;
-  }
-
-  Stream<List<OfertaBalcao>> buscarOrdensDeVenda() {
-    return _buscarOfertasPorTipo(TipoOrdem.venda);
-  }
-
-  Stream<List<OfertaBalcao>> buscarOrdensDeCompra() {
-    return _buscarOfertasPorTipo(TipoOrdem.compra);
-  }
-
-  Stream<List<OfertaBalcao>> _buscarOfertasPorTipo(TipoOrdem tipo) {
-    return _ofertasCollection
-        .where('tipo', isEqualTo: tipo.value)
-        .where('status', isEqualTo: 'aberta')
-        .snapshots()
-        .map((snapshot) {
-      final ofertas = snapshot.docs.map((doc) {
-        final data = doc.data();
-
-        return OfertaBalcao.fromMap({
-          ...data,
-          'id': doc.id,
-        });
-      }).toList();
-
-      ofertas.sort((a, b) {
-        final dataA = a.criadaEm ?? DateTime(2000);
-        final dataB = b.criadaEm ?? DateTime(2000);
-
-        return dataB.compareTo(dataA);
-      });
-
-      return ofertas;
-    });
-  }
-
-  Future<String> abrirOrdem({
-    required String startupId,
-    required String startupNome,
-    required String simbolo,
-    required TipoOrdem tipo,
-    required ModoOrdem modo,
-    required int quantidadeTokens,
-    required double precoUnitario,
-  }) async {
-    final callable = _functions.httpsCallable('abrirOrdemBalcao');
-
-    final response = await callable.call({
-      'startupId': startupId,
-      'startupNome': startupNome,
-      'simbolo': simbolo,
-      'tipo': tipo.value,
-      'modo': modo.value,
-      'quantidadeTokens': quantidadeTokens,
-      'precoUnitario': precoUnitario,
-    });
-
-    final data = Map<String, dynamic>.from(response.data);
-
-    return data['ordemId']?.toString() ?? '';
-  }
-
-  Future<void> cancelarOrdem(String ordemId) async {
-    final callable = _functions.httpsCallable('cancelarOrdemBalcao');
-
-    await callable.call({
-      'ordemId': ordemId,
-    });
   }
 
   String _pegarTextoStartup(
@@ -347,21 +312,6 @@ class ExchangeService {
 
   double _pegarNumeroStartup(
     Map<String, dynamic> data,
-    List<String> campos,
-  ) {
-    for (final campo in campos) {
-      final numero = _toDouble(data[campo]);
-
-      if (numero > 0) {
-        return numero;
-      }
-    }
-
-    return 0;
-  }
-
-  double _pegarNumeroEmMap(
-    Map<dynamic, dynamic> data,
     List<String> campos,
   ) {
     for (final campo in campos) {
@@ -404,27 +354,14 @@ class ExchangeService {
   }
 
   double _toDouble(dynamic value) {
-    if (value == null) {
-      return 0;
-    }
-
-    if (value is double) {
-      return value;
-    }
-
-    if (value is int) {
-      return value.toDouble();
-    }
-
-    if (value is num) {
-      return value.toDouble();
-    }
+    if (value == null) return 0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is num) return value.toDouble();
 
     var texto = value.toString().trim();
 
-    if (texto.isEmpty) {
-      return 0;
-    }
+    if (texto.isEmpty) return 0;
 
     texto = texto
         .replaceAll('R\$', '')
