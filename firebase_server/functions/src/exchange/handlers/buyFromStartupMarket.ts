@@ -9,6 +9,7 @@ import {FieldValue} from "firebase-admin/firestore";
 import {logger} from "firebase-functions";
 import {getStartupByIdInTransaction} from
   "../../startups/repositories/startupRepository";
+import {TradeDocument} from "../types";
 
 /**
  * Firebase Function responsável pela realização de uma compra de
@@ -139,11 +140,36 @@ export const buyFromStartupMarket = onCall(async (request) => {
         // existir, ele não apague os dados anteriores
         {merge: true},
       );
+
+      // Registrando a transação na blockchain
+
+      // Criando uma referência para o novo registro (com
+      // um id recém criado)
+      const tradeRef = db.collection("trades").doc();
+
+      // Criando um objeto com os dados da transação
+      const tradeDocument: TradeDocument = {
+        buyerId: user.uid,
+        startupId: startupId,
+        quantity: quantity,
+        unitPriceCents: startup.data.currentTokenPriceCents,
+        totalPriceCents: totalCost,
+        registeredAt: FieldValue.serverTimestamp(),
+      };
+
+      // Registrando a transação na blockchain
+      transaction.set(tradeRef, tradeDocument);
+
+      // Exibindo uma mensagem de sucesso da operação
+      logger.info(
+        `Registro da transação ${tradeRef.id}`+
+        " realizado com sucesso."
+      );
     });
 
     // Registrando no Logger da Function a mensagem de sucesso
     // após a conclusão da transação
-    logger.info("Ordem de compra criada com sucesso.");
+    logger.info("Compra a mercado realizada com sucesso.");
 
     // Retornando um objeto com o status de sucesso, o id da
     // startup e o id do usuário

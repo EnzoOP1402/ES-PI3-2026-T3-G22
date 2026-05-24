@@ -9,6 +9,13 @@ import {logger} from "firebase-functions";
 import {UserDocument} from "../types";
 import {FieldValue} from "firebase-admin/firestore";
 
+/**
+ * Função de cadastro de um usuário.
+ *
+ * Obtém os dados cadastrais vindos do frontend, valida-os, cria
+ * um usuário no Firebase Authentication e salva seus dados no
+ * Firestore.
+ */
 export const registerUser = onCall( async (request) => {
   // ETAPA 1: Obtenção e normalização dos dados vindos
   // da requisição

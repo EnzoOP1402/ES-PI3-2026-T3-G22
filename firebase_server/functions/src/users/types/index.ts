@@ -34,5 +34,13 @@ export type WalletDocument = {
   tokenName: string,
   availableQuantity: number,
   lockedQuantity: number,
-  totalQuantity: number,
+}
+
+// Definindo o tipo que representa o documento da Wallet
+// de um usuário
+export type WalletListTile = {
+  startupId: string,
+  startupName: string,
+  tokenName: string,
+  quantity: number,
 }

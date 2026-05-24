@@ -71,7 +71,32 @@ export type TradeDocument = {
     quantity: number,
     unitPriceCents: number,
     totalPriceCents: number,
-    buyOrderId: string,
-    sellOrderId: string,
+    buyOrderId?: string,
+    sellOrderId?: string,
     registeredAt: FieldValue
+}
+
+/**
+ * Tipo que representa a tendência de mercado do valor
+ * de oferta de uma ordem.
+ *
+ * - `up`: significa que o preço está mais alto que o de mercado
+ * - `down`: significa que o preço está mais baixo que o de mercado
+ * - `equal`: significa que o preço está igual ao de mercado
+ */
+export type PriceTrend = "up" | "down" | "equal";
+
+/**
+ * Tipo que representa o objeto de uma ordem exibida na
+ * tela do balcão de tokens.
+ */
+export type OfferListTile = {
+    id: string,
+    startupName: string,
+    tokenName: string,
+    quantity: number,
+    priceCents: number,
+    type?: OrderType
+    trend: PriceTrend,
+    isGoodDeal: boolean
 }

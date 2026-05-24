@@ -1,3 +1,5 @@
+/* Autor: Enzo Olivato Pazian */
+
 import * as admin from "firebase-admin";
 import {setGlobalOptions} from "firebase-functions";
 

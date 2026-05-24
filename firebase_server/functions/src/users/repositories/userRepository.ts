@@ -89,6 +89,7 @@ export async function getUserWalletStartupForUpdate(
   userId: string,
   startupId: string,
 ) {
+  // Garantindo que os dados necessários foram informados
   if (!userId || !startupId) {
     throw new Error(
       "userId e startupId são obrigatórios para buscar a carteira.",
@@ -126,4 +127,28 @@ export async function getUserWalletStartupForUpdate(
     availableQuantity: data?.availableQuantity,
     lockedQuantity: data?.lockedQuantity,
   };
+}
+
+/**
+ * Obtém os dados de um usuário através de seu ID.
+ *
+ * @param {string} userId - O UID do usuário a ter os
+ * dados buscados
+ * @return {UserDocument | undefined} - Os dados formatados de um usuário
+ */
+export async function getUserById(userId: string) {
+  // Garantindo que o ID do usuário foi informado
+  if (!userId) {
+    return undefined;
+  }
+
+  // Obtendo os dados do documento do usuário informado
+  const userDoc = await userCollection.doc(userId).get();
+
+  // Se o documento não existir, retorna undefined
+  if (!userDoc.exists) return undefined;
+
+  // Se o documento existir, o retorna seus dados
+  // convertidos para o tipo definido
+  return userDoc.data() as UserDocument;
 }

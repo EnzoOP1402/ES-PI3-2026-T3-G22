@@ -11,3 +11,5 @@ export {cancelOrder} from "./handlers/cancelOrder";
 export {getExchangeBoard} from "./handlers/getExchangeBoard";
 
 export {matchOrderTrigger} from "./handlers/matchOrderTrigger";
+
+export {getExchangeBoardByStartup} from "./handlers/getExchangeBoardByStartup";
