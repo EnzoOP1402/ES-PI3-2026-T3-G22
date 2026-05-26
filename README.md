@@ -50,3 +50,25 @@ Este aplicativo foi desenvolvido para fins estritamente acadêmicos (Projeto Int
 * **Não** utiliza dinheiro real.
 * As transações de tokens são **simuladas** e não possuem valor jurídico ou financeiro fora do ambiente do projeto.
 * Não há emissão de tokens em redes de blockchain públicas.
+
+---
+
+## 🛣️ Como iniciar o projeto MesclaInvest
+
+Passo-a-passo para realizar as instalações dos pacotes e ferramentas necessárias para a inicialização do aplicativo.
+- ;
+
+```
+cd backend
+```
+
+- ;
+
+
+```
+npm install
+```
+
+## 2. Vincule o banco de Dados (Windows)
+### Instalações nescessarias: 
+
