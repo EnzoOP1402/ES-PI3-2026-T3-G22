@@ -56,19 +56,24 @@ Este aplicativo foi desenvolvido para fins estritamente acadêmicos (Projeto Int
 ## 🛣️ Como iniciar o projeto MesclaInvest
 
 Passo-a-passo para realizar as instalações dos pacotes e ferramentas necessárias para a inicialização do aplicativo.
-- ;
 
+## 1. Instalação manual do Flutter SDK no Windows
+- **Baixar o Flutter SDK (zip)**: Acesse a documentação oficial: https://docs.flutter.dev/get-started/install/windows e baixe o pacote .zip do Flutter SDK para Windows.
+- **Extrair em pasta apropriada**: Crie (se necessário) a pasta C:\development e depois sdks. Extraia o zip para C:\development\sdks\flutter.
+  
+Estrutura esperada:
 ```
-cd backend
+C:\development\sdks\flutter\bin
 ```
+- **Configurar PATH no sistema**: Abra o menu iniciar e pesquise por **Variáveis de Ambiente para a sua Conta** e clique em Editar as variáveis de ambiente do sistema. Abra Variáveis de Ambiente e depois em Variáveis do usuário (ou do sistema), selecione Path e clique em Editar.
 
-- ;
-
-
+Adicione a entrada:
 ```
-npm install
+C:\dev\flutter\bin
 ```
+- Confirme com OK em todas as janelas.
 
-## 2. Vincule o banco de Dados (Windows)
-### Instalações nescessarias: 
+## 2. Importar Node.js
+- **Instalação do Pacote Node.js**: Acesse https://nodejs.org/pt-br e clique em "Baixar Node.js". Escolha o "Instalador Windows(.msi)".
+- 
 
