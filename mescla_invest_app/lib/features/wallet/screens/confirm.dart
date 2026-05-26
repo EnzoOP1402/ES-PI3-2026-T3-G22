@@ -1,3 +1,5 @@
+/* Autor: Bernardo Castro Brandão de Oliveira */
+
 import 'package:flutter/material.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
 
