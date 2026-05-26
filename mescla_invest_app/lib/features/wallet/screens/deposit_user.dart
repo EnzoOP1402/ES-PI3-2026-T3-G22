@@ -1,3 +1,5 @@
+/* Autor: Bernardo Castro Brandão de Oliveira */
+
 // Importa o pacote principal do Flutter com widgets visuais(Text, Collumn, etc)
 import 'package:flutter/material.dart';
 
