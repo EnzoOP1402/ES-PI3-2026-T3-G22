@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
 import 'package:mescla_invest_app/features/auth/data/models/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mescla_invest_app/routes/app_routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mescla_invest_app/features/profile/presentation/screens/camera_screen.dart';
 
@@ -198,7 +197,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const Divider(color: Color(0xFFC9C9C9), thickness: 1),
                       const SizedBox(height: 30),
                       Center(
-                        child: _ActionButton(
+                        child: ActionButton(
                           icon: Icons.history,
                           label: 'Histórico de compras',
                           onTap: () => _showMessage('Histórico de compras'),
@@ -206,20 +205,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       const SizedBox(height: 12),
                       Center(
-                        child: _ActionButton(
+                        child: ActionButton(
                           icon: Icons.logout_outlined,
                           label: 'Sair da conta',
-                          onTap: () async {
-                            await AuthRepository.instance.logout();
-                            Navigator.pushReplacementNamed(
-                              context,
-                              AppRoutes.login,
-                              );
-                            }
+                          onTap: AuthRepository.instance.logout
                           )
                           )
-                    ]
-                      ),
+                      ]
+                    ),
                   ),
                 ),
               ),
@@ -259,12 +252,12 @@ class _InfoItem extends StatelessWidget {
   }
 }
 
-class _ActionButton extends StatelessWidget {
+class ActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
 
-  const _ActionButton({
+  ActionButton({
     required this.icon,
     required this.label,
     required this.onTap,

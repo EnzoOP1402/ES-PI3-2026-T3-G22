@@ -1,17 +1,62 @@
-import {onCall} from "firebase-functions/v2/https";
-import * as admin from "firebase-admin";
+import {HttpsError, onCall} from "firebase-functions/https";
+import {allowedStages} from "../shared/constants";
+import {listStartupItems} from "../repositories/startupRepository";
+import {StartupStage} from "../types";
+import {normalizeString} from "../../shared/validation";
+import {requireAuthenticatedUser} from "../../shared/auth";
 
-export const listStartups = onCall(async () => {
-  const snapshot = await admin.firestore()
-    .collection("startups")
-    .get();
+export const listStartups = onCall(async (request) => {
+  requireAuthenticatedUser(request);
 
-  const startups = snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
+  const stage = normalizeString(request.data?.state);
+  const search = normalizeString(
+    request.data?.search
+  )?.toLocaleLowerCase("pt-BR");
+
+  if (stage && !allowedStages.includes(stage as StartupStage)) {
+    throw new HttpsError(
+      "invalid-argument",
+      "Filtro inválido. Use: nova, em_operacao ou em_expansao."
+    );
+  }
+
+  const allStartups = await listStartupItems();
+
+  console.log("STARTUPS ENCONTRADAS NO FIRESTORE:", allStartups.length);
+
+  const startups = allStartups
+    .filter((startup) => {
+      if (!stage) {
+        return true;
+      }
+
+      return startup.stage === stage;
+    })
+    .filter((startup) => {
+      if (!search) {
+        return true;
+      }
+
+      const searchable = [
+        startup.name,
+        startup.shortDescription,
+        startup.stage,
+        ...(startup.tags ?? []),
+      ].join(" ").toLocaleLowerCase("pt-BR");
+
+      return searchable.includes(search);
+    })
+    .sort((left, right) => {
+      return left.name.localeCompare(right.name, "pt-BR");
+    });
 
   return {
+    count: startups.length,
+    filters: {
+      availableStages: allowedStages,
+      stage: stage ?? null,
+      search: search ?? null,
+    },
     data: startups,
   };
 });

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/core/widgets/auth_wrapper.dart';
-import 'package:mescla_invest_app/features/auth/presentation/screens/welcome_screen.dart';
 import 'package:mescla_invest_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:mescla_invest_app/features/auth/presentation/screens/password_recovery_screen.dart';
 import 'package:mescla_invest_app/features/auth/presentation/screens/register_screen.dart';
