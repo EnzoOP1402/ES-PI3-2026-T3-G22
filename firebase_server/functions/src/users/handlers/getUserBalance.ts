@@ -40,7 +40,7 @@ export const getUserBalance = onCall(
       // Lança uma exceção que será exibida de forma amigável no front
       throw new HttpsError(
         "internal",
-        `Erro ao carregar do saldo do usuário: ${error}`
+        "Erro ao carregar do saldo do usuário."
       );
     }
   }

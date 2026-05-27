@@ -1,12 +1,14 @@
 /* Autor: livia */
 
 import 'package:flutter/material.dart';
+import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
+import 'package:mescla_invest_app/features/exchange/widgets/order_confirmation_modal.dart';
 import 'package:mescla_invest_app/routes/app_routes.dart';
 
 import '../../data/services/exchange_service.dart';
-import '../../widgets/exchange_model.dart';
+import '../../data/models/exchange_model.dart';
 
 class OrdemFormScreen extends StatefulWidget {
   const OrdemFormScreen({super.key});
@@ -17,14 +19,14 @@ class OrdemFormScreen extends StatefulWidget {
 
 class _OrdemFormScreenState extends State<OrdemFormScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
   final TextEditingController _precoController = TextEditingController();
   final TextEditingController _quantidadeController = TextEditingController();
 
   final ExchangeService _exchangeService = ExchangeService();
 
-  Stream<List<StartupExchangeOption>>? _startupsStream;
+  Future<List<StartupExchangeOption>>? _startupsFuture;
   bool _argumentosCarregados = false;
+  bool _verificandoSaldo = false; // Novo estado de loading para botão de avançar
 
   static const Color _primaryColor = Color(0xFF353988);
   static const Color _accentColor = Color(0xFFDB0065);
@@ -35,34 +37,22 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
 
   StartupExchangeOption? _startupSelecionada;
 
-  bool get _isOrdemMercado {
-    return _modo == ModoOrdem.mercado;
-  }
+  bool get _isOrdemMercado => _modo == ModoOrdem.mercado;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    if (_argumentosCarregados) {
-      return;
-    }
+    if (_argumentosCarregados) return;
 
     final args = ModalRoute.of(context)?.settings.arguments;
 
     if (args is Map<String, dynamic>) {
-      _tipo = TipoOrdemExtension.fromString(
-        args['tipo']?.toString() ?? 'compra',
-      );
-
-      _modo = ModoOrdemExtension.fromString(
-        args['modo']?.toString() ?? 'mercado',
-      );
+      _tipo = TipoOrdemExtension.fromString(args['tipo']?.toString() ?? 'compra');
+      _modo = ModoOrdemExtension.fromString(args['modo']?.toString() ?? 'mercado');
     }
 
-    _startupsStream = _exchangeService.buscarStartupsParaOrdem(
-      tipo: _tipo,
-    );
-
+    _startupsFuture = _exchangeService.buscarStartupsParaOrdem(tipo: _tipo);
     _argumentosCarregados = true;
   }
 
@@ -74,14 +64,8 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
   }
 
   String get _tituloTela {
-    if (_tipo == TipoOrdem.venda) {
-      return 'Abertura de Ordem de Venda';
-    }
-
-    if (_modo == ModoOrdem.mercado) {
-      return 'Abertura de Ordem de Compra a Mercado';
-    }
-
+    if (_tipo == TipoOrdem.venda) return 'Abertura de Ordem de Venda';
+    if (_modo == ModoOrdem.mercado) return 'Abertura de Ordem de Compra a Mercado';
     return 'Abertura de Ordem de Compra Limitada';
   }
 
@@ -89,11 +73,9 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
     if (_tipo == TipoOrdem.venda) {
       return 'Preencha os dados necessários para cadastrar uma oferta de venda de tokens.';
     }
-
     if (_modo == ModoOrdem.mercado) {
       return 'O valor unitário será definido automaticamente pelo preço do token cadastrado pela startup.';
     }
-
     return 'Preencha os dados necessários para prosseguir com a criação da oferta de compra de tokens.';
   }
 
@@ -101,83 +83,34 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
     if (_tipo == TipoOrdem.venda) {
       return 'Selecione uma startup que você possui tokens para vender.';
     }
-
     return 'Você deseja abrir uma ordem para qual startup?';
   }
 
   String get _textoCampoPreco {
-    if (_isOrdemMercado) {
-      return 'Valor unitário definido pela startup';
-    }
-
+    if (_isOrdemMercado) return 'Valor unitário definido pela startup';
     return 'Informe o valor unitário de cada token';
   }
 
   double _converterPreco(String valor) {
     final texto = valor.replaceAll('R\$', '').trim();
-
     if (texto.contains(',')) {
-      return double.tryParse(
-            texto.replaceAll('.', '').replaceAll(',', '.'),
-          ) ??
-          0;
+      return double.tryParse(texto.replaceAll('.', '').replaceAll(',', '.')) ?? 0;
     }
-
     return double.tryParse(texto) ?? 0;
   }
 
-  int _converterQuantidade(String valor) {
-    return int.tryParse(valor.trim()) ?? 0;
-  }
+  int _converterQuantidade(String valor) => int.tryParse(valor.trim()) ?? 0;
 
-  String _formatarPrecoInput(double valor) {
-    return valor.toStringAsFixed(2).replaceAll('.', ',');
-  }
+  String _formatarPrecoInput(double valor) => valor.toStringAsFixed(2).replaceAll('.', ',');
 
   void _atualizarPrecoMercado() {
-    if (!_isOrdemMercado) {
-      return;
-    }
-
-    final startup = _startupSelecionada;
-
-    if (startup == null || startup.valorToken <= 0) {
+    if (!_isOrdemMercado) return;
+    
+    if (_startupSelecionada == null || _startupSelecionada!.valorToken <= 0) {
       _precoController.clear();
       return;
     }
-
-    _precoController.text = _formatarPrecoInput(startup.valorToken);
-  }
-
-  StartupExchangeOption? _buscarStartupSelecionadaNaLista(
-    List<StartupExchangeOption> startups,
-  ) {
-    if (_startupSelecionada == null) {
-      return null;
-    }
-
-    for (final startup in startups) {
-      if (startup.id == _startupSelecionada!.id) {
-        return startup;
-      }
-    }
-
-    return null;
-  }
-
-  bool _erroPodeSerTratadoComoSemTokensParaVenda(Object? erro) {
-    if (erro == null) {
-      return false;
-    }
-
-    final texto = erro.toString().toLowerCase();
-
-    return texto.contains('permission-denied') ||
-        texto.contains('missing or insufficient permissions') ||
-        texto.contains('insufficient permissions') ||
-        texto.contains('not-found') ||
-        texto.contains('não possui tokens') ||
-        texto.contains('nao possui tokens');
+    _precoController.text = _formatarPrecoInput(_startupSelecionada!.valorToken);
   }
 
   Future<void> _abrirOrdemCompra() async {
@@ -191,135 +124,86 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
     );
   }
 
-  void _acessarCatalogo() {
-    Navigator.pushNamed(
-      context,
-      AppRoutes.catalog,
-    );
-  }
+  void _acessarCatalogo() => Navigator.pushNamed(context, AppRoutes.catalog);
 
   Future<void> _avancarParaResumo() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     if (_startupSelecionada == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Selecione uma startup para continuar.'),
-        ),
-      );
+      showErrorSnackBar(context, 'Selecione uma startup para continuar.');
       return;
     }
 
     final int quantidade = _converterQuantidade(_quantidadeController.text);
-
-    final double preco = _isOrdemMercado
-        ? _startupSelecionada!.valorToken
-        : _converterPreco(_precoController.text);
+    final double preco = _isOrdemMercado ? _startupSelecionada!.valorToken : _converterPreco(_precoController.text);
 
     if (preco <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Essa startup ainda não possui um valor de token cadastrado.',
-          ),
+      showErrorSnackBar(context, 'Essa startup ainda não possui um valor de token cadastrado.');
+      return;
+    }
+
+    if (_tipo == TipoOrdem.compra) {
+      setState(() => _verificandoSaldo = true);
+      try {
+        final saldoDisponivel = await _exchangeService.obterSaldoDisponivel();
+        final custoEstimado = preco * quantidade;
+
+        if (custoEstimado > saldoDisponivel) {
+          if (!mounted) return;
+          // Retorna a flag para a tela anterior disparar o pop-up sem precisar estourar a function na nuvem
+          Navigator.pop(context, 'saldo_insuficiente'); 
+          return;
+        }
+      } catch (e) {
+        // Se a verificação falhar, deixamos passar para que o próprio Trigger/Function no backend trave a ordem (camada extra de proteção).
+      } finally {
+        if (mounted) setState(() => _verificandoSaldo = false);
+      }
+    }
+
+    if (_formKey.currentState!.validate()) {
+
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => OrderConfirmationModal(
+          tipo: _tipo,
+          modo: _modo,
+          startupId: _startupSelecionada!.id,
+          startupNome: _startupSelecionada!.nome,
+          simbolo: _startupSelecionada!.simbolo,
+          quantidadeTokens: int.parse(_quantidadeController.text),
+          precoUnitario: double.parse(_precoController.text.replaceAll(',', '.')),
         ),
       );
-      return;
     }
-
-    final resultado = await Navigator.pushNamed(
-      context,
-      AppRoutes.ordemResumo,
-      arguments: {
-        'tipo': _tipo.value,
-        'modo': _modo.value,
-        'startupId': _startupSelecionada!.id,
-        'startupNome': _startupSelecionada!.nome,
-        'simbolo': _startupSelecionada!.simbolo,
-        'precoUnitario': preco,
-        'quantidadeTokens': quantidade,
-      },
-    );
 
     if (!mounted) return;
-
-    if (resultado == 'saldo_insuficiente') {
-      Navigator.pop(context, 'saldo_insuficiente');
-      return;
-    }
-
-    if (resultado == true || resultado == 'ordem_criada') {
-      Navigator.pop(context, resultado);
-      return;
-    }
   }
 
   Widget _buildEstadoSemTokensParaVenda() {
-    return Container(
+     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: Colors.black.withOpacity(0.06),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        border: Border.all(color: Colors.black.withOpacity(0.06)),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 3))],
       ),
       child: Column(
         children: [
           Container(
-            width: 66,
-            height: 66,
-            decoration: BoxDecoration(
-              color: _accentColor.withOpacity(0.10),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.account_balance_wallet_outlined,
-              color: _accentColor,
-              size: 32,
-            ),
+            width: 66, height: 66,
+            decoration: BoxDecoration(color: _accentColor.withOpacity(0.10), shape: BoxShape.circle),
+            child: const Icon(Icons.account_balance_wallet_outlined, color: _accentColor, size: 32),
           ),
           const SizedBox(height: 14),
-          const Text(
-            'Você ainda não possui tokens de nenhuma startup.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: _primaryColor,
-              fontSize: 17,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
+          const Text('Você ainda não possui tokens.', textAlign: TextAlign.center, style: TextStyle(color: _primaryColor, fontSize: 17, fontWeight: FontWeight.w900)),
           const SizedBox(height: 8),
-          const Text(
-            'Deseja começar a investir?',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.black87,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Abra uma ordem de compra ou acesse o catálogo para conhecer as startups disponíveis.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.black54,
-              fontSize: 11.5,
-              height: 1.3,
-            ),
-          ),
+          const Text('Deseja começar a investir?', textAlign: TextAlign.center, style: TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.w700)),
           const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,
@@ -330,18 +214,16 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(9),
-                ),
+                  borderRadius: BorderRadius.circular(9)
+                )
               ),
               onPressed: _abrirOrdemCompra,
-              child: const Text(
-                'Abrir ordem de compra',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
+              child: const Text('Abrir ordem de compra',
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w800)
+              )
+            )
           ),
           const SizedBox(height: 10),
           SizedBox(
@@ -351,21 +233,19 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
               style: OutlinedButton.styleFrom(
                 foregroundColor: _primaryColor,
                 side: BorderSide(
-                  color: _primaryColor.withOpacity(0.25),
+                  color: _primaryColor.withOpacity(0.25)
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(9),
-                ),
-              ),
-              onPressed: _acessarCatalogo,
-              child: const Text(
-                'Acessar catálogo',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
+                  borderRadius: BorderRadius.circular(9)
+                )
+              ), onPressed: _acessarCatalogo,
+              child: const Text('Acessar catálogo',
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700
+              )
+             )
+            )
           ),
         ],
       ),
@@ -374,187 +254,82 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
 
   Widget _buildEstadoSemStartupsCompra() {
     return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: Colors.black.withOpacity(0.06),
-        ),
-      ),
-      child: const Text(
-        'Nenhuma startup cadastrada no momento.',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: Colors.black54,
-          fontSize: 12,
-        ),
-      ),
+      width: double.infinity, margin: const EdgeInsets.only(top: 8), padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: Colors.black.withOpacity(0.06))),
+      child: const Text('Nenhuma startup cadastrada no momento.', textAlign: TextAlign.center, style: TextStyle(color: Colors.black54, fontSize: 12)),
     );
   }
 
-  InputDecoration _inputDecoration({
-    String? hintText,
-    Widget? suffixIcon,
-  }) {
+  InputDecoration _inputDecoration({String? hintText, Widget? suffixIcon}) {
     return InputDecoration(
-      hintText: hintText,
-      suffixIcon: suffixIcon,
-      hintStyle: const TextStyle(
-        color: Colors.black38,
-        fontSize: 11,
-      ),
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 10,
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(7),
-        borderSide: BorderSide.none,
-      ),
-      errorStyle: const TextStyle(
-        fontSize: 10,
-      ),
+      hintText: hintText, suffixIcon: suffixIcon,
+      hintStyle: const TextStyle(color: Colors.black38, fontSize: 11),
+      filled: true, fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(7), borderSide: BorderSide.none),
     );
   }
 
-  Widget _buildFormularioComStartups(
-    List<StartupExchangeOption> startups,
-  ) {
-    final startupSelecionadaAtual =
-        _buscarStartupSelecionadaNaLista(startups);
-
+  Widget _buildFormularioComStartups(List<StartupExchangeOption> startups) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DropdownButtonFormField<StartupExchangeOption>(
-          value: startupSelecionadaAtual,
+          value: _startupSelecionada,
           isExpanded: true,
           decoration: _inputDecoration(),
-          hint: const Text(
-            'Selecione uma startup',
-            style: TextStyle(fontSize: 12),
-          ),
+          hint: const Text('Selecione uma startup', style: TextStyle(fontSize: 12)),
           items: startups.map((startup) {
-            final precoTexto = startup.valorToken > 0
-                ? 'R\$ ${_formatarPrecoInput(startup.valorToken)}'
-                : 'sem preço';
-
+            final precoTexto = startup.valorToken > 0 ? 'R\$ ${_formatarPrecoInput(startup.valorToken)}' : 'sem preço';
             return DropdownMenuItem<StartupExchangeOption>(
               value: startup,
-              child: Text(
-                '${startup.nome} (${startup.simbolo}) - $precoTexto',
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12),
-              ),
+              child: Text('${startup.nome} (${startup.simbolo}) - $precoTexto', overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
             );
           }).toList(),
           onChanged: (value) {
-            setState(() {
-              _startupSelecionada = value;
-              _atualizarPrecoMercado();
-            });
+            setState(() { _startupSelecionada = value; _atualizarPrecoMercado(); });
           },
-          validator: (value) {
-            if (value == null) {
-              return 'Selecione uma startup.';
-            }
-
-            return null;
-          },
+          validator: (value) => value == null ? 'Selecione uma startup.' : null,
         ),
         const SizedBox(height: 14),
-        Text(
-          _textoCampoPreco,
-          style: const TextStyle(
-            color: Colors.black87,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        Text(_textoCampoPreco, style: const TextStyle(color: Colors.black87, fontSize: 11, fontWeight: FontWeight.w700)),
         const SizedBox(height: 6),
         TextFormField(
           controller: _precoController,
           readOnly: _isOrdemMercado,
-          keyboardType: const TextInputType.numberWithOptions(
-            decimal: true,
-          ),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
           decoration: _inputDecoration(
             hintText: _isOrdemMercado ? 'Selecione uma startup' : 'R\$',
-            suffixIcon: _isOrdemMercado
-                ? const Icon(
-                    Icons.lock_outline_rounded,
-                    size: 18,
-                    color: Colors.black45,
-                  )
-                : null,
+            suffixIcon: _isOrdemMercado ? const Icon(Icons.lock_outline_rounded, size: 18, color: Colors.black45) : null,
           ),
           validator: (value) {
-            final double preco = _isOrdemMercado
-                ? (_startupSelecionada?.valorToken ?? 0)
-                : _converterPreco(value ?? '');
-
-            if (preco <= 0) {
-              return _isOrdemMercado
-                  ? 'A startup não possui valor de token cadastrado.'
-                  : 'Informe um valor válido.';
-            }
-
+            final double preco = _isOrdemMercado ? (_startupSelecionada?.valorToken ?? 0) : _converterPreco(value ?? '');
+            if (preco <= 0) return _isOrdemMercado ? 'A startup não possui valor de token.' : 'Informe um valor válido.';
             return null;
           },
         ),
         const SizedBox(height: 14),
-        const Text(
-          'Informe a quantidade de tokens',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        const Text('Informe a quantidade de tokens', style: TextStyle(color: Colors.black87, fontSize: 11, fontWeight: FontWeight.w700)),
         const SizedBox(height: 6),
         TextFormField(
           controller: _quantidadeController,
           keyboardType: TextInputType.number,
-          decoration: _inputDecoration(
-            hintText: 'Ex: 1, 100, 1000...',
-          ),
+          decoration: _inputDecoration(hintText: 'Ex: 1, 100, 1000...'),
           validator: (value) {
-            final int quantidade = _converterQuantidade(value ?? '');
-
-            if (quantidade <= 0) {
-              return 'Informe uma quantidade válida.';
-            }
-
+            if (_converterQuantidade(value ?? '') <= 0) return 'Informe uma quantidade válida.';
             return null;
           },
         ),
         const SizedBox(height: 28),
         Center(
           child: SizedBox(
-            width: 160,
-            height: 42,
+            width: 160, height: 42,
             child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _primaryColor,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(7),
-                ),
-              ),
-              onPressed: _avancarParaResumo,
-              child: const Text(
-                'Avançar',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: _primaryColor, foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7))),
+              onPressed: _verificandoSaldo ? null : _avancarParaResumo,
+              child: _verificandoSaldo 
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('Avançar', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
             ),
           ),
         ),
@@ -563,46 +338,22 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
   }
 
   Widget _buildConteudoStartups() {
-    return StreamBuilder<List<StartupExchangeOption>>(
-      stream: _startupsStream,
+    return FutureBuilder<List<StartupExchangeOption>>( // Mudança para consumir o Future
+      future: _startupsFuture,
       builder: (context, snapshot) {
-        if (_startupsStream == null ||
-            snapshot.connectionState == ConnectionState.waiting) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 28),
-            child: Center(
-              child: CircularProgressIndicator(
-                color: _primaryColor,
-              ),
-            ),
-          );
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Padding(padding: EdgeInsets.symmetric(vertical: 28), child: Center(child: CircularProgressIndicator(color: _primaryColor)));
+        }
+
+        if (snapshot.hasError) {
+          return Padding(padding: const EdgeInsets.only(top: 6), child: Text('Erro ao carregar startups: ${snapshot.error}', style: const TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.w600)));
         }
 
         final startups = snapshot.data ?? [];
 
-        final bool semTokensParaVenda = _tipo == TipoOrdem.venda &&
-            ((snapshot.hasError &&
-                    _erroPodeSerTratadoComoSemTokensParaVenda(
-                      snapshot.error,
-                    )) ||
-                (!snapshot.hasError && startups.isEmpty));
-
-        if (semTokensParaVenda) {
+        // Sem mais 'try/catches' nas mensagens de erro do Firestore! A function manda a lista vazia se for o caso.
+        if (_tipo == TipoOrdem.venda && startups.isEmpty) {
           return _buildEstadoSemTokensParaVenda();
-        }
-
-        if (snapshot.hasError) {
-          return Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Text(
-              'Erro ao carregar startups: ${snapshot.error}',
-              style: const TextStyle(
-                color: Colors.red,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          );
         }
 
         if (startups.isEmpty) {
@@ -618,9 +369,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _backgroundColor,
-      appBar: const CustomAppBar(
-        title: 'Balcão',
-      ),
+      appBar: const CustomAppBar(title: 'Balcão'),
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(
@@ -630,32 +379,11 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _tituloTela,
-                  style: const TextStyle(
-                    color: _primaryColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
+                Text(_tituloTela, style: const TextStyle(color: _primaryColor, fontSize: 18, fontWeight: FontWeight.w900)),
                 const SizedBox(height: 4),
-                Text(
-                  _descricaoTela,
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontSize: 11,
-                    height: 1.25,
-                  ),
-                ),
+                Text(_descricaoTela, style: const TextStyle(color: Colors.black87, fontSize: 11, height: 1.25)),
                 const SizedBox(height: 18),
-                Text(
-                  _textoSelecaoStartup,
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                Text(_textoSelecaoStartup, style: const TextStyle(color: Colors.black87, fontSize: 11, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 6),
                 _buildConteudoStartups(),
               ],
@@ -663,9 +391,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: const AppBottomNavigation(
-        selectedIndex: 2,
-      ),
+      bottomNavigationBar: const AppBottomNavigation(selectedIndex: 2),
     );
   }
 }

@@ -5,8 +5,8 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "startupId", "order": "ASCENDING" },
-        { "fieldPath": "type", "order": "ASCENDING" },
         { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "type", "order": "ASCENDING" },
         { "fieldPath": "priceCents", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "ASCENDING" }
       ]
@@ -16,8 +16,8 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "startupId", "order": "ASCENDING" },
-        { "fieldPath": "type", "order": "ASCENDING" },
         { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "type", "order": "ASCENDING" },
         { "fieldPath": "priceCents", "order": "DESCENDING" },
         { "fieldPath": "createdAt", "order": "ASCENDING" }
       ]

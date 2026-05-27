@@ -139,43 +139,28 @@ export const matchOrderTrigger = onDocumentCreated(
               return {action: "break"};
             }
 
-            // Se ordem do livro é que já foi limpa, retornamos uma
+            // Se ordem do livro já foi limpa, retornamos uma
             // ação para dar continue e pular para a próxima ordem
             // do livro.
             if (freshCounter.status === "completed") {
               return {action: "continue"};
             }
 
-            // ----------------------------------------------------
-            // ETAPA 4: O match de ofertas e a transação
+            // ====================================================
+            // FASE 1: LEITURAS DA TRANSAÇÃO (READS)
+            // Absolutamente nenhum comando de escrita (update/set)
+            // pode rodar antes desse bloco terminar.
+            // ====================================================
 
-            // Definindo a quantidade que será negociada nessa
-            // realização (o menor valor entre ambas as quantidades
-            // restantes)
-            const matchQuantity = Math.min(
-              freshIncoming.remainingQuantity,
-              freshCounter.remainingQuantity
-            );
-
-            // ----------------------------------------------------
-            // ETAPA 4.1: Troca de valores
-
-            // Definindo o valor total da negociação, que consiste
-            // no preço unitário da negociação (que é o valor
-            // ofertado pela ordem correspondente) multiplicado
-            // pela quantidade negociada
-            const totalCost = matchQuantity * freshCounter.priceCents;
-
-            // ----------------------------------------------------
-            // ETAPA 4.1.1: Obtenção dos dados dos usuários
-
-            // Obtendo o ID do usuário comprador
+            // Obtendo o ID do usuário comprador e vendedor
             const buyerId = freshIncoming.type === "buy" ?
               freshIncoming.userId : freshCounter.userId;
 
-            // Obtendo o ID do usuário vendedor
             const sellerId = freshIncoming.type === "sell" ?
               freshIncoming.userId : freshCounter.userId;
+
+            // Obtendo o ID da startup a partir dos dados da ordem
+            const startupId = freshIncoming.startupId;
 
             // Obtendo o saldo do usuário comprador para atualização
             const buyerBalance = await getUserBalanceForUpdate(
@@ -187,6 +172,11 @@ export const matchOrderTrigger = onDocumentCreated(
               transaction, sellerId
             );
 
+            // Obtendo a wallet do usuário vendedor
+            const sellerWallet = await getUserWalletStartupForUpdate(
+              transaction, sellerId, startupId
+            );
+
             // Se não conseguir obter os dados do saldo, emite um
             // erro e encerra a iteração
             if (!buyerBalance || !sellerBalance) {
@@ -196,8 +186,46 @@ export const matchOrderTrigger = onDocumentCreated(
               return;
             }
 
-            // ----------------------------------------------------
-            // ETAPA 4.1.2: Calculando o troco
+            // Verificando se os IDs das ordens compatíveis é igual
+            // (evitando que um usuário realize a própria ordem)
+            if (buyerId === sellerId) {
+              logger.info(
+                `Ignorando correspondência na ordem [${counterDoc.id}]. `+
+                `O usuário '${buyerId}' não pode negociar consigo mesmo.`
+              );
+              // Retorna a ação "continue" para pular
+              // esta ordem sem estourar o motor
+              return {action: "continue"};
+            }
+
+            // Se não conseguir obter os dados da carteira, emite
+            // um erro e encerra a iteração
+            if (!sellerWallet) {
+              logger.error(
+                `Carteira do vendedor [${sellerId}] não encontrada`+
+                ` para a startup ${startupId}`
+              );
+              return;
+            }
+
+            // ====================================================
+            // FASE 2: CÁLCULOS LÓGICOS E REGRAS DE NEGÓCIO (MEMÓRIA)
+            // Processamento local de dados estruturados
+            // ====================================================
+
+            // Definindo a quantidade que será negociada nessa
+            // realização (o menor valor entre ambas as quantidades
+            // restantes)
+            const matchQuantity = Math.min(
+              freshIncoming.remainingQuantity,
+              freshCounter.remainingQuantity
+            );
+
+            // Definindo o valor total da negociação, que consiste
+            // no preço unitário da negociação (que é o valor
+            // ofertado pela ordem correspondente) multiplicado
+            // pela quantidade negociada
+            const totalCost = matchQuantity * freshCounter.priceCents;
 
             // Descobrindo quanto dinheiro o comprador "congelou"
             // originalmente para essa quantidade de tokens
@@ -213,11 +241,7 @@ export const matchOrderTrigger = onDocumentCreated(
             // e o custo total da negociação)
             const changeCents = buyerFrozenAmountForMatch - totalCost;
 
-            // ----------------------------------------------------
-            // ETAPA 4.1.3: Atualizando os saldos
-
             // Definindo os novos saldos do comprador
-
             // Definindo o novo saldo congelado (perde todo o valor
             // que havia reservado para essa negociação)
             const buyerFrozenBalanceAfterPurchase =
@@ -231,6 +255,32 @@ export const matchOrderTrigger = onDocumentCreated(
             // Definindo o novo saldo do vendedor
             const sellerBalanceAfterPurchase =
               sellerBalance.balanceAvailableCents + totalCost;
+
+            // Verificando se o vendedor vendeu os últimos tokens
+            // que possuía de uma startup através da diferença entre
+            // o total de tokens que ele possui e o total vendido
+            const sellerTotalTokensBefore =
+              sellerWallet.availableQuantity + sellerWallet.lockedQuantity;
+            const sellerTotalTokensAfter =
+              sellerTotalTokensBefore - matchQuantity;
+
+            // Definindo as quantidades restantes de ambas as ordens
+            const newIncomingQuantity =
+              freshIncoming.remainingQuantity - matchQuantity;
+            const newCounterQuantity =
+              freshCounter.remainingQuantity - matchQuantity;
+
+            // Definindo os novos status das ordens após suas
+            // realizações
+            const newIncomingStatus = newIncomingQuantity === 0 ?
+              "completed" : "partial";
+            const newCounterStatus = newCounterQuantity === 0 ?
+              "completed" : "partial";
+
+            // ====================================================
+            // FASE 3: ESCRITAS DA TRANSAÇÃO (WRITES)
+            // A partir deste ponto, nenhuma leitura (.get) é permitida!
+            // ====================================================
 
             // Atualizando os saldos do usuário comprador com os
             // novos valores calculados
@@ -248,31 +298,7 @@ export const matchOrderTrigger = onDocumentCreated(
             // Exibindo uma mensagem de sucesso da operação
             logger.info("Saldos dos usuários atualizados");
 
-            // ----------------------------------------------------
-            // ETAPA 4.2: Troca de tokens
-
-            // Obtendo o ID da startup a partir dos dados da ordem
-            const startupId = freshIncoming.startupId;
-
-            // Obtendo a wallet do usuário vendedor
-            const sellerWallet = await getUserWalletStartupForUpdate(
-              transaction, sellerId, startupId
-            );
-
-            // Se não conseguir obter os dados da carteira, emite
-            // um erro e encerra a iteração
-            if (!sellerWallet) {
-              logger.error(
-                `Carteira do vendedor [${sellerId}] não encontrada`+
-                ` para a startup ${startupId}`
-              );
-              return;
-            }
-
             // Criando uma referência para a wallet do comprador
-            // (como pode ser um cliente que ainda não investiu
-            // nessa startup, ele pode não ter a carteira para
-            // fazermos a busca usando a função anterior)
             const buyerWalletRef = db
               .collection("users")
               .doc(buyerId)
@@ -297,11 +323,7 @@ export const matchOrderTrigger = onDocumentCreated(
               `${matchQuantity} tokens transferidos.`
             );
 
-            // ----------------------------------------------------
-            // ETAPA 4.3: Registro na Blockchain
-
-            // Criando uma referência para o novo registro (com
-            // um id recém criado)
+            // Criando uma referência para o novo registro (com id único)
             const tradeRef = db.collection("trades").doc();
 
             // Criando um objeto com os dados da transação
@@ -321,7 +343,7 @@ export const matchOrderTrigger = onDocumentCreated(
               registeredAt: FieldValue.serverTimestamp(),
             };
 
-            // Registrando a transação na blockchain
+            // Registrando a transação na blockchain fictícia
             transaction.set(tradeRef, tradeDocument);
 
             // Exibindo uma mensagem de sucesso da operação
@@ -330,27 +352,20 @@ export const matchOrderTrigger = onDocumentCreated(
               " realizado com sucesso."
             );
 
-            // ----------------------------------------------------
-            // ETAPA 4.4: Revisão do quadro de investidores
-
-            // Obtendo a referência ao documento do usuário
-            // comprador na coleção de investidores da startup
+            // Obtendo a referência para os investidores da startup
             const buyerInvestorRef = db
-              .collection("startups")
+              .collection("Startups")
               .doc(startupId)
               .collection("investors")
               .doc(buyerId);
 
-            // Obtendo a referência ao documento do usuário
-            // vendedor na coleção de investidores da startup
             const sellerInvestorRef = db
-              .collection("startups")
+              .collection("Startups")
               .doc(startupId)
               .collection("investors")
               .doc(sellerId);
 
-            // Adicionando ou atualizando os dados do usuário
-            // comprador à coleção de investidores da startup
+            // Adicionando ou atualizando os dados do usuário comprador
             transaction.set(
               buyerInvestorRef,
               {
@@ -363,14 +378,6 @@ export const matchOrderTrigger = onDocumentCreated(
               {merge: true}
             );
 
-            // Verificando se o vendedor vendeu os últimos tokens
-            // que possuía de uma startup através da diferença entre
-            // o total de tokens que ele possui e o total vendido
-            const sellerTotalTokensBefore =
-              sellerWallet.availableQuantity + sellerWallet.lockedQuantity;
-            const sellerTotalTokensAfter =
-              sellerTotalTokensBefore - matchQuantity;
-
             if (sellerTotalTokensAfter <= 0) {
               // Se o saldo final dele zerou, ele deixou de ser
               // investidor da startup, então deletamos seu
@@ -378,52 +385,35 @@ export const matchOrderTrigger = onDocumentCreated(
               // aos privilégios de investidor
               transaction.delete(sellerInvestorRef);
 
-              // Informando que o usuário foi excluído da coleção
               logger.info(
-                `Usuário [${sellerId}] deixou de ser investidor da`+
+                `Usuário [${sellerId}] deixou de ser investidor da `+
                 `startup ${startupId} (Posição zerada).`
               );
             } else {
               // Se ele ainda possui tokens restantes, ele continua
               // sendo investidor, então apenas atualizamos quantos
               // tokens ele possui
-              transaction.update(sellerInvestorRef, {
-                quantity: FieldValue.increment(-matchQuantity),
-                updatedAt: FieldValue.serverTimestamp(),
-              });
+              transaction.set(
+                sellerInvestorRef,
+                {
+                  quantity: FieldValue.increment(-matchQuantity),
+                  updatedAt: FieldValue.serverTimestamp(),
+                },
+                {merge: true}
+              );
             }
 
             // Exibindo uma mensagem de sucesso da operação
             logger.info("Quadro de investidores da startup"+
               " atualizado com sucesso.");
 
-            // ----------------------------------------------------
-            // ETAPA 4.5: Atualização das ordens
-
-            // Definindo as quantidades restantes de ambas as ordens
-            // subtraindo a quantidade negociada
-            const newIncomingQuantity =
-              freshIncoming.remainingQuantity - matchQuantity;
-            const newCounterQuantity =
-              freshCounter.remainingQuantity - matchQuantity;
-
-            // Definindo os novos status das ordens após suas
-            // realizações
-            const newIncomingStatus = newIncomingQuantity === 0 ?
-              "completed" : "partial";
-            const newCounterStatus = newCounterQuantity === 0 ?
-              "completed" : "partial";
-
-            // Atualizando os dados das ordens com base nas novas
-            // informações definidas
-
-            // Atualizando a oferta criada
+            // Atualizando a oferta criada (incoming)
             transaction.update(freshIncomingRef, {
               remainingQuantity: newIncomingQuantity,
               status: newIncomingStatus,
             });
 
-            // Atualizando os dados da oferta correspondente
+            // Atualizando os dados da oferta correspondente (counter)
             transaction.update(freshCounterRef, {
               remainingQuantity: newCounterQuantity,
               status: newCounterStatus,
@@ -434,6 +424,7 @@ export const matchOrderTrigger = onDocumentCreated(
             return {action: "success", newIncomingQuantity};
           }
         );
+
         // Controlando o loop externo com base no resultado da transação
 
         // Se houve um break, significa que a ordem principal foi

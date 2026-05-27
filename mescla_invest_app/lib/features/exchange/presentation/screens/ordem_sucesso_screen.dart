@@ -5,14 +5,13 @@ import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
 import 'package:mescla_invest_app/routes/app_routes.dart';
 
-import '../../widgets/exchange_model.dart';
+import '../../data/models/exchange_model.dart';
 
 class OrdemSucessoScreen extends StatelessWidget {
   const OrdemSucessoScreen({super.key});
 
   static const Color _primaryColor = Color(0xFF353988);
-  static const Color _accentColor = Color(0xFFDB0065);
-  static const Color _backgroundColor = Color(0xFFE8E9EB);
+  static const Color _backgroundColor = Color(0xFFDEDEDE);
 
   @override
   Widget build(BuildContext context) {
@@ -37,13 +36,13 @@ class OrdemSucessoScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: _accentColor,
+                      color: Color(0xFF008A17),
                       width: 5,
                     ),
                   ),
                   child: const Icon(
                     Icons.check_rounded,
-                    color: _accentColor,
+                    color: Color(0xFF008A17),
                     size: 62,
                   ),
                 ),

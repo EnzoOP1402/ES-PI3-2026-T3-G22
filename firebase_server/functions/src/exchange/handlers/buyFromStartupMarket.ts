@@ -97,7 +97,7 @@ export const buyFromStartupMarket = onCall(async (request) => {
       // O valor total da ordem é removido do saldo disponível
       // do usuário
       transaction.update(userBalance.ref, {
-        balanceAvailable: userBalance.balanceAvailableCents - totalCost,
+        balanceAvailableCents: userBalance.balanceAvailableCents - totalCost,
       });
 
       // Depois das verificações de saldo, fazemos as operações

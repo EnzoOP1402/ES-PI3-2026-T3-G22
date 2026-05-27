@@ -14,7 +14,6 @@ class UserModel {
   final String email;
   final String cpf;
   final String phone;
-  // final bool twoFAOn;
   final Timestamp? createdAt;
 
   // Definindo o construtor da classe com parâmetros nomeados
@@ -24,7 +23,6 @@ class UserModel {
     required this.email,
     required this.cpf,
     required this.phone,
-    // required this.twoFAOn,
     required this.createdAt,
   });
 

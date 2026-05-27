@@ -30,6 +30,15 @@ export const getTokensListByUser = onCall(
         .orderBy("startupName", "asc")
         .get();
 
+      // Se a carteira não tiver dados, retorna uma lista
+      // vazia imediatamente
+      if (walletSnapshot.empty) {
+        return {
+          success: true,
+          tokenList: [],
+        };
+      }
+
       // Criando a lista que receberá os resultados obtidos e
       // convertidos para o tipo que representa os itens
       // da lista de tokens

@@ -108,8 +108,8 @@ export const createSellOrder = onCall(
         // A quantidade vendida sai da quantidade de tokens disponíveis
         // e é movida para a quantidade congelada
         transaction.update(userWalletStartup.ref, {
-          availableQuantity: userWalletStartup.availableQuantity - quantity,
-          lockedQuantity: userWalletStartup.lockedQuantity + quantity,
+          availableQuantity: FieldValue.increment(-quantity),
+          lockedQuantity: FieldValue.increment(quantity),
         });
 
         // Depois das verificações e operações com a carteira,

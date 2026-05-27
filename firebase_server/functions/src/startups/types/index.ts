@@ -135,3 +135,24 @@ export type StartupListItem = {
  coverImageUrl?: string;
  tags: string[];
 };
+
+/**
+ * Versão enxuta da startup usada para que a lista de startups com tokens
+ * emitidos seja exibida quando um investidor for abrir uma ordem de compra
+ */
+export type StartupForBuyOrders = {
+  id: string,
+  name: string,
+  tokenName: string,
+  currentTokenPriceCents: number,
+}
+
+/**
+ * Versão enxuta da startup usada para que a lista de startups com tokens
+ * emitidos seja exibida quando um investidor for abrir uma ordem de venda
+ */
+export type StartupForSellOrders = {
+  id: string,
+  name: string,
+  tokenName: string,
+}

@@ -10,6 +10,10 @@ export {createStartupQuestion} from "./handlers/createStartupQuestion";
 
 export {getStartupDetails} from "./handlers/getStartupDetails";
 
+export {getStartupsForBuyOrders} from "./handlers/getStartupsForBuyOrders";
+
+export {getStartupsForSellOrders} from "./handlers/getStartupsForSellOrders";
+
 // Exportando a função de obtenção dos dados de uma startup
 // para que ela possa ser acessada por outros arquivos
 export {getStartupById} from "./repositories/startupRepository";

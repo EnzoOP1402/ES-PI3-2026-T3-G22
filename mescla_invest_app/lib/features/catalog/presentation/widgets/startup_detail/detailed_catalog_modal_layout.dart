@@ -13,11 +13,14 @@ class DetailedCatalogModalLayout extends StatelessWidget {
   final String? subtitle;
   // Conteúdo do modal
   final List<Widget> children;
+  // Altura do modal
+  final double? height;
   
   const DetailedCatalogModalLayout({
     required this.title,
     this.subtitle,
     required this.children,
+    this.height,
     super.key
   });
 
@@ -25,7 +28,9 @@ class DetailedCatalogModalLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.9,
+      height: height == null ?
+        MediaQuery.of(context).size.height * 0.9 :
+        MediaQuery.of(context).size.height * (height!/10),
       decoration: BoxDecoration(
         color: const Color(0xFFD9D9D9),
         borderRadius: BorderRadius.only(

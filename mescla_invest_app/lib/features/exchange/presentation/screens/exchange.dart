@@ -2,13 +2,16 @@
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
+import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/detailed_catalog_modal_layout.dart';
 import 'package:mescla_invest_app/routes/app_routes.dart';
 
 import '../../data/models/board_order_model.dart';
 import '../../data/services/exchange_service.dart';
-import '../../widgets/exchange_model.dart';
+import '../../data/models/exchange_model.dart';
 
 class ExchangeScreen extends StatefulWidget {
   const ExchangeScreen({super.key});
@@ -28,9 +31,9 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
 
   static const Color _primaryColor = Color(0xFF353988);
   static const Color _accentColor = Color(0xFFDB0065);
-  static const Color _backgroundColor = Color(0xFFE8E9EB);
-  static const Color _sectionBackground = Color(0xFFD7D7D7);
-  static const Color _cardBackground = Color(0xFFF7F7F7);
+  static const Color _backgroundColor = Color(0xFFDEDEDE);
+  static const Color _sectionBackground = Color(0xFFDEDEDE);
+  static const Color _cardBackground = Color(0xFFF4F4F4);
 
   @override
   void initState() {
@@ -335,13 +338,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
 
       ScaffoldMessenger.of(context).clearSnackBars();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Não foi possível abrir a ordem. Tente novamente.',
-          ),
-        ),
-      );
+      showErrorSnackBar(context, 'Não foi possível abrir a ordem. Tente novamente.');
     }
   }
 
@@ -355,106 +352,73 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setModalState) {
-            return Container(
-              padding: const EdgeInsets.fromLTRB(22, 14, 22, 22),
-              decoration: const BoxDecoration(
-                color: _backgroundColor,
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(28),
-                ),
-              ),
-              child: SafeArea(
-                top: false,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 18),
-                      decoration: BoxDecoration(
-                        color: Colors.black26,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    const Text(
-                      'Como você quer investir?',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: _primaryColor,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    const Text(
-                      'Selecione a opção desejada',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.black54,
-                        fontSize: 11,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Divider(height: 1, color: Colors.black12),
-                    const SizedBox(height: 10),
-                    _OpcaoInvestimentoRadio(
-                      titulo: 'Ordem a mercado',
-                      descricao:
-                          'Compre tokens pelo preço anunciado pela startup',
-                      value: ModoOrdem.mercado,
-                      groupValue: modoSelecionado,
-                      onChanged: (value) {
-                        setModalState(() {
-                          modoSelecionado = value;
-                        });
-                      },
-                    ),
-                    _OpcaoInvestimentoRadio(
-                      titulo: 'Ordem limitada',
-                      descricao:
-                          'Faça sua oferta e negocie com outros investidores da plataforma',
-                      value: ModoOrdem.limitada,
-                      groupValue: modoSelecionado,
-                      onChanged: (value) {
-                        setModalState(() {
-                          modoSelecionado = value;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: 180,
-                      height: 42,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _primaryColor,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        onPressed: () {
-                          Navigator.pop(context);
-
-                          _abrirFormularioOrdem(
-                            tipo: TipoOrdem.compra,
-                            modo: modoSelecionado,
-                          );
+            return DetailedCatalogModalLayout(
+              title: "Como você quer investir?",
+              subtitle: "Selecione a opção desejada",
+              height: 4,
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      _OpcaoInvestimentoRadio(
+                        titulo: 'Ordem a mercado',
+                        descricao:
+                            'Compre tokens pelo preço anunciado pela startup',
+                        value: ModoOrdem.mercado,
+                        groupValue: modoSelecionado,
+                        onChanged: (value) {
+                          setModalState(() {
+                            modoSelecionado = value;
+                          });
                         },
-                        child: const Text(
-                          'Avançar',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
+                      ),
+                      _OpcaoInvestimentoRadio(
+                        titulo: 'Ordem limitada',
+                        descricao:
+                            'Faça sua oferta e negocie com outros investidores da plataforma',
+                        value: ModoOrdem.limitada,
+                        groupValue: modoSelecionado,
+                        onChanged: (value) {
+                          setModalState(() {
+                            modoSelecionado = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: 180,
+                        height: 42,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _primaryColor,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+
+                            _abrirFormularioOrdem(
+                              tipo: TipoOrdem.compra,
+                              modo: modoSelecionado,
+                            );
+                          },
+                          child: const Text(
+                            'Avançar',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+              ],
             );
           },
         );
@@ -490,7 +454,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                   child: Text(
                     'Erro ao carregar ordens: ${snapshot.error}',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: GoogleFonts.montserrat(
                       color: Colors.red,
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -587,124 +551,125 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
         children: [
           Text(
             titulo,
-            style: const TextStyle(
+            style: GoogleFonts.montserrat(
               color: _primaryColor,
-              fontSize: 19,
-              fontWeight: FontWeight.w900,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
               height: 1,
             ),
           ),
           const SizedBox(height: 5),
           Text(
             descricao,
-            style: const TextStyle(
+            style: GoogleFonts.montserrat(
               color: Colors.black87,
-              fontSize: 11,
+              fontSize: 14,
               height: 1.18,
             ),
           ),
           const SizedBox(height: 12),
           orders.isEmpty
-              ? const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 14),
-                  child: Text(
-                    'Nenhuma ordem disponível no momento.',
-                    style: TextStyle(
-                      color: Colors.black54,
-                      fontSize: 12,
-                    ),
+            ? const Padding(
+                padding: EdgeInsets.symmetric(vertical: 14),
+                child: Text(
+                  'Nenhuma ordem disponível no momento.',
+                  style: TextStyle(
+                    color: Colors.black54,
+                    fontSize: 12,
                   ),
-                )
-              : Column(
-                  children: orders
-                      .map(
-                        (order) => _buildCardOferta(
-                          order,
-                          isVenda: isVenda,
-                        ),
-                      )
-                      .toList(),
                 ),
+              )
+            : SizedBox(
+                height: 240, 
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  // Garante que a rolagem interna funcione perfeitamente mesmo dentro de outro scroll
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: orders.length,
+                  padding: EdgeInsets.zero, // Remove paddings padrões do ListView
+                  itemBuilder: (context, index) {
+                    final order = orders[index];
+                    return _buildCardOferta(
+                      order,
+                      isVenda: isVenda,
+                    );
+                  },
+                ),
+              ),
         ],
       ),
     );
   }
 
-  Widget _buildCardOferta(
-    BoardOrderModel order, {
-    required bool isVenda,
-  }) {
-    final bool isAlta = order.appreciated;
-    final Color indicatorColor =
-        isAlta ? Colors.green.shade700 : Colors.red.shade700;
+Widget _buildCardOferta(
+  BoardOrderModel order, {
+  required bool isVenda,
+}) {
+  final bool isAlta = order.appreciated;
+  final Color indicatorColor =
+      isAlta ? Colors.green.shade700 : Colors.red.shade700;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 9),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-      decoration: BoxDecoration(
-        color: _cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.black.withOpacity(0.04),
+  return Container(
+    margin: const EdgeInsets.only(bottom: 9),
+    decoration: BoxDecoration(
+      color: _cardBackground,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.12),
+          blurRadius: 5,
+          offset: const Offset(0, 2),
+        ),
+      ],
+      border: Border.all(
+        color: Colors.black.withOpacity(0.04),
+      ),
+    ),
+    child: ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+      dense: true,
+      
+      // Ícone lateral esquerdo
+      leading: const Icon(
+        Icons.attach_money_rounded,
+        color: Colors.black,
+        size: 24,
+      ),
+
+      // Título Principal
+      title: Text(
+        order.startupName,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.montserrat(
+          color: Colors.black,
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
         ),
       ),
-      child: Row(
+
+      // Subtítulo descritivo
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 2),
+        child: Text(
+          '${order.remainingQuantity} tokens • ${order.tokenName}',
+          style: GoogleFonts.montserrat(
+            color: Colors.black,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+
+      // Lado direito: Preço e Indicador de tendência juntos
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min, // Impede que a Row ocupe todo o espaço horizontal
         children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(9),
-            ),
-            child: Icon(
-              isVenda
-                  ? Icons.attach_money_rounded
-                  : Icons.shopping_cart_rounded,
-              color: Colors.black,
-              size: 19,
-            ),
-          ),
-          const SizedBox(width: 9),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  order.startupName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${order.remainingQuantity} tokens • ${order.tokenName}',
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
           Text(
             _formatarPrecoCentavos(order.priceCents),
             style: TextStyle(
               color: indicatorColor,
-              fontSize: 10.5,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -714,12 +679,13 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                 ? Icons.arrow_upward_rounded
                 : Icons.arrow_downward_rounded,
             color: indicatorColor,
-            size: 16,
+            size: 24,
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildBotaoAcao({
     required String texto,
@@ -740,9 +706,9 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
         onPressed: onPressed,
         child: Text(
           texto,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w800,
+          style: GoogleFonts.montserrat(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -805,7 +771,7 @@ class _OpcaoInvestimentoRadio extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     descricao,
-                    style: const TextStyle(
+                    style: GoogleFonts.montserrat(
                       color: Colors.black54,
                       fontSize: 11,
                       height: 1.15,

@@ -122,7 +122,7 @@ export const getExchangeBoardByStartup = onCall(
       // Lança uma exceção que será exibida de forma amigável no front
       throw new HttpsError(
         "internal",
-        `Erro ao carregar os dados do balcão para a startup: ${error}`
+        "Erro ao carregar os dados do balcão para a startup"
       );
     }
   }

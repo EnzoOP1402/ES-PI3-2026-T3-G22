@@ -59,7 +59,7 @@ export const getExchangeBoard = onCall(
         // Firestore limita a query a 30 itens com o
         // operador "in"), ou buscando direto se for menor
         const startupsSnapshot = await db
-          .collection("startups")
+          .collection("Startups")
           .where("__name__", "in", startupIds.slice(0, 30))
           .get();
 

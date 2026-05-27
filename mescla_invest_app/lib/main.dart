@@ -15,7 +15,6 @@ import 'package:mescla_invest_app/features/home/presentation/screens/home_screen
 import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
 import 'package:mescla_invest_app/features/wallet/presentation/screens/wallet_screen.dart';
 import 'package:mescla_invest_app/features/exchange/presentation/screens/ordem_form_screen.dart';
-import 'package:mescla_invest_app/features/exchange/presentation/screens/ordem_resumo_screen.dart';
 import 'package:mescla_invest_app/features/exchange/presentation/screens/ordem_sucesso_screen.dart';
 import 'package:mescla_invest_app/routes/app_routes.dart';
 import 'firebase_options.dart';
@@ -81,7 +80,6 @@ class MesclaInvest extends StatelessWidget {
         AppRoutes.wallet:(_) => const WalletScreen(),
         AppRoutes.exchange:(_) => const ExchangeScreen(),
         AppRoutes.ordemForm: (_) => const OrdemFormScreen(),
-        AppRoutes.ordemResumo: (_) => const OrdemResumoScreen(),
         AppRoutes.ordemSucesso: (_) => const OrdemSucessoScreen()
         } ,
     );
