@@ -1,6 +1,7 @@
 /* Autor: livia */
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
@@ -190,20 +191,51 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.black.withOpacity(0.06)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 3))],
+        border: Border.all(
+          color: Colors.black.withOpacity(0.06)
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3)
+          )
+        ],
       ),
       child: Column(
         children: [
           Container(
             width: 66, height: 66,
-            decoration: BoxDecoration(color: _accentColor.withOpacity(0.10), shape: BoxShape.circle),
-            child: const Icon(Icons.account_balance_wallet_outlined, color: _accentColor, size: 32),
+            decoration: BoxDecoration(
+              color: _accentColor.withOpacity(0.10),
+              shape: BoxShape.circle
+            ),
+            child: const Icon(
+              Icons.wallet,
+              color: _accentColor,
+              size: 32
+            ),
           ),
           const SizedBox(height: 14),
-          const Text('Você ainda não possui tokens.', textAlign: TextAlign.center, style: TextStyle(color: _primaryColor, fontSize: 17, fontWeight: FontWeight.w900)),
+          Text(
+            'Você ainda não possui tokens.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.montserrat(
+              color: _primaryColor,
+              fontSize: 17,
+              fontWeight: FontWeight.w900
+            )
+          ),
           const SizedBox(height: 8),
-          const Text('Deseja começar a investir?', textAlign: TextAlign.center, style: TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.w700)),
+          Text(
+            'Deseja começar a investir?',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.montserrat(
+              color: Colors.black87,
+              fontSize: 13,
+              fontWeight: FontWeight.w700
+            )
+          ),
           const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,
@@ -218,8 +250,8 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
                 )
               ),
               onPressed: _abrirOrdemCompra,
-              child: const Text('Abrir ordem de compra',
-              style: TextStyle(
+              child: Text('Abrir ordem de compra',
+              style: GoogleFonts.montserrat(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w800)
               )
@@ -239,8 +271,8 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
                   borderRadius: BorderRadius.circular(9)
                 )
               ), onPressed: _acessarCatalogo,
-              child: const Text('Acessar catálogo',
-              style: TextStyle(
+              child: Text('Acessar catálogo',
+              style: GoogleFonts.montserrat(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w700
               )
@@ -254,19 +286,42 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
 
   Widget _buildEstadoSemStartupsCompra() {
     return Container(
-      width: double.infinity, margin: const EdgeInsets.only(top: 8), padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: Colors.black.withOpacity(0.06))),
-      child: const Text('Nenhuma startup cadastrada no momento.', textAlign: TextAlign.center, style: TextStyle(color: Colors.black54, fontSize: 12)),
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: Colors.black.withOpacity(0.06)
+        )
+      ),
+      child: Text(
+        'Nenhuma startup cadastrada no momento.',
+        textAlign: TextAlign.center,
+        style: GoogleFonts.montserrat(
+          color: Colors.black54, fontSize: 12
+        )
+      ),
     );
   }
 
   InputDecoration _inputDecoration({String? hintText, Widget? suffixIcon}) {
     return InputDecoration(
-      hintText: hintText, suffixIcon: suffixIcon,
-      hintStyle: const TextStyle(color: Colors.black38, fontSize: 11),
-      filled: true, fillColor: Colors.white,
+      hintText: hintText,
+      suffixIcon: suffixIcon,
+      hintStyle: GoogleFonts.montserrat(
+        color: Color(0xFF757575),
+        fontSize: 12,
+        fontWeight: .w500
+      ),
+      filled: true,
+      fillColor: Color(0xFFF4F4F4),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(7), borderSide: BorderSide.none),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(7),
+        borderSide: BorderSide.none
+      ),
     );
   }
 
@@ -275,24 +330,50 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DropdownButtonFormField<StartupExchangeOption>(
-          value: _startupSelecionada,
+          initialValue: _startupSelecionada,
           isExpanded: true,
           decoration: _inputDecoration(),
-          hint: const Text('Selecione uma startup', style: TextStyle(fontSize: 12)),
-          items: startups.map((startup) {
-            final precoTexto = startup.valorToken > 0 ? 'R\$ ${_formatarPrecoInput(startup.valorToken)}' : 'sem preço';
-            return DropdownMenuItem<StartupExchangeOption>(
-              value: startup,
-              child: Text('${startup.nome} (${startup.simbolo}) - $precoTexto', overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
-            );
-          }).toList(),
+          hint: Text(
+            'Selecione uma startup',
+            style: GoogleFonts.montserrat(
+              fontSize: 12,
+              fontWeight: .w500
+            )
+          ),
+          icon: Icon(Icons.keyboard_arrow_down_rounded),
+          borderRadius: BorderRadius.circular(10),
+          items: startups.map(
+            (startup) {
+              final precoTexto = startup.valorToken > 0 ? 'R\$ ${_formatarPrecoInput(startup.valorToken)}' : 'sem preço';
+              return DropdownMenuItem<StartupExchangeOption>(
+                value: startup,
+                child: Text(
+                  '${startup.nome} (${startup.simbolo}) - $precoTexto',
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.montserrat(fontSize: 12)
+                ),
+
+              );
+            }
+          ).toList(),
           onChanged: (value) {
-            setState(() { _startupSelecionada = value; _atualizarPrecoMercado(); });
+            setState(() { 
+              _startupSelecionada = value;
+              _atualizarPrecoMercado();
+              }
+            );
           },
           validator: (value) => value == null ? 'Selecione uma startup.' : null,
         ),
         const SizedBox(height: 14),
-        Text(_textoCampoPreco, style: const TextStyle(color: Colors.black87, fontSize: 11, fontWeight: FontWeight.w700)),
+        Text(
+          _textoCampoPreco,
+          style: GoogleFonts.montserrat(
+            color: Colors.black87,
+            fontSize: 14,
+            fontWeight: FontWeight.w700
+          )
+        ),
         const SizedBox(height: 6),
         TextFormField(
           controller: _precoController,
@@ -300,7 +381,11 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           decoration: _inputDecoration(
             hintText: _isOrdemMercado ? 'Selecione uma startup' : 'R\$',
-            suffixIcon: _isOrdemMercado ? const Icon(Icons.lock_outline_rounded, size: 18, color: Colors.black45) : null,
+            suffixIcon: _isOrdemMercado ? const Icon(
+              Icons.lock_outline_rounded,
+              size: 24,
+              color: Colors.black45
+            ) : null,
           ),
           validator: (value) {
             final double preco = _isOrdemMercado ? (_startupSelecionada?.valorToken ?? 0) : _converterPreco(value ?? '');
@@ -309,7 +394,14 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
           },
         ),
         const SizedBox(height: 14),
-        const Text('Informe a quantidade de tokens', style: TextStyle(color: Colors.black87, fontSize: 11, fontWeight: FontWeight.w700)),
+        Text(
+          'Informe a quantidade de tokens',
+          style: GoogleFonts.montserrat(
+            color: Colors.black87,
+            fontSize: 14,
+            fontWeight: FontWeight.w700
+          )
+        ),
         const SizedBox(height: 6),
         TextFormField(
           controller: _quantidadeController,
@@ -325,11 +417,31 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
           child: SizedBox(
             width: 160, height: 42,
             child: ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: _primaryColor, foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7))),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _primaryColor,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(7)
+                )
+              ),
               onPressed: _verificandoSaldo ? null : _avancarParaResumo,
               child: _verificandoSaldo 
-                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Text('Avançar', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
+                ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white
+                  )
+                )
+                : Text(
+                  'Avançar',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500
+                  )
+                ),
             ),
           ),
         ),
@@ -346,7 +458,17 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
         }
 
         if (snapshot.hasError) {
-          return Padding(padding: const EdgeInsets.only(top: 6), child: Text('Erro ao carregar startups: ${snapshot.error}', style: const TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.w600)));
+          return Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              'Erro ao carregar startups: ${snapshot.error}',
+              style: GoogleFonts.montserrat(
+                color: Colors.red,
+                fontSize: 14,
+                fontWeight: FontWeight.w600
+              )
+            )
+          );
         }
 
         final startups = snapshot.data ?? [];
@@ -379,11 +501,33 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_tituloTela, style: const TextStyle(color: _primaryColor, fontSize: 18, fontWeight: FontWeight.w900)),
+                Text(
+                  _tituloTela,
+                  style: GoogleFonts.montserrat(
+                    color: _primaryColor,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700
+                  )
+                ),
                 const SizedBox(height: 4),
-                Text(_descricaoTela, style: const TextStyle(color: Colors.black87, fontSize: 11, height: 1.25)),
+                Text(
+                  _descricaoTela,
+                  style: GoogleFonts.montserrat(
+                    color: Colors.black87,
+                    fontSize: 14,
+                    height: 1.25,
+                    fontWeight: FontWeight.w500
+                  )
+                ),
                 const SizedBox(height: 18),
-                Text(_textoSelecaoStartup, style: const TextStyle(color: Colors.black87, fontSize: 11, fontWeight: FontWeight.w700)),
+                Text(
+                  _textoSelecaoStartup,
+                  style: GoogleFonts.montserrat(
+                    color: Colors.black87,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700
+                  )
+                ),
                 const SizedBox(height: 6),
                 _buildConteudoStartups(),
               ],

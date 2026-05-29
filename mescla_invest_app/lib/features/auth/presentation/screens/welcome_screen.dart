@@ -16,19 +16,14 @@ class WelcomeScreen extends StatelessWidget {
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-              colors: [
-                        Color(0xFF353988),
-                        Color(0xFFDB0065) ],
-               stops: [0.65, 0.95],
-               begin: Alignment.bottomRight,
-               end: Alignment.topLeft,
-                ),
+                colors: [
+                  Color(0xFF353988),
+                  Color(0xFFDB0065)
+                ],
+                stops: [0.65, 0.95],
+                begin: Alignment.bottomRight,
+                end: Alignment.topLeft,
               ),
-            ),
-          // DESENHO DE FUNDO
-          Positioned.fill(
-            child: CustomPaint(
-              painter: BackgroundPainter(), 
             ),
           ),
           // CONTEÚDO

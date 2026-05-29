@@ -141,6 +141,28 @@ export const buyFromStartupMarket = onCall(async (request) => {
         {merge: true},
       );
 
+      // Atualizando a subcoleção de investidores da startup
+
+      // Obtendo a referência da subcoleção de investidores
+      const buyerInvestorRef = db
+        .collection("Startups")
+        .doc(startupId)
+        .collection("investors")
+        .doc(user.uid);
+
+      // Atualizando/registrando os dados de investidores da startup
+      // após a compra
+      transaction.set(
+        buyerInvestorRef,
+        {
+          // Incrementa ou inicializa a quantidade de tokens comprados
+          quantity: FieldValue.increment(quantity),
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        // O merge garante a criação caso seja um novo investidor
+        {merge: true},
+      );
+
       // Registrando a transação na blockchain
 
       // Criando uma referência para o novo registro (com

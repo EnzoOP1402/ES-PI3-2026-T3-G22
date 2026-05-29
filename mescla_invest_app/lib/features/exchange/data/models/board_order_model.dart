@@ -11,6 +11,7 @@ class BoardOrderModel {
   final int quantity;
   final int remainingQuantity;
   final bool appreciated;
+  final String priceTrend;
   final String status;
 
   const BoardOrderModel({
@@ -23,6 +24,7 @@ class BoardOrderModel {
     required this.quantity,
     required this.remainingQuantity,
     required this.appreciated,
+    required this.priceTrend,
     required this.status,
   });
 
@@ -36,7 +38,8 @@ class BoardOrderModel {
       priceCents: _toInt(map['priceCents']),
       quantity: _toInt(map['quantity']),
       remainingQuantity: _toInt(map['remainingQuantity'] ?? map['quantity']),
-      appreciated: _toBool(map['appreciated'] ?? map['trend']),
+      appreciated: _toBool(map['isGoodDeal']),
+      priceTrend: map['trend']?.toString() ?? "equal",
       status: map['status']?.toString() ?? 'open',
     );
   }

@@ -1,6 +1,7 @@
 /* Autor: livia */
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
 import 'package:mescla_invest_app/routes/app_routes.dart';
@@ -49,10 +50,10 @@ class OrdemSucessoScreen extends StatelessWidget {
 
                 const SizedBox(height: 18),
 
-                const Text(
+                Text(
                   'Tudo certo!',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: GoogleFonts.montserrat(
                     color: _primaryColor,
                     fontSize: 28,
                     fontWeight: FontWeight.w900,
@@ -65,7 +66,7 @@ class OrdemSucessoScreen extends StatelessWidget {
                 Text(
                   args.mensagemPrincipal,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: GoogleFonts.montserrat(
                     color: Colors.black87,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -77,7 +78,7 @@ class OrdemSucessoScreen extends StatelessWidget {
                 Text(
                   args.mensagemSecundaria,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: GoogleFonts.montserrat(
                     color: Colors.black54,
                     fontSize: 11,
                     height: 1.25,
@@ -106,9 +107,9 @@ class OrdemSucessoScreen extends StatelessWidget {
                           (route) => false,
                         );
                       },
-                      child: const Text(
+                      child: Text(
                         'Ir para a carteira',
-                        style: TextStyle(
+                        style: GoogleFonts.montserrat(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
                         ),
@@ -138,9 +139,9 @@ class OrdemSucessoScreen extends StatelessWidget {
                         (route) => false,
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       'Voltar ao balcão',
-                      style: TextStyle(
+                      style: GoogleFonts.montserrat(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
                       ),
@@ -178,10 +179,10 @@ class _SucessoArgs {
     }
 
     if (modo == ModoOrdem.mercado) {
-      return 'Sua ordem de compra foi aberta com sucesso.';
+      return 'Sua compra foi efetuada com sucesso.';
     }
 
-    return 'Sua ordem de compra limitada foi aberta com sucesso.';
+    return 'Sua ordem de compra foi aberta com sucesso.';
   }
 
   String get mensagemSecundaria {

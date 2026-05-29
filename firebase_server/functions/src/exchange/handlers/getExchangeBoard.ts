@@ -5,6 +5,7 @@ import {requireAuthenticatedUser} from "../../shared/auth";
 import {db} from "../../shared/firebase";
 import {logger} from "firebase-functions";
 import {OfferDocument, OfferListTile, PriceTrend} from "../types";
+import {FieldPath} from "firebase-admin/firestore";
 
 /**
  * Firebase Function responsável pelo carregamento das informações
@@ -60,7 +61,7 @@ export const getExchangeBoard = onCall(
         // operador "in"), ou buscando direto se for menor
         const startupsSnapshot = await db
           .collection("Startups")
-          .where("__name__", "in", startupIds.slice(0, 30))
+          .where(FieldPath.documentId(), "in", startupIds.slice(0, 30))
           .get();
 
         // Para cada documento obtido, armazena no "Map" o
@@ -76,18 +77,21 @@ export const getExchangeBoard = onCall(
       // o de mercado, a tendência está alta, senão
       // está baixa ou igual
       const processedOrders = allOffers.map((order) => {
-        const marketPrice = startupMarketPrices[order.startupId] || 0;
+        const marketPrice = Number(startupMarketPrices[order.startupId] || 0);
+
+        // Convertendo o valor da ordem por segurança
+        const orderPrice = Number(order.priceCents || 0);
 
         let trend: PriceTrend = "equal";
-        if (order.priceCents > marketPrice) trend = "up";
-        if (order.priceCents < marketPrice) trend = "down";
+        if (orderPrice > marketPrice) trend = "up";
+        if (orderPrice < marketPrice) trend = "down";
 
         // Definindo se a oferta é vantajosa para quem está olhando o balcão
         // Ordem de Venda abaixo do mercado = Bom para comprar (true)
         // Ordem de Compra acima do mercado = Bom para vender (true)
         const isGoodDeal = order.type === "sell" ?
-          order.priceCents <= marketPrice :
-          order.priceCents >= marketPrice;
+          orderPrice <= marketPrice :
+          orderPrice >= marketPrice;
 
         // Retornando objeto que representa o item da lista
         // de ordens que será exibido na tela
@@ -96,7 +100,7 @@ export const getExchangeBoard = onCall(
           startupName: order.startupName,
           tokenName: order.tokenName,
           quantity: order.remainingQuantity,
-          priceCents: order.priceCents,
+          priceCents: orderPrice,
           trend,
           isGoodDeal,
         } as OfferListTile;

@@ -228,6 +228,60 @@ export async function listPublicQuestions(startupId: string) {
   );
 }
 
+// Função criada por: Enzo Olivato Pazian
+/**
+ * Função para a listagem das perguntas privadas de uma startup
+ * feitas pelo usuário logado.
+ * @param {string} startupId - O id da startup que possui as perguntas
+ * @param {string} userId - O id do usuário que fez as perguntas
+ * @return {[]} - A lista de perguntas com os dados dos usuários
+ */
+export async function listPrivateQuestions(startupId: string, userId: string) {
+  const questionsSnapshot = await startupsCollection
+    .doc(startupId)
+    .collection("questions")
+    .where("visibility", "==", "privada")
+    .where("authorUid", "==", userId)
+    .limit(50)
+    .get();
+
+  // Obtendo os dados do usuário
+  try {
+    // Busca o documento do usuário na coleção "users" do Firestore
+    const userDoc = await db.collection("users").doc(userId).get();
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      const authorName = userData?.fullName || "Usuário";
+      const authorPhotoUrl = userData?.profilePicture || null;
+
+      const questionsWithUsers = questionsSnapshot.docs.map(
+        (doc) => {
+          const data = doc.data();
+
+          return {
+            id: doc.id as string,
+            text: data.text as string,
+            answer: data.answer as string ?? null,
+            answeredAt: data.answeredAt?.toDate?.()?.toISOString?.() ?? null,
+            createdAt: data.createdAt?.toDate?.()?.toISOString?.() ?? null,
+            authorName: authorName as string,
+            authorPhotoUrl: authorPhotoUrl as string ?? null,
+          };
+        }
+      );
+
+      return questionsWithUsers.sort((left, right) =>
+        String(right.createdAt ?? "")
+          .localeCompare(String(left.createdAt ?? ""))
+      );
+    }
+    return [];
+  } catch (error) {
+    console.error(`Erro ao buscar usuário ${userId}:`, error);
+    return [];
+  }
+}
+
 export async function createQuestion(
   startupId: string,
   question: StartupQuestionDocument

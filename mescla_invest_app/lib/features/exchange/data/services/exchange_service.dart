@@ -1,4 +1,4 @@
-/* Autor: livia (Refatorado para Cloud Functions) */
+/* Autor: livia */
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:mescla_invest_app/features/exchange/data/models/board_order_model.dart';

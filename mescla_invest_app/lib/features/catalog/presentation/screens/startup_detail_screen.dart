@@ -362,7 +362,9 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
                   startupId: widget.startupId,
                   perguntasPublicas: perguntasPublicas,
                 ),
+                if(startupData['access']['isInvestor']) 
                 PrivateQuestionsCard(
+                  startupId: widget.startupId,
                   perguntasPrivadas: perguntasPrivadas,
                 ),
               ],

@@ -96,14 +96,13 @@ class FinancialPanelCard extends StatelessWidget {
         ),
 
         const SizedBox(height: 16),
-
+        if(startupData['access']['canTradeTokens'])
         SizedBox(
-          width: double.infinity,
           child: ElevatedButton(
             onPressed: onInvestPressed,
             style: ElevatedButton.styleFrom(
               elevation: 0,
-              backgroundColor: const Color(0xFFE4007C),
+              backgroundColor: const Color(0xFF353988),
               foregroundColor: Colors.white,
               disabledBackgroundColor: Colors.grey.shade400,
               shape: RoundedRectangleBorder(
@@ -119,7 +118,7 @@ class FinancialPanelCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Investir na startup',
+                  'Investir',
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
