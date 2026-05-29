@@ -1,7 +1,4 @@
 /* Autor: Rafael Henrique dos Santos Inácio */
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class UserTokenModel {
   final String startupId;
   final String startupName;
@@ -25,6 +22,5 @@ class UserTokenModel {
 class WalletDetails {
   final double balance;
   final List<UserTokenModel> tokens;
-
   WalletDetails({required this.balance, required this.tokens});
 }

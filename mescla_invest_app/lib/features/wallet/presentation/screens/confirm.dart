@@ -49,9 +49,7 @@ class SuccessScreen extends StatelessWidget {
                     color: Colors.green,
                   ),
                 ),
-
                 const SizedBox(height: 70),
-
                 SizedBox(
                   width: 205,
                   height: 68,

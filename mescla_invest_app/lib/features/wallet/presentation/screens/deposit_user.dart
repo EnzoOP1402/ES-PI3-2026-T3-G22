@@ -75,8 +75,8 @@ class _WalletUserState extends State<WalletUser> {
             Text(
               'Escolha a forma de pagamento',
               style: GoogleFonts.montserrat(
-                fontSize: 35,
-                fontWeight: FontWeight.w900,
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
                 color: Color(0xFF353988),
               ),
             ),
@@ -93,12 +93,13 @@ class _WalletUserState extends State<WalletUser> {
               },
 
               child: SizedBox(
+                width: 380,
                 height: 90,
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF4F4F4),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(50),
                     // Borda aparece se selecionado.
                     border: Border.all(
@@ -116,8 +117,14 @@ class _WalletUserState extends State<WalletUser> {
                       const SizedBox(width: 10),
 
                       // Texto expansível
-                      const Expanded(
-                        child: Text("Pix powered by Banco Central"),
+                      Expanded(
+                        child: Text(
+                          "Pix powered by Banco Central",
+                          style: GoogleFonts.montserrat(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -143,9 +150,8 @@ class _WalletUserState extends State<WalletUser> {
                   padding: const EdgeInsets.all(18),
 
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF4F4F4),
+                    color:Colors.white,
                     borderRadius: BorderRadius.circular(50),
-
                     border: Border.all(
                       color: _selectedPayment == 2
                           ? const Color(0xFF353988)
@@ -154,15 +160,19 @@ class _WalletUserState extends State<WalletUser> {
                     ),
                   ),
 
-                  child: const Row(
+                  child:Row(
                     children: [
                       // Ícone de transferência
                       Icon(Icons.compare_arrows_rounded, size: 34),
-
                       SizedBox(width: 14),
-
                       Expanded(
-                        child: Text("Transferência Eletrônica Disponível"),
+                        child: Text(
+                          "Transferência Eletrônica Disponível",
+                          style: GoogleFonts.montserrat(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          ),
+                        ),
                       ),
                     ],
                   ),
