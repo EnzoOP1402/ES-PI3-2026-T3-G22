@@ -109,26 +109,20 @@ class _CatalogoState extends State<Catalogo> {
     } on FirebaseFunctionsException catch (e) {
 
       if (mounted) {
-
         showErrorSnackBar(
           context,
           e.message ??
-              'Erro ao comunicar com o servidor.',
+          'Erro ao comunicar com o servidor.',
         );
       }
-
       rethrow;
-
     } catch (e) {
-
       if (mounted) {
-
         showErrorSnackBar(
           context,
           'Erro inesperado ao buscar startups.',
         );
       }
-
       rethrow;
     }
   }

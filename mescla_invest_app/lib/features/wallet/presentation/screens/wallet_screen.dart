@@ -1,31 +1,29 @@
 /* Autor: Rafael Henrique dos Santos Inácio */
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
 import 'package:mescla_invest_app/features/wallet/data/models/token_model.dart';
 import 'package:mescla_invest_app/features/wallet/data/models/wallet_model.dart';
 import 'package:mescla_invest_app/features/wallet/data/repositories/wallet_repository.dart';
+import 'package:mescla_invest_app/features/wallet/presentation/screens/my_offers_screen.dart';
+import 'package:mescla_invest_app/features/wallet/presentation/widgets/button_mid.dart';
 import 'package:mescla_invest_app/features/wallet/presentation/widgets/wallet_balance_section.dart';
 import 'package:mescla_invest_app/features/wallet/presentation/widgets/wallet_deposit_section.dart';
 import 'package:mescla_invest_app/features/wallet/presentation/widgets/wallet_tokens_list.dart';
-
 import 'deposit_user.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
-
   @override
   State<WalletScreen> createState() => _WalletScreenState();
 }
-
 class _WalletScreenState extends State<WalletScreen> {
   bool _isObscured = false;
-
   Future<WalletDetails>? _walletFuture;
-
   final Color _backgroundColor = const Color(0xFFE6E6E6);
-
   final List<TokenModel> _meusTokens = [
     TokenModel(
       startupId: '1',
@@ -38,7 +36,7 @@ class _WalletScreenState extends State<WalletScreen> {
       startupId: '2',
       startupName: 'NotaCerta',
       tokenName: 'NCTK',
-      quantity: 790,
+      quantity: 795,
     ),
 
     TokenModel(
@@ -66,7 +64,6 @@ class _WalletScreenState extends State<WalletScreen> {
   @override
   void initState() {
     super.initState();
-
     _walletFuture = WalletRepository.instance.getWalletData();
   }
 
@@ -133,17 +130,9 @@ class _WalletScreenState extends State<WalletScreen> {
                     saldo: saldoReal,
                     onToggle: _toggleVisibility,
                   ),
-
                   const SizedBox(height: 16),
-
-                  Divider(
-                    color: Colors.grey[400],
-                    thickness: 1,
-                  ),
-
+                  Divider(color: Colors.grey,thickness: 1,),
                   const SizedBox(height: 16),
-
-                  //Campo com o deposito
                   Center(
                     child: WalletDepositSection(
                       onDeposit: _goToDeposit,
@@ -151,23 +140,34 @@ class _WalletScreenState extends State<WalletScreen> {
                   ),
 
                   const SizedBox(height: 16),
-
-                  Divider(
-                    color: Colors.grey[400],
-                    thickness: 1,
+                  Divider(color: Colors.grey,thickness: 1,height: 20),
+                  Divider(color: Colors.transparent,thickness: 40,),
+                  Center(
+                    child: CustomOutlinedButton(
+                      text: 'Minhas ofertas',
+                      icon: Icons.currency_exchange,
+                      page: const MyOffersScreen(),
+                    ),
                   ),
-
                   const SizedBox(height: 16),
-
+                  Center(
+                    child: CustomOutlinedButton(
+                      text: 'Histórico de compras',
+                      icon: Icons.history,
+                      page: const MyOffersScreen(),
+                    ),
+                  ),
+                  Divider(color: Colors.transparent,thickness: 40,),
+                  Divider(color: Colors.grey,thickness: 1,height: 20),
+                  const SizedBox(height: 16),
                   /// TOKENS
-                  const Center(
+                  Center(
                     child: Text(
                       'Lista de Tokens adquiridos',
-
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
                       ),
                     ),
                   ),

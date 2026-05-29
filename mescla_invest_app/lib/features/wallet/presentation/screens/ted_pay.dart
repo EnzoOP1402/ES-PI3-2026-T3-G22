@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mescla_invest_app/core/widgets/confirm_exit_dialog.dart';
+import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
 import 'package:mescla_invest_app/features/wallet/presentation/screens/confirm.dart';
-import 'package:mescla_invest_app/features/wallet/presentation/theme/background_wallet.dart';
-import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
 import 'package:flutter/services.dart';
+import 'package:mescla_invest_app/routes/app_routes.dart';
 
 class Tedpay extends StatefulWidget {
+
   final String valor;
-
   const Tedpay({super.key, required this.valor});
-
   @override
   State<Tedpay> createState() => _TedpayState();
 }
@@ -33,124 +34,40 @@ class _TedpayState extends State<Tedpay> {
 
   @override
   Widget build(BuildContext context) {
-    return BackgroundWallet(
+    return Scaffold(
+      backgroundColor: const Color(0xFFF3F3F3),
+      appBar: CustomAppBar(
+      title: 'Carteira',
+      // Função executada ao clicar no botão de voltar.
       onBackPressed: () {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return Dialog(
-              backgroundColor: Colors.transparent,
-              child: Container(
-                width: 320,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFDEDEDE),
-                  borderRadius: BorderRadius.circular(28),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Cancelar investimento',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Se você sair, todos os dados preenchidos serão perdidos.',
-                      style: TextStyle(fontSize: 14, color: Colors.black87),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Tem certeza que deseja sair?',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const Catalogo(),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            width: 90,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              border: Border.all(
-                                color: const Color(0xFF353988),
-                                width: 3,
-                              ),
-                              borderRadius: BorderRadius.circular(22),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                'Sim',
-                                style: TextStyle(
-                                  color: Color(0xFF353988),
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: Container(
-                            width: 90,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFDB0065),
-                              borderRadius: BorderRadius.circular(22),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                'Não',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
+      showDialog(
+        context: context,
+        builder: (_) {
+        return ConfirmExitDialog(
+          title: 'Cancelar depósito',
+          message:'Se você sair, todos os dados preenchidos serão perdidos.',
+          question: 'Tem certeza que deseja sair?',
+            onConfirm: () {
+            Navigator.pop(context);
+            Navigator.pushNamed(
+            context,
+            AppRoutes.wallet,
+              );
+            },
+          );
+        },
+      );
+    },
+  ),
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Transfira o valor para a conta abaixo:',
-              style: TextStyle(
+              style: GoogleFonts.montserrat(
                 fontSize: 35,
                 fontWeight: FontWeight.w900,
                 color: Color(0xFF353988),
@@ -166,14 +83,11 @@ class _TedpayState extends State<Tedpay> {
             _infoCard(titulo: 'Conta', valor: '56789-0'),
 
             _infoCard(titulo: 'CNPJ', valor: '12.345.678/0001-99'),
-
             _infoCard(titulo: 'Valor da TED', valor: 'R\$ ${widget.valor}'),
-
             const SizedBox(height: 30),
-
-            const Text(
+            Text(
               'Após realizar a TED no seu banco, informe o comprovante para agilizar a validação:',
-              style: TextStyle(
+              style: GoogleFonts.montserrat(
                 color: Colors.black87,
                 fontWeight: FontWeight.w900,
                 fontSize: 14,
@@ -218,9 +132,9 @@ class _TedpayState extends State<Tedpay> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Confirmar TED',
-                    style: TextStyle(fontSize: 18, color: Colors.white),
+                    style: GoogleFonts.montserrat(fontSize: 18, color: Colors.white),
                   ),
                 ),
               ),
@@ -255,7 +169,7 @@ class _TedpayState extends State<Tedpay> {
               children: [
                 Text(
                   titulo,
-                  style: const TextStyle(
+                  style: GoogleFonts.montserrat(
                     fontSize: 14,
                     color: Color(0xFF8E8E8E),
                     fontWeight: FontWeight.w500,
@@ -266,7 +180,7 @@ class _TedpayState extends State<Tedpay> {
 
                 Text(
                   valor,
-                  style: const TextStyle(
+                  style: GoogleFonts.montserrat(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,

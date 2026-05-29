@@ -21,7 +21,6 @@ class WalletBalanceSection extends StatelessWidget {
       locale: 'pt_BR',
     ).format(value);
   }
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -34,28 +33,22 @@ class WalletBalanceSection extends StatelessWidget {
             fontSize: 16,
           ),
         ),
-
         const SizedBox(height: 4),
-
         Row(
           children: [
             Text(
               isObscured
                   ? 'R\$ _ _'
                   : formatCurrency(saldo),
-
-              style: GoogleFonts.montserrat(
+                style: GoogleFonts.montserrat(
                 color: Colors.black,
                 fontSize: 24,
                 fontWeight: FontWeight.w400,
               ),
             ),
-
             const SizedBox(width: 16),
-
             GestureDetector(
               onTap: onToggle,
-
               child: Row(
                 children: [
                   Icon(
@@ -64,13 +57,16 @@ class WalletBalanceSection extends StatelessWidget {
                         : Icons.visibility_off_outlined,
                     size: 18,
                   ),
-
                   const SizedBox(width: 6),
-
                   Text(
                     isObscured
                         ? 'Mostrar'
                         : 'Ocultar',
+                        style: GoogleFonts.montserrat(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        )
                   ),
                 ],
               ),

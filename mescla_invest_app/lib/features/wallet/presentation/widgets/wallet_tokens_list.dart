@@ -16,11 +16,9 @@ class WalletTokensList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     if (isObscured) {
-      return const Text('Oculto');
+      return const Text('');
     }
-
     if (tokens.isEmpty) {
       return const Center(
         child: Text(
@@ -28,13 +26,10 @@ class WalletTokensList extends StatelessWidget {
         ),
       );
     }
-
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-
       itemCount: tokens.length,
-
       itemBuilder: (context, index) {
         return TokenCard(
           token: tokens[index],

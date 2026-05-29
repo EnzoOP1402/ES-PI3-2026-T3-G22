@@ -4,13 +4,8 @@ import 'package:flutter/material.dart';
 // Importa formatadores de entrada de texto, usado para verificar se o
 //usuario digitou números no campo de valor a ser deposistado.
 import 'package:flutter/services.dart';
-
-// Importa a tela de catálogo/startups
-import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
-
-// Importa o widget de background/layout base da carteira,
-import 'package:mescla_invest_app/features/wallet/presentation/theme/background_wallet.dart';
-
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
 // Importa a tela de pagamento via TED.
 import 'package:mescla_invest_app/features/wallet/presentation/screens/ted_pay.dart';
 
@@ -18,6 +13,8 @@ import 'package:mescla_invest_app/features/wallet/presentation/screens/ted_pay.d
 import 'package:mescla_invest_app/features/wallet/presentation/screens/qrcode_pix.dart';
 
 import 'package:mescla_invest_app/features/wallet/data/repositories/wallet_repository.dart';
+import 'package:mescla_invest_app/core/widgets/confirm_exit_dialog.dart';
+import 'package:mescla_invest_app/routes/app_routes.dart';
 
 // StatefulWidget porque a interface muda dinamicamente
 class WalletUser extends StatefulWidget {
@@ -40,151 +37,31 @@ class _WalletUserState extends State<WalletUser> {
   // Método principal que constrói a interface.
   @override
   Widget build(BuildContext context) {
-    return BackgroundWallet(
+    return Scaffold(
+      backgroundColor: const Color(0xFFF3F3F3),
+      appBar: CustomAppBar(
+      title: 'Carteira',
       // Função executada ao clicar no botão de voltar.
       onBackPressed: () {
-        // Exibe diálogo de confirmação para evitar perda de dados.
-        showDialog(
-          context: context,
-          builder: (context) {
-            return Dialog(
-              // Remove fundo padrão branco.
-              backgroundColor: Colors.transparent,
-
-              child: Container(
-                width: 320,
-
-                // Espaçamento interno.
-                padding: const EdgeInsets.all(24),
-
-                // Aparência visual do modal.
-                decoration: BoxDecoration(
-                  color: const Color(0xFFDEDEDE),
-                  borderRadius: BorderRadius.circular(28),
-                ),
-
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-
-                  children: [
-                    // Título do modal.
-                    const Text(
-                      'Cancelar investimento',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.black,
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Aviso de perda de dados.
-                    const Text(
-                      'Se você sair, todos os dados preenchidos serão perdidos.',
-                      style: TextStyle(fontSize: 14, color: Colors.black87),
-                    ),
-
-                    const SizedBox(height: 4),
-
-                    // Pergunta final.
-                    const Text(
-                      'Tem certeza que deseja sair?',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Linha dos botões (Sim / Não)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        // Botão Sim
-                        GestureDetector(
-                          onTap: () {
-                            // Fecha o diálogo.
-                            Navigator.pop(context);
-
-                            // Navega para o catálogo.
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const Catalogo(),
-                              ),
-                            );
-                          },
-
-                          child: Container(
-                            width: 90,
-                            height: 44,
-
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-
-                              // Definição da borda.
-                              border: Border.all(
-                                color: const Color(0xFF353988),
-                                width: 3,
-                              ),
-
-                              borderRadius: BorderRadius.circular(22),
-                            ),
-
-                            child: const Center(
-                              child: Text(
-                                'Sim',
-                                style: TextStyle(
-                                  color: Color(0xFF353988),
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(width: 12),
-
-                        // Botão não
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-
-                          child: Container(
-                            width: 90,
-                            height: 44,
-
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFDB0065),
-                              borderRadius: BorderRadius.circular(22),
-                            ),
-
-                            child: const Center(
-                              child: Text(
-                                'Não',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-
+      showDialog(
+        context: context,
+        builder: (_) {
+        return ConfirmExitDialog(
+          title: 'Cancelar depósito',
+          message:'Se você sair, todos os dados preenchidos serão perdidos.',
+          question: 'Tem certeza que deseja sair?',
+            onConfirm: () {
+            Navigator.pop(context);
+            Navigator.pushNamed(
+            context,
+            AppRoutes.wallet,
+              );
+            },
+          );
+        },
+      );
+    },
+  ),
       // Conteúdo principal da tela.
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -195,9 +72,9 @@ class _WalletUserState extends State<WalletUser> {
 
           children: [
             // Título principal
-            const Text(
+            Text(
               'Escolha a forma de pagamento',
-              style: TextStyle(
+              style: GoogleFonts.montserrat(
                 fontSize: 35,
                 fontWeight: FontWeight.w900,
                 color: Color(0xFF353988),
@@ -217,15 +94,12 @@ class _WalletUserState extends State<WalletUser> {
 
               child: SizedBox(
                 height: 90,
-
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(18),
-
                   decoration: BoxDecoration(
                     color: const Color(0xFFF4F4F4),
                     borderRadius: BorderRadius.circular(50),
-
                     // Borda aparece se selecionado.
                     border: Border.all(
                       color: _selectedPayment == 1
@@ -332,9 +206,9 @@ class _WalletUserState extends State<WalletUser> {
                     ),
                   ),
 
-                  child: const Text(
+                  child: Text(
                     'Escolher',
-                    style: TextStyle(
+                    style: GoogleFonts.montserrat(
                       fontSize: 20,
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
@@ -418,7 +292,7 @@ class _WalletUserState extends State<WalletUser> {
                       //Texto ser for TED
                       : 'Digite o valor da TED',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: GoogleFonts.montserrat(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF353988),
@@ -434,7 +308,7 @@ class _WalletUserState extends State<WalletUser> {
                       //Texto ser for TED
                       : 'Informe quanto deseja depositar via TED',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 15, color: Colors.black54),
+                  style: GoogleFonts.montserrat(fontSize: 15, color: Colors.black54),
                 ),
 
                 const SizedBox(height: 28),
@@ -443,14 +317,14 @@ class _WalletUserState extends State<WalletUser> {
                   controller: valueController,
                   keyboardType: TextInputType.number,
                   textAlign: TextAlign.left,
-                  style: const TextStyle(
+                  style: GoogleFonts.montserrat(
                     fontSize: 34,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF000000),
                   ),
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   decoration: InputDecoration(
-                    prefixIcon: const Padding(
+                    prefixIcon: Padding(
                       padding: EdgeInsets.only(
                         left: 18,
                         right: 15,
@@ -461,7 +335,7 @@ class _WalletUserState extends State<WalletUser> {
                         widthFactor: 1.0,
                         child: Text(
                           'R\$ |',
-                          style: TextStyle(
+                          style: GoogleFonts.montserrat(
                             fontSize: 30,
                             fontWeight: FontWeight.w700,
                             color: Colors.black87,
@@ -474,7 +348,7 @@ class _WalletUserState extends State<WalletUser> {
                       minHeight: 0,
                     ),
                     hintText: '0,00',
-                    hintStyle: const TextStyle(
+                    hintStyle: GoogleFonts.montserrat(
                       color: Colors.grey,
                       fontSize: 34,
                     ),
@@ -565,9 +439,9 @@ class _WalletUserState extends State<WalletUser> {
                           borderRadius: BorderRadius.circular(18),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Continuar',
-                        style: TextStyle(
+                        style: GoogleFonts.montserrat(
                           fontSize: 20,
                           color: Colors.white,
                           fontWeight: FontWeight.w600,

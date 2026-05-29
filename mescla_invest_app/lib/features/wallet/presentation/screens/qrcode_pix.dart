@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:mescla_invest_app/core/widgets/confirm_exit_dialog.dart';
+import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
+import 'package:mescla_invest_app/features/wallet/presentation/screens/confirm.dart';
+import 'package:mescla_invest_app/routes/app_routes.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:mescla_invest_app/features/wallet/presentation/theme/background_wallet.dart';
-import 'package:mescla_invest_app/features/wallet/presentation/screens/pix_pay.dart';
-import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
 
 class Qrcode extends StatefulWidget {
   final String valor;
@@ -50,118 +51,6 @@ class _QrcodeState extends State<Qrcode> {
 
     return '$minutos:${secs.toString().padLeft(2, '0')}';
   }
-
-  void mostrarDialogCancelar() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            width: 320,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: const Color(0xFFDEDEDE),
-              borderRadius: BorderRadius.circular(28),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Cancelar investimento',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Se você sair, todos os dados preenchidos serão perdidos.',
-                  style: TextStyle(fontSize: 14, color: Colors.black87),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Tem certeza que deseja sair?',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.end, 
-                  children: [
-                    // Botão "Sim"
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const Catalogo()),
-                        );
-                      },
-                      child: Container(
-                        width: 90,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: Colors.transparent,
-                          border: Border.all(
-                            color: const Color(0xFF353988),
-                            width: 3,
-                          ),
-                          borderRadius: BorderRadius.circular(22),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Sim',
-                            style: TextStyle(
-                              color: Color(0xFF353988),
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 12,
-                    ), 
-                    
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        width: 90,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFDB0065),
-                          borderRadius: BorderRadius.circular(22),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Não',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   @override
   void dispose() {
     timer.cancel();
@@ -170,8 +59,31 @@ class _QrcodeState extends State<Qrcode> {
 
   @override
   Widget build(BuildContext context) {
-    return BackgroundWallet(
-      onBackPressed: mostrarDialogCancelar,
+    return Scaffold(
+      backgroundColor: const Color(0xFFF3F3F3),
+      appBar: CustomAppBar(
+      title: 'Carteira',
+      // Função executada ao clicar no botão de voltar.
+      onBackPressed: () {
+      showDialog(
+        context: context,
+        builder: (_) {
+        return ConfirmExitDialog(
+          title: 'Cancelar depósito',
+          message:'Se você sair, todos os dados preenchidos serão perdidos.',
+          question: 'Tem certeza que deseja sair?',
+            onConfirm: () {
+            Navigator.pop(context);
+            Navigator.pushNamed(
+            context,
+            AppRoutes.wallet,
+              );
+            },
+          );
+        },
+      );
+    },
+  ),
       body: SingleChildScrollView(
         child: Center(
           child: Padding(
@@ -203,22 +115,14 @@ class _QrcodeState extends State<Qrcode> {
                   padding: const EdgeInsets.all(12),
                   child: GestureDetector(
                     onTap: () async {
-                      
-                    
                       timer.cancel();
-                      
                       await Navigator.push(
-                        
                         context,
                         MaterialPageRoute(
-                          builder: (context) => TelaBranca(valor: widget.valor),
+                          builder: (context) => SuccessScreen(valor: widget.valor),
                         ),
                       );
-
-                    
                       gerarNovoQrCode();
-
-                 
                       iniciarTimer();
                     },
                     child: QrImageView(data: qrData, size: 200),
@@ -242,21 +146,40 @@ class _QrcodeState extends State<Qrcode> {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
+                  TextButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => ConfirmExitDialog(
+                          title: 'Cancelar depósito',
+                          message:
+                              'Se você sair, todos os dados preenchidos serão perdidos.',
+                          question: 'Tem certeza que deseja sair?',
+                          onConfirm: () {
+                            Navigator.pop(context);
 
-            
-                GestureDetector(
-                  onTap: mostrarDialogCancelar,
-                  child: const Text(
-                    'Cancelar',
-                    style: TextStyle(color: Colors.red, fontSize: 24),
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.wallet,
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      'Cancelar',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 24,
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
+              ]
         ),
       ),
+    )
+    )
     );
   }
 }

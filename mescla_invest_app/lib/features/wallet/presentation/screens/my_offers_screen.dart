@@ -1,4 +1,5 @@
 /* Autor: Rafael Henrique dos Santos Inácio */
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -64,7 +65,7 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
       backgroundColor: _backgroundColor,
       appBar: CustomAppBar(
         title: 'Carteira',
-       ),
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -76,32 +77,31 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
               children: [
                 Text(
                   'Minhas Ofertas',
-                  style: TextStyle(
+                    style: GoogleFonts.montserrat(
                     color: _primaryBlue,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Confira suas ofertas ativas esperando por ser realizadas. Para cancelá-las, basta arrastá-las para a direita.',
-                  style: TextStyle(
+                  style: GoogleFonts.montserrat(
                     fontSize: 14,
                     color: Colors.black87,
-                    height: 1.3,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
           ),
-
           // Lista de Ofertas com o Dismissible
           Expanded(
             child: _minhasOfertas.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       'Você não possui ofertas ativas no momento.',
-                      style: TextStyle(fontSize: 16, color: Colors.black54),
+                      style: GoogleFonts.montserrat(fontSize: 16, color: Colors.black54),
                     ),
                   )
                 : ListView.builder(
@@ -167,7 +167,6 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
                             ),
                           );
                         },
-
                         // O Card visual da oferta em si
                         child: Card(
                           margin: const EdgeInsets.symmetric(vertical: 6),
@@ -188,7 +187,7 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
                                   width: 60,
                                   child: Text(
                                     offer.tokenTicker,
-                                    style: const TextStyle(
+                                    style: GoogleFonts.montserrat(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
                                     ),
@@ -202,7 +201,7 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
                                     children: [
                                       Text(
                                         _formatCurrency(offer.price),
-                                        style: const TextStyle(
+                                        style: GoogleFonts.montserrat(
                                           fontWeight: FontWeight.w600,
                                           fontSize: 15,
                                         ),
@@ -210,7 +209,7 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
                                       const SizedBox(height: 2),
                                       Text(
                                         offer.orderType,
-                                        style: TextStyle(
+                                        style: GoogleFonts.montserrat(
                                           color: Colors.grey[600],
                                           fontSize: 12,
                                         ),
@@ -221,7 +220,7 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
                                 // Quantidade
                                 Text(
                                   '${offer.quantity} tokens',
-                                  style: const TextStyle(
+                                  style: GoogleFonts.montserrat(
                                     fontWeight: FontWeight.w500,
                                     fontSize: 14,
                                   ),

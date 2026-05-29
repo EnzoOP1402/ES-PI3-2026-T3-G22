@@ -9,14 +9,16 @@ class CustomAppBar extends StatelessWidget
 
   final String title;
 
+  final VoidCallback? onBackPressed;
+
   const CustomAppBar({
     super.key,
     required this.title,
+    this.onBackPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-
     return AppBar(
       backgroundColor: const Color(0xFF353988),
       elevation: 0,
@@ -37,16 +39,15 @@ class CustomAppBar extends StatelessWidget
           color: Colors.white,
           size: 20,
         ),
-        onPressed: () {
-          Navigator.pop(context);
-        },
+        onPressed:
+            onBackPressed ??
+            () {
+              Navigator.pop(context);
+            },
       ),
-
       actions: [
-
-        // BOTÃO PERFIL
         IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.person,
             color: Colors.white,
             size: 28,

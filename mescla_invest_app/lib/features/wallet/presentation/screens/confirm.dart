@@ -1,31 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:mescla_invest_app/features/catalog/presentation/screens/startup_catalog_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
+import 'package:mescla_invest_app/features/wallet/presentation/screens/wallet_screen.dart';
 
 class SuccessScreen extends StatelessWidget {
   final String valor;
-
   const SuccessScreen({super.key, required this.valor});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F3F3),
-
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Color(0xFF353988),
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'Carteira',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+      appBar: CustomAppBar(
+      title: 'Carteira',
       ),
-
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -42,24 +30,20 @@ class SuccessScreen extends StatelessWidget {
                   ),
                   child: const Icon(Icons.check, color: Colors.green, size: 55),
                 ),
-
                 const SizedBox(height: 30),
-
-                const Text(
+                Text(
                   'Valor depositado com\nsucesso!',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: GoogleFonts.montserrat(
                     fontSize: 28,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
                 ),
-
                 const SizedBox(height: 45),
-
                 Text(
                   'Valor Total: R\$$valor',
-                  style: const TextStyle(
+                  style: GoogleFonts.montserrat(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
                     color: Colors.green,
@@ -69,8 +53,8 @@ class SuccessScreen extends StatelessWidget {
                 const SizedBox(height: 70),
 
                 SizedBox(
-                  width: 220,
-                  height: 60,
+                  width: 205,
+                  height: 68,
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -85,7 +69,7 @@ class SuccessScreen extends StatelessWidget {
                         Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const Catalogo(),
+                            builder: (context) => const WalletScreen(),
                           ),
                           (route) => false,
                         );
@@ -97,9 +81,9 @@ class SuccessScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Menu Principal',
-                        style: TextStyle(
+                        style: GoogleFonts.montserrat(
                           fontSize: 22,
                           color: Colors.white,
                           fontWeight: FontWeight.w500,

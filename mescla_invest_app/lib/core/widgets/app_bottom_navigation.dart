@@ -31,21 +31,18 @@ class AppBottomNavigation extends StatelessWidget {
           AppRoutes.catalog,
         );
         break;
-
       case 2:
         Navigator.pushReplacementNamed(
           context,
           AppRoutes.exchange,
         );
         break;
-
       case 3:
         Navigator.pushReplacementNamed(
           context,
           AppRoutes.dashboard,
         );
         break;
-
       case 4:
         Navigator.pushReplacementNamed(
           context,
@@ -54,111 +51,110 @@ class AppBottomNavigation extends StatelessWidget {
         break;
     }
   }
-
   @override
   Widget build(BuildContext context) {
+    return NavigationBar(
+    height: 75,
+    backgroundColor: const Color(0xFFE8E9EB),
+    indicatorColor: const Color(0xFFDB0065),
+    selectedIndex: selectedIndex,
 
-  return NavigationBar(
-  height: 75,
-  backgroundColor: const Color(0xFFE8E9EB),
-  indicatorColor: const Color(0xFFDB0065),
-  selectedIndex: selectedIndex,
+    labelTextStyle:
+        WidgetStateProperty.resolveWith<TextStyle>(
+      (states) {
 
-  labelTextStyle:
-      WidgetStateProperty.resolveWith<TextStyle>(
-    (states) {
+        if (states.contains(
+          WidgetState.selected,
+        )) {
 
-      if (states.contains(
-        WidgetState.selected,
-      )) {
+          return const TextStyle(
+            fontSize: 13,
+            color: Color(0xFFDB0065),
+            fontWeight: FontWeight.bold,
+          );
+        }
 
         return const TextStyle(
-          fontSize: 13,
-          color: Color(0xFFDB0065),
-          fontWeight: FontWeight.bold,
+          fontSize: 12,
+          color: Color(0xFF353988),
         );
-      }
+      },
+    ),
 
-      return const TextStyle(
-        fontSize: 12,
-        color: Color(0xFF353988),
+    onDestinationSelected: (index) {
+      _onItemTapped(
+        context,
+        index,
       );
     },
-  ),
 
-  onDestinationSelected: (index) {
-    _onItemTapped(
-      context,
-      index,
-    );
-  },
+    destinations: const [
 
-  destinations: const [
+      NavigationDestination(
+        selectedIcon: Icon(
+          Icons.home_rounded,
+          color: Color(0xFFE8E9EB),
+        ),
 
-    NavigationDestination(
-      selectedIcon: Icon(
-        Icons.home_rounded,
-        color: Color(0xFFE8E9EB),
+        icon: Icon(
+          Icons.home_rounded,
+          color: Color(0xFF353988),
+        ),
+
+        label: 'Home',
       ),
 
-      icon: Icon(
-        Icons.home_rounded,
-        color: Color(0xFF353988),
+      NavigationDestination(
+        selectedIcon: Icon(
+          Icons.lightbulb_outline,
+          color: Color(0xFFE8E9EB),
+        ),
+        icon: Icon(
+          Icons.lightbulb_outline,
+          color: Color(0xFF353988),
+        ),
+
+        label: 'Catálogo',
       ),
 
-      label: 'Home',
-    ),
+      NavigationDestination(
+        selectedIcon: Icon(
+          Icons.attach_money,
+          color: Color(0xFFE8E9EB),
+        ),
 
-    NavigationDestination(
-      selectedIcon: Icon(
-        Icons.lightbulb_outline,
-        color: Color(0xFFE8E9EB),
-      ),
-      icon: Icon(
-        Icons.lightbulb_outline,
-        color: Color(0xFF353988),
-      ),
-
-      label: 'Catálogo',
-    ),
-
-    NavigationDestination(
-      selectedIcon: Icon(
-        Icons.attach_money,
-        color: Color(0xFFE8E9EB),
+        icon: Icon(
+          Icons.attach_money,
+          color: Color(0xFF353988),
+        ),
+        label: 'Balcão',
       ),
 
-      icon: Icon(
-        Icons.attach_money,
-        color: Color(0xFF353988),
-      ),
-      label: 'Balcão',
-    ),
+      NavigationDestination(
+        selectedIcon: Icon(
+          Icons.bar_chart_rounded,
+          color: Color(0xFFE8E9EB),
+        ),
+        icon: Icon(
+          Icons.bar_chart_rounded,
+          color: Color(0xFF353988),
+        ),
 
-    NavigationDestination(
-      selectedIcon: Icon(
-        Icons.bar_chart_rounded,
-        color: Color(0xFFE8E9EB),
+        label: 'Dashboard',
       ),
-      icon: Icon(
-        Icons.bar_chart_rounded,
-        color: Color(0xFF353988),
-      ),
+      NavigationDestination(
+        selectedIcon: Icon(
+          Icons.wallet_rounded,
+          color: Color(0xFFE8E9EB),
+        ),
+        icon: Icon(
+          Icons.wallet_rounded,
+          color: Color(0xFF353988),
+        ),
 
-      label: 'Dashboard',
-    ),
-    NavigationDestination(
-      selectedIcon: Icon(
-        Icons.account_balance_wallet_rounded,
-        color: Color(0xFFE8E9EB),
+        label: 'Carteira',
       ),
-      icon: Icon(
-        Icons.account_balance_wallet_rounded,
-        color: Color(0xFF353988),
-      ),
-
-      label: 'Carteira',
-    ),
-  ],
-);
-}}
+    ],
+  );
+  }
+}
