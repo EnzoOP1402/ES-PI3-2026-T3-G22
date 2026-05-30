@@ -159,7 +159,7 @@ O projeto está dividido em **duas pastas principais**:
 - `firebase_server/`: raiz do backend Firebase Functions.
 
 ```bash
-ES-PI3-2026-T3-G18/
+ES-PI3-2026-T3-G22/
 ├── mescla_invest_app/          # Aplicativo Flutter
 │   ├── lib/
 │   │   ├── core/
@@ -282,17 +282,17 @@ git --version
 ## 4. Clonar o repositório do projeto
 - Após instalar o Git, abra o terminal na pasta onde deseja salvar o projeto e execute:
 
-git clone https://github.com/zarpela/ES-PI3-2026-T3-G18.git
+git clone https://github.com/EnzoOP1402/ES-PI3-2026-T3-G22.git
 
 - Depois, entre na pasta do projeto:
 
-cd ES-PI3-2026-T3-G18
+cd ES-PI3-2026-T3-G22
 
 **Entender as pastas principais**
 
 O projeto possui duas pastas principais:
 
-ES-PI3-2026-T3-G18/
+ES-PI3-2026-T3-G22/
 ├── mescla_invest_app/    # Aplicativo Flutter
 └── firebase_server/      # Backend Firebase
 
