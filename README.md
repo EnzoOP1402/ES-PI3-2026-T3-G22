@@ -295,6 +295,7 @@ O projeto possui duas pastas principais:
 
 ES-PI3-2026-T3-G22/
 ├── mescla_invest_app/    # Aplicativo Flutter
+
 └── firebase_server/      # Backend Firebase
 
 - Para rodar o app Flutter, entre em:
