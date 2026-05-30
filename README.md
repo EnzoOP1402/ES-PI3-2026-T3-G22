@@ -227,6 +227,8 @@ Desenvolvido para a disciplina Projeto Integrador III do curso de Engenharia de 
 
 Professor Orientador: Prof. Me. Mateus Pereira Dias
 
+---
+
 ## 🛣️ Como iniciar o projeto MesclaInvest
 
 Passo-a-passo para realizar as instalações dos pacotes e ferramentas necessárias para a inicialização do aplicativo.
@@ -265,7 +267,9 @@ npm -v
 - Durante a instalação, mantenha as opções padrão e conclua o processo.
 - Após instalar, abra o terminal e verifique se o Git foi instalado corretamente:
 
+```bash
 git --version
+```
 
 ## 4. Clonar o repositório do projeto
 - Após instalar o Git, abra o terminal na pasta onde deseja salvar o projeto e execute:
@@ -278,8 +282,10 @@ cd ES-PI3-2026-T3-G18
 
 ## 5. Instalar as dependências do Flutter
 - Na raiz do projeto, execute:
-
+  
+```bash
 flutter pub get
+```
 
 - Esse comando baixa todos os pacotes utilizados pelo aplicativo.
 
@@ -287,8 +293,10 @@ flutter pub get
 - O projeto utiliza Firebase Authentication, Cloud Firestore e Firebase Functions.
 
 - Para utilizar o Firebase, é necessário ter o Firebase CLI instalado. Execute:
-
+  
+```bash
 npm install -g firebase-tools
+```
 
 - Depois, faça login na sua conta Firebase:
 
@@ -296,27 +304,37 @@ firebase login
 
 - Caso seja necessário vincular o projeto local ao Firebase, execute:
 
+```bash
 firebase use --add
+```
 
 - E selecione o projeto correspondente ao MesclaInvest.
 
 ## 7. Instalar dependências das Firebase Functions
 - Entre na pasta functions:
-
+  
+```bash
 cd functions
+```
 
 - Instale as dependências:
 
+```bash
 npm install
+```
 
 - Depois, volte para a raiz do projeto:
 
+```bash
 cd ..
+```
 
 ## 8. Rodar o projeto no Chrome
 - Com tudo configurado, execute:
 
+```bash
 flutter run -d chrome
+```
 
 - O aplicativo será iniciado no navegador Google Chrome.
 
@@ -324,30 +342,42 @@ flutter run -d chrome
 
 - Caso deseje executar em um dispositivo Android, conecte o celular ou abra um emulador e execute:
 
+```bash
 flutter devices
+```
 
 - Depois rode:
 
+```bash
 flutter run
+```
 
 ## 10. Comandos úteis durante o desenvolvimento
 
 - Atualizar pacotes:
 
+```bash
 flutter pub get
+```
 
 - Verificar problemas no ambiente Flutter:
 
+```bash
 flutter doctor
+```
 
 - Limpar arquivos temporários do projeto:
 
+```bash
 flutter clean
+```
 
 - Rodar novamente após limpar:
 
+```bash
 flutter pub get
 flutter run -d chrome
+```
 
 ## 11. Fluxo principal de uso
 
@@ -361,8 +391,7 @@ flutter run -d chrome
 6. Acompanha seus ativos na carteira.
 7. Visualiza indicadores no dashboard.
 8. Pode negociar tokens no Balcão de Tokens com outros usuários.
-   
-- Regras de negócio principais
+9. Regras de negócio principais
 * Apenas usuários cadastrados podem realizar transações.
 * O saldo da carteira é simulado.
 * O usuário só pode comprar tokens se possuir saldo suficiente.
