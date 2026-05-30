@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 //usuario digitou números no campo de valor a ser deposistado.
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
 // Importa a tela de pagamento via TED.
 import 'package:mescla_invest_app/features/wallet/presentation/screens/ted_pay.dart';
@@ -15,6 +16,7 @@ import 'package:mescla_invest_app/features/wallet/presentation/screens/qrcode_pi
 import 'package:mescla_invest_app/features/wallet/data/repositories/wallet_repository.dart';
 import 'package:mescla_invest_app/core/widgets/confirm_exit_dialog.dart';
 import 'package:mescla_invest_app/routes/app_routes.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // StatefulWidget porque a interface muda dinamicamente
 class WalletUser extends StatefulWidget {
@@ -393,54 +395,65 @@ class _WalletUserState extends State<WalletUser> {
                     ),
                     child: ElevatedButton(
                       onPressed: () async {
-                        final valor = valueController.text.trim();
+                          final valor = valueController.text.trim();
+                          if (valor.isEmpty || valor == '0,00') {
+                            showErrorSnackBar(
+                              context,
+                              'Digite um valor válido para depósito',
+                            );
+                            return;
+                          }
 
-                        //Verifica se o valor é válido
-                        if (valor.isEmpty || valor == '0,00') {
-                          //SnackBar de erro
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Digite um valor válido para depósito',
-                              ),
-                              backgroundColor: Color(0xFFCF0000),
-                            ),
-                          );
-                          return;
-                        }
-                        final double valorDigitado =
-                            double.tryParse(
-                              valor.replaceAll('.', '').replaceAll(',', '.'),
-                            ) ??
-                            0.0;
+                          try {
+                            final double valorDigitado =
+                                double.tryParse(
+                                  valor.replaceAll('.', '').replaceAll(',', '.'),
+                                ) ??
+                                0.0;
 
-                        // Aqui você usa:
-                        await WalletRepository.instance.adicionarSaldo(
-                          valorDigitado,
-                        );
+                            final int amountCents =
+                                (valorDigitado * 100).round();
+                            await WalletRepository.instance.addBalance(
+                              amountCents,
+                            );
 
-                        Navigator.pop(modalContext);
+                            if (!mounted) return;
 
-                        //Verifica o tippo de pagamento escolhido para ir ao
-                        //proceso específico de pagamento para cada tipo.
-                        if (_selectedPayment == 1) {
-                          //Se escolheu PIX
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => Qrcode(valor: valor),
-                            ),
-                          );
-                        } else if (_selectedPayment == 2) {
-                          //Se escolheu TED
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => Tedpay(valor: valor),
-                            ),
-                          );
-                        }
-                      },
+                            Navigator.pop(modalContext);
+
+                            showSuccessSnackBar(
+                              context,
+                              'Saldo adicionado com sucesso!',
+                            );
+
+                            if (_selectedPayment == 1) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => Qrcode(
+                                    valor: valor,
+                                  ),
+                                ),
+                              );
+                            } else if (_selectedPayment == 2) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => Tedpay(
+                                    valor: valor,
+                                  ),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (!mounted) return;
+
+                            showErrorSnackBar(
+                              context,
+                              e.toString(),
+                            );
+                          }
+                        },
                       //Botão Continuar
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,

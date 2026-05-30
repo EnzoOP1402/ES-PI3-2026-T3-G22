@@ -1,9 +1,11 @@
 /* Autor: Rafael Henrique dos Santos Inácio */
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mescla_invest_app/features/wallet/data/models/offer_model.dart';
+import 'package:mescla_invest_app/features/wallet/data/repositories/wallet_repository.dart';
 
 class MyOffersScreen extends StatefulWidget {
   const MyOffersScreen({super.key});
@@ -17,46 +19,35 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
   final Color _backgroundColor = const Color(0xFFE6E6E6);
 
   // Lista simulada de ofertas baseada no seu protótipo
-  final List<OfferModel> _minhasOfertas = [
-    OfferModel(
-      id: '1',
-      tokenTicker: 'PMTK',
-      price: 120.0,
-      orderType: 'Ordem de compra',
-      quantity: 790,
-    ),
-    OfferModel(
-      id: '2',
-      tokenTicker: 'NCTK',
-      price: 180.0,
-      orderType: 'Ordem de venda',
-      quantity: 900,
-    ),
-    OfferModel(
-      id: '3',
-      tokenTicker: 'HVTK',
-      price: 120.0,
-      orderType: 'Ordem de venda',
-      quantity: 800,
-    ),
-    OfferModel(
-      id: '4',
-      tokenTicker: 'MTTK',
-      price: 100.0,
-      orderType: 'Ordem de compra',
-      quantity: 150,
-    ),
-    OfferModel(
-      id: '5',
-      tokenTicker: 'MLTK',
-      price: 110.0,
-      orderType: 'Ordem de venda',
-      quantity: 100,
-    ),
-  ];
-
+  List<OfferModel> _minhasOfertas = [];
+  bool _isLoading = true;
   String _formatCurrency(double value) {
     return NumberFormat.simpleCurrency(locale: 'pt_BR').format(value);
+  }
+  @override
+  void initState() {
+    super.initState();
+    _loadOffers();
+  }
+
+  Future<void> _loadOffers() async {
+    try {
+      final offers = await WalletRepository.instance.getUserOffers();
+
+      setState(() {
+        _minhasOfertas = offers;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      showErrorSnackBar(
+        context,
+        'Erro ao carregar ofertas.',
+      );
+    }
   }
 
   @override
@@ -66,7 +57,10 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
       appBar: CustomAppBar(
         title: 'Carteira',
       ),
-      body: Column(
+      body:  _isLoading ? const Center(
+        child: CircularProgressIndicator(),
+      )
+      : Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Cabeçalho da página

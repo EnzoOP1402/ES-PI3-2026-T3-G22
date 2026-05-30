@@ -24,47 +24,14 @@ class _WalletScreenState extends State<WalletScreen> {
   bool _isObscured = false;
   Future<WalletDetails>? _walletFuture;
   final Color _backgroundColor = const Color(0xFFE6E6E6);
-  final List<TokenModel> _meusTokens = [
-    TokenModel(
-      startupId: '1',
-      startupName: 'PetMatch',
-      tokenName: 'PMTK',
-      quantity: 790,
-    ),
-
-    TokenModel(
-      startupId: '2',
-      startupName: 'NotaCerta',
-      tokenName: 'NCTK',
-      quantity: 795,
-    ),
-
-    TokenModel(
-      startupId: '3',
-      startupName: 'HealthVibe',
-      tokenName: 'HVTK',
-      quantity: 790,
-    ),
-
-    TokenModel(
-      startupId: '4',
-      startupName: 'MetaLive',
-      tokenName: 'MLTK',
-      quantity: 790,
-    ),
-
-    TokenModel(
-      startupId: '5',
-      startupName: 'CardVision',
-      tokenName: 'CVTK',
-      quantity: 790,
-    ),
-  ];
+  List<TokenModel> _tokens = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _walletFuture = WalletRepository.instance.getWalletData();
+    _loadTokens();
   }
 
   void _toggleVisibility() {
@@ -72,6 +39,25 @@ class _WalletScreenState extends State<WalletScreen> {
       _isObscured = !_isObscured;
     });
   }
+  Future<void> _loadTokens() async {
+  try {
+    final tokens = await WalletRepository.instance.getTokensListByUser();
+
+    setState(() {
+      _tokens = tokens;
+      _isLoading = false;
+    });
+  } catch (e) {
+    setState(() {
+      _isLoading = false;
+    });
+
+    showErrorSnackBar(
+      context,
+      'Erro ao carregar tokens.',
+    );
+  }
+}
 
   void _goToDeposit() {
     Navigator.push(
@@ -92,13 +78,12 @@ class _WalletScreenState extends State<WalletScreen> {
         title: 'Carteira',
       ),
       body: SafeArea(
-        bottom: false,
         child: FutureBuilder<WalletDetails>(
           future: _walletFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState ==
                 ConnectionState.waiting) {
-              return const Center(
+              return Center(
                 child: CircularProgressIndicator(
                   color: Color(0xFF353988),
                 ),
@@ -112,22 +97,12 @@ class _WalletScreenState extends State<WalletScreen> {
               );
             }
             final wallet = snapshot.data;
-            double saldoReal;
-            if (wallet != null) {
-              saldoReal = wallet.balance;
-            } else {
-              saldoReal = 0.0;
-            }
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
                 children: [
-                  // Campo com o Saldo
                   WalletBalanceSection(
                     isObscured: _isObscured,
-                    saldo: saldoReal,
+                    saldo: wallet?.balance ?? 0,
                     onToggle: _toggleVisibility,
                   ),
                   const SizedBox(height: 16),
@@ -173,7 +148,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   ),
                   const SizedBox(height: 16),
                   WalletTokensList(
-                    tokens: _meusTokens,
+                    tokens: _tokens,
                     isObscured: _isObscured,
                   ),
                   const SizedBox(height: 20),

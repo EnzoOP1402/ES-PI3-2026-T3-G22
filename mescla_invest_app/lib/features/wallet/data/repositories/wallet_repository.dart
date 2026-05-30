@@ -1,60 +1,106 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:mescla_invest_app/features/wallet/data/models/offer_model.dart';
+import 'package:mescla_invest_app/features/wallet/data/models/token_model.dart';
 import '../models/wallet_model.dart';
 
 class WalletRepository {
-  static final WalletRepository _instance = WalletRepository._internal();
-  static WalletRepository get instance => _instance;
-  WalletRepository._internal();
+  WalletRepository._();
 
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  static final instance = WalletRepository._();
 
-  // Função para buscar o saldo e os tokens do usuário logado de forma combinada
-  Future<WalletDetails> getWalletData() async {
-    // Recupera o UID do usuário logado dinamicamente do AuthRepository
-    final uid = AuthRepository.instance.currentUser?.uid;
-    if (uid == null) throw Exception("Usuário não autenticado.");
+  final FirebaseFunctions _functions =
+      FirebaseFunctions.instanceFor(
+        region: 'southamerica-east1',
+      );
 
-    // 1. Busca o saldo do usuário na coleção principal de usuários
-    final userDoc = await _db.collection('users').doc(uid).get();
-    final userData = userDoc.data() ?? {};
-    final int balanceCents = userData['balanceCents'] ?? 0;
-    final double balance = balanceCents / 100; // Converte centavos para Real
+Future<WalletDetails> getWalletData() async {
+  try {
+    final callable =
+        _functions.httpsCallable(
+          'getUserBalance',
+        );
+    final result = await callable.call();
+    final data =
+    Map<String, dynamic>.from(result.data);
+    final int balanceAvailableCents =
+      data['balanceAvailableCents'] ?? 0;
+    final wallet = WalletDetails(
+      balance: balanceAvailableCents / 100,
+      tokens: [],
+    );
 
-    // 2. Busca a lista de tokens adquiridos na subcoleção do usuário
-    final tokensSnapshot = await _db
-        .collection('users')
-        .doc(uid)
-        .collection('tokens')
-        .get();
+    return wallet;
+  } on FirebaseFunctionsException catch (e) {
 
-    final List<UserTokenModel> tokens = tokensSnapshot.docs.map((doc) {
-      return UserTokenModel.fromMap(doc.id, doc.data());
-    }).toList();
-
-    return WalletDetails(balance: balance, tokens: tokens);
+    throw Exception(
+      e.message ??
+          'Erro ao carregar carteira',
+    );
+  } catch (e) {
+    rethrow;
   }
+}
 
-  Future<void> adicionarSaldo(double valor) async {
-    final uid = AuthRepository.instance.currentUser?.uid;
-    if (uid == null) throw Exception("Usuário não autenticado.");
+Future<void> addBalance(int amountCents,) async {
+    try {
+      final callable =
+          _functions.httpsCallable(
+            'addBalance',
+          );
 
-    final doc = FirebaseFirestore.instance.collection('users').doc(uid);
+      await callable.call({
+        'amountCents': amountCents,
+      });
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(
+        e.message ??
+            'Erro ao adicionar saldo',
+      );
+    }
+  }
+  Future<List<OfferModel>> getUserOffers() async {
+    try {
+      final result = await _functions
+          .httpsCallable('getUserOffers')
+          .call();
 
-    await FirebaseFirestore.instance.runTransaction((transaction) async {
-      final snapshot = await transaction.get(doc);
+      final data = result.data;
 
-      final data = snapshot.data() as Map<String, dynamic>? ?? {};
+      final List offers = data['userOffers'];
 
-      final saldoAtualCentavos = (data['balanceCents'] ?? 0) as int;
+      return offers.map((offer) {
+        return OfferModel(
+          id: offer['id'],
+          tokenTicker: offer['tokenName'],
+          price: offer['priceCents'] / 100,
+          orderType: offer['type'] == 'buy'
+              ? 'Ordem de compra'
+              : 'Ordem de venda',
+          quantity: offer['quantity'],
+        );
+      }).toList();
+    } catch (e) {
+      throw Exception('Erro ao carregar ofertas: $e');
+    }
+  }
+  Future<List<TokenModel>> getTokensListByUser() async {
+    try {
+      final result = await _functions
+          .httpsCallable('getTokensListByUser')
+          .call();
 
-      final valorCentavos = (valor * 100).toInt();
+      final List tokenList = result.data['tokenList'];
 
-      final novoSaldo = saldoAtualCentavos + valorCentavos;
-
-      transaction.set(doc, {
-        'balanceCents': novoSaldo,
-      }, SetOptions(merge: true));
-    });
+      return tokenList.map((token) {
+        return TokenModel(
+          startupId: token['startupId'],
+          startupName: token['startupName'],
+          tokenName: token['tokenName'],
+          quantity: token['quantity'],
+        );
+      }).toList();
+    } catch (e) {
+      throw Exception('Erro ao carregar tokens: $e');
+    }
   }
 }

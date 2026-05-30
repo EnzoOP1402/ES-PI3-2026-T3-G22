@@ -82,7 +82,7 @@ class SuccessScreen extends StatelessWidget {
                       child: Text(
                         'Menu Principal',
                         style: GoogleFonts.montserrat(
-                          fontSize: 22,
+                          fontSize: 20,
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
                         ),
