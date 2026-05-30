@@ -1,6 +1,6 @@
 /* Autor: Enzo Olivato Pazian */
 
-import {HttpsError, onCall} from "firebase-functions/https";
+import {HttpsError, onCall} from "firebase-functions/v2/https";
 import {normalizeString} from "../../shared/validation";
 import {normalizePhoneToE164} from "../shared/validation";
 import {cpfExists} from "../repositories/userRepository";

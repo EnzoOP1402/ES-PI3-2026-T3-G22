@@ -1,6 +1,6 @@
 /* Autor: Enzo Olivato Pazian */
 
-import {onDocumentCreated} from "firebase-functions/firestore";
+import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import {OfferDocument, TradeDocument} from "../types";
 import {logger} from "firebase-functions";
 import {db} from "../../shared/firebase";
