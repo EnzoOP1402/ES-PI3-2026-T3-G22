@@ -2,6 +2,7 @@
 
 // Implementando as dependências
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mescla_invest_app/core/errors/app_exceptions.dart';
 import '../models/user_model.dart';
@@ -54,50 +55,32 @@ class AuthRepository {
       throw AuthException("Não foi possível realizar o login agora.");
     }
   }
-
   /// Método de cadastro: responsável por utilizar os dados obtidos no objeto [user] e a [password]
   /// para validar a consistência de dados como o CPF, invocar o método de cadastro do Firebase Auth
-  /// e criar um documento no Firestore contendo os dados do novo usuário criado
+  /// e criar um documento no Firestore contendo os dados do novo usuário criado através de uma chamada
+  /// à Firebase Function registerUser.
   Future<void> register(UserModel user, String password) async {
-    // Declarando o objeto do tipo UserCredential que obterá o usuário criado pelo Firebase Auth
-    UserCredential? credential;
-    
     try {
-      // Passo 1 do cadastro: verificar se o CPF já existe no Firestore
-      // Acessa o Firestore e busca por um documento na coleção que contenha o CPF a ser inserido
-      final QuerySnapshot<Map<String, dynamic>> cpfCheck = await _db
-          .collection('users')
-          .where('cpf', isEqualTo: user.cpf)
-          .get();
-
-      // Se um documento contendo o CPF possuir dados (o CPF já está cadastrado), dispara um
-      // erro convertido com a a exceção autoral e impede a continuação do método
-      if (cpfCheck.docs.isNotEmpty) {
-        // Lança o erro que será tratado pela UI
-        throw AuthException("Este CPF já está cadastrado em outra conta.");
-      }
-
-      // Passo 2: cria a conta no Firebase Auth
-      // Aguarda a operação do método de criação de novo usuário a partir de e-mail e senha
-      // do Firebase Auth e armazena o usuário criado
-      credential = await _auth.createUserWithEmailAndPassword(
-        email: user.email, 
-        password: password
-      );
-
-      // Passo 3: atribui o UID criado a um novo objeto que referencia o usuário
-      // Criando uma cópia do usuário com o UID real que o Firebase acabou de gerar
-      final userWithUid = user.copyWith(uid: credential.user!.uid);
-
-      // Passo 4: salva os dados no Firestore
-      // Aguardando o salvamento dos dados adicionais no Firestore usando o UID do Auth
-      // como ID do documento E dentro do documento
-      await _db.collection('users').doc(credential.user!.uid).set(userWithUid.toMap());
+      // Fazendo a chamada à função de cadastro do Firebase
+      await FirebaseFunctions
+      .instanceFor(region: 'southamerica-east1')
+      .httpsCallable('registerUser')
+      .call({
+        'email': user.email,
+        'password': password,
+        'fullName': user.fullName,
+        'cpf': user.cpf,
+        'phone': user.phone,
+      });
+      
+      // Após o retorno de sucesso da Function, o usuário já está criado no Auth, então
+      // efetuamos o login automático dele usando o mesmo e-mail e senha inseridos
+      await _auth.signInWithEmailAndPassword(email: user.email, password: password);
     }
-    // Se algum erro autoral for identificado, dispara a própria mensagem,
-    // que já é uma String tratada pronta para ser interceptada pela UI 
-    on AuthException catch(e) {
-      throw e.message;
+    // Se 
+    on FirebaseFunctionsException catch (e) {
+      // Lança a exceção
+      throw AuthException("Erro ao realizar cadastro: ${e.message ?? 'Falha na Function'}");
     }
     // Se erros específicos do Firebase Auth (Senha fraca, e-mail duplicado) forem identificados,
     // dispara o erro identificado através do método de tratamento de erro 
@@ -106,21 +89,17 @@ class AuthRepository {
       throw _handleAuthError(e);
     }
     // Se erros específicos do Firestore (Permissão, banco fora do ar) forem identificados,
-    // exclui o usuário na base de dados do Firebase Auth e dispara o erro identificado,
-    // convertendo-o em uma exceção autoral para tratar a mensagem de erro 
+    // dispara o erro identificado, convertendo-o em uma exceção autoral para tratar
+    // a mensagem de erro 
     on FirebaseException {
-      // Verifica se o usuário foi criado pelo Auth e, se sim, o exclui
-      if (credential?.user != null) await credential!.user!.delete();
       // Lança a exceção
       throw AuthException("Erro no banco de dados: Permissão negada ou falha na rede.");
     }
-    // Se erros genéricos forem identificados, exclui o usuário do Auth e dispara o erro
-    // identificado, convertendo-o em uma exceção autoral para tratar a mensagem de erro 
+    // Se erros genéricos forem identificados, dispara o erro identificado, convertendo-o
+    // em uma exceção autoral para tratar a mensagem de erro 
     catch (e) {
-      // Verifica se o usuário foi criado pelo Auth e, se sim, o exclui
-      if (credential?.user != null) await credential!.user!.delete();
       // Lança a exceção
-      throw AuthException("Ocorreu um erro inesperado. Tente novamente.");
+      throw AuthException("Ocorreu um erro inesperado. Tente novamente. ${e.toString()}");
     }
   }
 

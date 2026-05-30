@@ -1,12 +1,12 @@
 /* eslint-disable require-jsdoc */
-import {FieldValue} from "firebase-admin/firestore";
+import {FieldValue, Transaction} from "firebase-admin/firestore";
 
 import {
   StartupDocument,
   StartupListItem,
   StartupQuestionDocument,
 } from "../types";
-import {db} from "../shared/firebase";
+import {db} from "../../shared/firebase";
 
 const startupsCollection = db.collection("Startups");
 
@@ -52,6 +52,8 @@ const demoStartups: Array<StartupDocument & {id: string}> = [
     coverImageUrl: "https://images.unsplash.com/photo-" +
  "1581093458791-9d15482442f6",
     tags: ["healthtech", "iot", "educacao"],
+    tokenName: "BCTK",
+    purchaseAvailableTokens: 100000,
   },
   {
     id: "rota-verde",
@@ -85,6 +87,8 @@ const demoStartups: Array<StartupDocument & {id: string}> = [
     coverImageUrl: "https://images.unsplash.com/photo-" +
  "1500530855697-b586d89ba3ee",
     tags: ["logtech", "sustentabilidade", "mobilidade"],
+    tokenName: "RVTK",
+    purchaseAvailableTokens: 250000,
   },
   {
     id: "mentorai",
@@ -121,6 +125,8 @@ const demoStartups: Array<StartupDocument & {id: string}> = [
     pitchDeckUrl: "https://example.com/decks/mentorai.pdf",
     coverImageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978",
     tags: ["edtech", "ia", "mentoria"],
+    tokenName: "MAITK",
+    purchaseAvailableTokens: 500000,
   },
 ];
 
@@ -222,6 +228,60 @@ export async function listPublicQuestions(startupId: string) {
   );
 }
 
+// Função criada por: Enzo Olivato Pazian
+/**
+ * Função para a listagem das perguntas privadas de uma startup
+ * feitas pelo usuário logado.
+ * @param {string} startupId - O id da startup que possui as perguntas
+ * @param {string} userId - O id do usuário que fez as perguntas
+ * @return {[]} - A lista de perguntas com os dados dos usuários
+ */
+export async function listPrivateQuestions(startupId: string, userId: string) {
+  const questionsSnapshot = await startupsCollection
+    .doc(startupId)
+    .collection("questions")
+    .where("visibility", "==", "privada")
+    .where("authorUid", "==", userId)
+    .limit(50)
+    .get();
+
+  // Obtendo os dados do usuário
+  try {
+    // Busca o documento do usuário na coleção "users" do Firestore
+    const userDoc = await db.collection("users").doc(userId).get();
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      const authorName = userData?.fullName || "Usuário";
+      const authorPhotoUrl = userData?.profilePicture || null;
+
+      const questionsWithUsers = questionsSnapshot.docs.map(
+        (doc) => {
+          const data = doc.data();
+
+          return {
+            id: doc.id as string,
+            text: data.text as string,
+            answer: data.answer as string ?? null,
+            answeredAt: data.answeredAt?.toDate?.()?.toISOString?.() ?? null,
+            createdAt: data.createdAt?.toDate?.()?.toISOString?.() ?? null,
+            authorName: authorName as string,
+            authorPhotoUrl: authorPhotoUrl as string ?? null,
+          };
+        }
+      );
+
+      return questionsWithUsers.sort((left, right) =>
+        String(right.createdAt ?? "")
+          .localeCompare(String(left.createdAt ?? ""))
+      );
+    }
+    return [];
+  } catch (error) {
+    console.error(`Erro ao buscar usuário ${userId}:`, error);
+    return [];
+  }
+}
+
 export async function createQuestion(
   startupId: string,
   question: StartupQuestionDocument
@@ -251,4 +311,47 @@ export async function seedDemoStartups(): Promise<string[]> {
   await batch.commit();
 
   return demoStartups.map((startup) => startup.id);
+}
+
+// Função criada por: Enzo Olivato Pazian
+/**
+ * Obtém os dados de saldo um usuário dentro de uma
+ * transação ativa.
+ *
+ * É usada na criação de ordens de compra e venda,
+ * sendo uma parte essencial das verificações de
+ * viabilidade da abertura de ordens.
+ *
+ * @param {Transaction} transaction -
+ * Representa a transação em andamento;
+ * @param {string} startupId - O startup que terá os dados
+ * obtidos
+ */
+export async function getStartupByIdInTransaction(
+  transaction: Transaction,
+  startupId: string
+) {
+  // Obtemos o objeto com os dados do documento da
+  // startup através da operação de busca atômica
+  // gerada pela transaction
+  const startupDoc = await transaction.get(startupsCollection.doc(startupId));
+
+  // Se o documento não trouxer dados de uma startup
+  // existente, retorna null (que será interceptado
+  // pela transação principal)
+  if (!startupDoc.exists) {
+    return null;
+  }
+
+  // Extraindo os dados do documento
+  const data = startupDoc.data();
+
+  // Retornando os dados obtidos
+  return {
+    // Retornando a referência para que ela possa ser
+    // acessada pelo próximo update
+    ref: startupsCollection.doc(startupId),
+    // Retornando os dados da startup
+    data: data as StartupDocument,
+  };
 }

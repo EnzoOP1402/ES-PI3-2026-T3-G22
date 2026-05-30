@@ -1,4 +1,4 @@
-/* eslint-disable linebreak-style *//* eslint-disable max-len */
+/* eslint-disable max-len */
 /* Autor: Enzo Olivato Pazian */
 
 // Importando os recursos principais para o uso do firebase
@@ -11,10 +11,10 @@ const db = admin.firestore();
 const collectionStartups = db.collection("Startups");
 
 /**
- * Exclui TODOS os documentos de uma colecao.
+ * Exclui TODOS os documentos de uma coleção.
  * @param {FirebaseFirestore.CollectionReference} collectionRef
- * Referencia da colecao desejada.
- * @return {Promise<number>} Numero de documentos excluidos.
+ * Referencia da coleção desejada.
+ * @return {Promise<number>} Numero de documentos excluídos.
  */
 async function deleteCollectionDocuments(
   collectionRef: FirebaseFirestore.CollectionReference,
@@ -77,6 +77,7 @@ export const addBatchStartups = functions
           "puc-campinas",
           "mescla",
         ],
+        "tokenName": "NCTK",
       },
       {
         "name": "HealthVibe",
@@ -110,6 +111,7 @@ export const addBatchStartups = functions
           "puc-campinas",
           "mescla",
         ],
+        "tokenName": "HVTK",
       },
       {
         "name": "Metalive",
@@ -155,6 +157,7 @@ export const addBatchStartups = functions
           "puc-campinas",
           "mescla",
         ],
+        "tokenName": "MLTK",
       },
       {
         "name": "CardVision",
@@ -194,6 +197,7 @@ export const addBatchStartups = functions
           "puc-campinas",
           "mescla",
         ],
+        "tokenName": "CVTK",
       },
       {
         "name": "PetMatch",
@@ -227,6 +231,7 @@ export const addBatchStartups = functions
           "puc-campinas",
           "mescla",
         ],
+        "tokenName": "PMTK",
       },
       {
         "name": "AgroSense",
@@ -266,6 +271,7 @@ export const addBatchStartups = functions
           "puc-campinas",
           "mescla",
         ],
+        "tokenName": "ASTK",
       },
       {
         "name": "SafePay",
@@ -305,6 +311,7 @@ export const addBatchStartups = functions
           "puc-campinas",
           "mescla",
         ],
+        "tokenName": "SPTK",
       },
       {
         "name": "UrbanMob",
@@ -344,6 +351,7 @@ export const addBatchStartups = functions
           "puc-campinas",
           "mescla",
         ],
+        "tokenName": "UMTK",
       },
     ];
     // Criando o batch para a operação em lote

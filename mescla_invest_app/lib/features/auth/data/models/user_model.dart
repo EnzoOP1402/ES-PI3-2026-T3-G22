@@ -14,7 +14,6 @@ class UserModel {
   final String email;
   final String cpf;
   final String phone;
-  // final bool twoFAOn;
   final Timestamp? createdAt;
   final String? photoUrl;
 
@@ -25,7 +24,6 @@ class UserModel {
     required this.email,
     required this.cpf,
     required this.phone,
-    // required this.twoFAOn,
     required this.createdAt,
     required this.photoUrl,
   });

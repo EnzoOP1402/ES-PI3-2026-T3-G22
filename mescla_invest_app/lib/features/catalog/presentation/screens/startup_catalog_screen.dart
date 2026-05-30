@@ -63,9 +63,8 @@ class _CatalogoState extends State<Catalogo> {
     try {
 
       final functions =
-          FirebaseFunctions.instanceFor(
-            region: 'southamerica-east1'
-          );
+          FirebaseFunctions.instanceFor(region: 'southamerica-east1');
+
       final callable =
           functions.httpsCallable(
         'listStartups',

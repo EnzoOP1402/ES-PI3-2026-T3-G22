@@ -12,9 +12,12 @@ import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/question_item_tile.dart';
 
 class PublicQuestionsCard extends StatefulWidget {
+   // Parâmetro para a chamada da Firebase Function
   final String startupId;
+  // Lista de perguntas trazida da página principal
   final List<dynamic> perguntasPublicas;
 
+  // Construtor do Widget
   const PublicQuestionsCard({
     super.key,
     required this.startupId,
@@ -30,6 +33,7 @@ class _PublicQuestionsCardState extends State<PublicQuestionsCard> {
   late List<dynamic> _localQuestions;
   final _modalPublicQuestionController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
   // Variável controladora do carregamento dos dados da página
   // Quando a página é acessada, el muda de valor e aciona a tela de carregamento,
   // fazendo com que a tela com as informações só seja visível após todas estarem posicionadas
@@ -57,6 +61,7 @@ class _PublicQuestionsCardState extends State<PublicQuestionsCard> {
   @override
   void initState() {
     super.initState();
+    // Inicializando a lista local com a lista trazida do banco
     _localQuestions = List.from(widget.perguntasPublicas);
     // Função de obtenção dos dados do usuário para o envio de mensagens
     _loadCurrentUserProfile();
@@ -70,47 +75,52 @@ class _PublicQuestionsCardState extends State<PublicQuestionsCard> {
     super.dispose();
   }
 
-  // Função responsável por acionar a Firebase Function de postagem da pergunta
+  // Função responsável por acionar a Firebase Function de postagem da pergunta pública
   Future<void> _handleCorePublicQuestionSending(String message) async {
     try {
       setState(() => _isQuestionLoading = true);
       
-      // 1. Criamos uma instância temporária do modelo
-      // O authorId e authorEmail serão preenchidos pelo Firebase no backend (onCall),
-      // mas precisamos deles para instanciar a classe no Flutter.
+      
+      // Criamos a instância temporária mudando para a pergunta privada
       final novaPergunta = QuestionModel(
         authorId: AuthRepository.instance.currentUser?.uid ?? '', 
         text: message,
-        visibility: QuestionVisibility.publica,
+        visibility: QuestionVisibility.publica, // Definido como pública
         createdAt: Timestamp.now(), // Timestamp local apenas para o objeto
       );
 
-      final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('createStartupQuestion');
+      // Armazenando o acesso à Function de criação de perguntas
+      final HttpsCallable callable = FirebaseFunctions.instanceFor(region: 'southamerica-east1').httpsCallable('createStartupQuestion');
 
-      // 2. Usamos o toMap() para garantir a estrutura correta!
-      // Adicionamos o startupId manualmente pois ele não faz parte do documento da pergunta,
-      // mas sim do caminho/parâmetro que a função espera.
+      // Adicionando o id da startup ao objeto que será passado como
+      // parâmetro pela função
       final payload = novaPergunta.toCallableMap();
       payload['startupId'] = widget.startupId; 
 
+      // Chamando a Function
       await callable.call(payload);
 
       // Exibe uma mensagem de sucesso
       if (mounted) {
-        // 3. Inserindo a pergunta recém criada na lista de perguntas sem precisar chamar a Function
+        // Inserindo a pergunta recém criada na lista de perguntas sem precisar chamar a Function para recarregar a lista
         final novaPerguntaLocal = {
-          'id': 'temp_${DateTime.now().millisecondsSinceEpoch}', // ID temporário
-          'authorName': _currentUserProfile?['fullName'] ?? 'Eu', // Busca o fullName do Firestore
-          'authorPhotoUrl': _currentUserProfile?['profilePicture'], // Busca a foto do Firestore
+          // ID temporário
+          'id': 'temp_${DateTime.now().millisecondsSinceEpoch}',
+          // Obtém o fullName do Firestore
+          'authorName': _currentUserProfile?['fullName'] ?? 'Eu',
+          // Obtém a foto do Firestore
+          'authorPhotoUrl': _currentUserProfile?['profilePicture'],
+          // A mensagem em si
           'text': message,
-          'createdAt': DateTime.now().toIso8601String(), // Data local para exibição imediata
+          // Data local para exibição imediata
+          'createdAt': DateTime.now().toIso8601String(), 
           'answer': null,
           'answeredAt': null,
         };
 
         setState(() {
           // Insere no início da lista (index 0) para aparecer no topo, 
-          // respeitando a ordenação por data do protótipo
+          // respeitando a ordenação por data
           _localQuestions.insert(0, novaPerguntaLocal);
         });
 
@@ -118,23 +128,27 @@ class _PublicQuestionsCardState extends State<PublicQuestionsCard> {
         showSuccessSnackBar(context, "Pergunta enviada com sucesso!");
       }
     } on FirebaseFunctionsException catch (e) {
-      // O backend lança HttpsError específicos (ex: 'invalid-argument', 'not-found')
-      // O FirebaseFunctionsException captura esses erros do onCall para podermos tratá-los no app
+      // Tratando erros do Firebase
       if (!mounted) return;
       showErrorSnackBar(context, e.message ?? "Erro ao comunicar com o servidor.");
     } catch (e) {
-      // Captura erros genéricos (ex: falta de internet)
+      // Capturando erros genéricos
       if (!mounted) return;
       showErrorSnackBar(context, "Erro inesperado: ${e.toString()}");
     } finally {
+      // Mudando o valor da variável de controle do carregamento e
+      // limpando o valor do input de perguntas
       if (mounted) setState(() => _isQuestionLoading = false);
       _modalPublicQuestionController.clear();
     }
   }
 
+  // Função responsável pela abertura do modal que carrega a lista de
+  // perguntas privadas
   void _abrirModalPergunta() {
     showModalBottomSheet(
       context: context,
+      // Definindo scroll
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
@@ -142,6 +156,9 @@ class _PublicQuestionsCardState extends State<PublicQuestionsCard> {
           
           // Função o envio da pergunta através do modal
           Future<void> onModalPublicQuestionSubmit(StateSetter setModalState) async {
+            // Se o input tiver sido validado, muda o valor da variável
+            // de controle do carregamento, chama a função de publicação
+            // da pergunta e volta o estado ao original
             if (_formKey.currentState?.validate() ?? false) {
               // Sincroniza o loading no modal e na tela de fundo
               setModalState(() => _isQuestionLoading = true);
@@ -155,26 +172,35 @@ class _PublicQuestionsCardState extends State<PublicQuestionsCard> {
             }
           }
           
+          // Definindo a interface
           return DetailedCatalogModalLayout(
+            // Informações do cabeçalho do modal padrão
             title: "Perguntas Públicas",
             subtitle: "Quantidade de perguntas: ${_localQuestions.length.toString()}",
             children: [
+              // Renderizando a lista em um Expanded para ocupar todo o
+              // espaço disponível
               Expanded(
-                // Perguntas
                 child: _isQuestionLoading ?
+                // Exibe o indicativo de carregamento quando
+                // uma pergunta estiver sendo enviada ou a lista
+                // estiver sendo carregada
                 const Center(child: CircularProgressIndicator(),)
                 : Column(
                   children: [
                     Expanded(
+                      // Habilitando a rolagem da lista
                       child: SingleChildScrollView(
                         child: Padding(
                           padding: EdgeInsets.all(16),
                           child: Column(
                             children: [
-                              // RENDERIZANDO AS PERGUNTAS PÚBLICAS
+                              // Renderizando as perguntas públicas
                               _isLoading 
                                 ? const Center(child: CircularProgressIndicator())
                                 : _localQuestions.isEmpty
+                                // Se a lista estiver vazia, exibe uma
+                                // mensagem amigável
                                   ? Center(
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(vertical: 40.0),
@@ -189,6 +215,7 @@ class _PublicQuestionsCardState extends State<PublicQuestionsCard> {
                                       ),
                                     ),
                                   )
+                                  // Renderizando a lista
                                   : ListView.builder(
                                       shrinkWrap: true,
                                       physics: const NeverScrollableScrollPhysics(),
@@ -206,7 +233,7 @@ class _PublicQuestionsCardState extends State<PublicQuestionsCard> {
                         ),
                       ),
                     ),
-                    // Rodapé do modal
+                    // Rodapé do modal contendo o input público
                     Container(
                       // Posicionando o input na base da página
                       padding: EdgeInsets.only(
@@ -270,9 +297,12 @@ class _PublicQuestionsCardState extends State<PublicQuestionsCard> {
     );
   }
 
+  // Definindo a interface do Widget
   @override
   Widget build(BuildContext context) {
+    // Usando o card padrão do catálogo para envolver o conteúdo
     return DetailedCatalogCardSection(
+      // Título e descrição do card
       title: 'Perguntas públicas',
       children: [
         Text(
@@ -280,19 +310,30 @@ class _PublicQuestionsCardState extends State<PublicQuestionsCard> {
           style: GoogleFonts.montserrat(fontSize: 14, color: Colors.black),
         ),
 
+        // Espaçamento
         const SizedBox(height: 12),
 
+        // Seção que recebe o botão principal
         SizedBox(
+          width: double.infinity,
           height: 40,
+          // Definido o botão
           child: OutlinedButton.icon(
+            // Definindo a ação do botão (abrir o modal)
             onPressed: _abrirModalPergunta,
+            // Definindo o ícone do botão
             icon: const Icon(Icons.add_comment_outlined),
+            // Definindo o texto do botão
             label: const Text('Fazer pergunta pública'),
+            // Estilizando o botão
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFF353988),
               side: const BorderSide(color: Color(0xFF353988), width: 1.2),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              textStyle: GoogleFonts.montserrat(fontWeight: FontWeight.w600, fontSize: 16),
+              textStyle: GoogleFonts.montserrat(
+                fontWeight: FontWeight.w600,
+                fontSize: 16
+              ),
             ),
           ),
         ),

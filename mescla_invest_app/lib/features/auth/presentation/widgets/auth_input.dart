@@ -39,7 +39,7 @@ class AuthInput extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hint,
           filled: true,
-          fillColor: Colors.grey[200],
+          fillColor: Color(0xFFF4F4F4),
           contentPadding: const EdgeInsets.symmetric(horizontal: 20),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),

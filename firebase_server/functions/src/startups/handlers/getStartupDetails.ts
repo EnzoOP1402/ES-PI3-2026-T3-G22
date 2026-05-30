@@ -1,8 +1,9 @@
 import {HttpsError, onCall} from "firebase-functions/https";
-import {requireAuthenticatedUser} from "../shared/auth";
-import {normalizeString} from "../shared/validation";
+import {requireAuthenticatedUser} from "../../shared/auth";
+import {normalizeString} from "../../shared/validation";
 import {
   getStartupById,
+  listPrivateQuestions,
   listPublicQuestions,
   userIsInvestor,
 } from "../repositories/startupRepository";
@@ -39,6 +40,7 @@ export const getStartupDetails = onCall(async (request) => {
   const isInvestor = await userIsInvestor(startupId, user.uid);
 
   const questions = await listPublicQuestions(startupId);
+  const privateQuestions = await listPrivateQuestions(startupId, user.uid);
 
   return {
     data: {
@@ -47,6 +49,7 @@ export const getStartupDetails = onCall(async (request) => {
       createdAt: startup.createdAt?.toDate().toISOString() ?? null,
       updatedAt: startup.updatedAt?.toDate().toISOString() ?? null,
       publicQuestions: questions,
+      privateQuestions,
       access: {
         isInvestor,
         canTradeTokens: isInvestor,

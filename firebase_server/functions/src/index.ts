@@ -1,3 +1,5 @@
+/* Autor: Enzo Olivato Pazian */
+
 import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { setGlobalOptions } from "firebase-functions/v2";
@@ -10,5 +12,8 @@ setGlobalOptions({
   region: "southamerica-east1",
 });
 
-export * from "./startups";
 export * from "./users";
+
+export * from "./startups";
+
+export * from "./exchange";
