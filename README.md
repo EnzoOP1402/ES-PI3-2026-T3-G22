@@ -156,6 +156,7 @@ O MesclaInvest segue uma arquitetura baseada em serviços utilizando Firebase co
 O projeto está dividido em **duas pastas principais**:
 
 - `mescla_invest_app/`: raiz do aplicativo Flutter.
+  
 - `firebase_server/`: raiz do backend Firebase Functions.
 
 ```bash
