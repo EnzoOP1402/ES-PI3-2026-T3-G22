@@ -48,7 +48,6 @@ O investidor pode:
 * Comprar tokens diretamente das startups.
 * Visualizar informações detalhadas antes da compra.
 * Consultar o valor unitário dos ativos.
-* Acompanhar sua participação em cada startup.
 
 📊 **Dashboard do Investidor**
 
@@ -57,7 +56,6 @@ O dashboard apresenta:
 * Quantidade de tokens adquiridos.
 * Acompanhamento em tempo real da valorização dos tokens adquiridos.
 * Evolução dos investimentos.
-* Retorno sobre investimento (ROI).
 
 💼 **Carteira Simulada**
 
@@ -80,7 +78,6 @@ Funcionalidades:
 * Abrir ordens de venda.
 * Comprar tokens de outros investidores.
 * Visualizar ofertas disponíveis.
-* Acompanhar status das negociações.
 
 ❓ **Sistema de Perguntas**
 
@@ -152,44 +149,49 @@ O MesclaInvest segue uma arquitetura baseada em serviços utilizando Firebase co
 
 * Cloud Firestore
 
----
-
-## 🛠️ Tecnologias Utilizadas
-
-O projeto utiliza tecnologias de ponta para garantir performance e escalabilidade:
-
-* **Framework:** [Flutter](https://flutter.dev/) 
-* **Linguagens:** Dart e Typescript
-* **Backend & Auth:** [Firebase](https://firebase.google.com/)
-* **Banco de Dados:** Cloud Firestore (NoSQL)
-* **Arquitetura:** Lógica de Blockchain simulada para integridade das transações.
-
 ----
 
 ## 📂 Estrutura do Projeto
 
-```
-lib/
-├── core/
-├── features/
-│   ├── auth/
-│   ├── catalog/
-│   ├── dashboard/
-│   ├── exchange/
-│   ├── wallet/
-│   ├── profile/
-│   └── startup/
-├── routes/
-├── services/
-└── main.dart
+O projeto está dividido em **duas pastas principais**:
 
-functions/
-├── src/
-├── package.json
-└── tsconfig.json
-```
+- `mescla_invest_app/`: raiz do aplicativo Flutter.
+- `firebase_server/`: raiz do backend Firebase Functions.
 
----
+```bash
+ES-PI3-2026-T3-G18/
+├── mescla_invest_app/          # Aplicativo Flutter
+│   ├── lib/
+│   │   ├── core/
+│   │   ├── features/
+│   │   │   ├── auth/
+│   │   │   ├── catalog/
+│   │   │   ├── dashboard/
+│   │   │   ├── exchange/
+│   │   │   ├── wallet/
+│   │   │   ├── profile/
+│   │   │   └── startup/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── main.dart
+│   ├── android/
+│   ├── ios/
+│   ├── web/
+│   ├── pubspec.yaml
+│   └── firebase.json
+│
+├── firebase_server/            # Backend Firebase
+│   ├── functions/
+│   │   ├── src/
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   ├── firebase.json
+│   ├── firestore.rules
+│   ├── firestore.indexes.json
+│   └── storage.rules
+│
+└── README.md
+```
 
 ## 👥 A Equipe 22
 
@@ -233,8 +235,8 @@ Professor Orientador: Prof. Me. Mateus Pereira Dias
 
 Passo-a-passo para realizar as instalações dos pacotes e ferramentas necessárias para a inicialização do aplicativo.
 
-## 1. Instalação manual do Flutter SDK no Windows
-- **Baixar o Flutter SDK (zip)**: Acesse a documentação oficial: https://docs.flutter.dev/get-started/install/windows e baixe o pacote .zip do Flutter SDK para Windows.
+## 1. Instalação manual do Flutter SDK 
+- **Baixar o Flutter SDK (zip)**: Acesse a documentação oficial: https://docs.flutter.dev/get-started/install/windows e baixe o pacote .zip do Flutter SDK
 - **Extrair em pasta apropriada**: Crie (se necessário) a pasta C:\development e depois sdks. Extraia o zip para C:\development\sdks\flutter.
   
 Estrutura esperada:
@@ -249,9 +251,15 @@ C:\dev\flutter\bin
 ```
 - Confirme com OK em todas as janelas.
 
+- Após instalar, abra o terminal e verifique:
+
+```bash
+flutter --version
+flutter doctor
+```
+
 ## 2. Importar Node.js
 - **Instalação do Pacote Node.js**: Acesse https://nodejs.org/pt-br e clique em "Baixar Node.js". 
-- Baixe o instalador para Windows (.msi).
 - Execute o instalador e mantenha as opções padrão.
 - Finalize a instalação.
 
@@ -279,6 +287,22 @@ git clone https://github.com/zarpela/ES-PI3-2026-T3-G18.git
 - Depois, entre na pasta do projeto:
 
 cd ES-PI3-2026-T3-G18
+
+**Entender as pastas principais**
+
+O projeto possui duas pastas principais:
+
+ES-PI3-2026-T3-G18/
+├── mescla_invest_app/    # Aplicativo Flutter
+└── firebase_server/      # Backend Firebase
+
+- Para rodar o app Flutter, entre em:
+
+cd mescla_invest_app
+
+- Para configurar as Firebase Functions, entre em:
+
+cd firebase_server/functions
 
 ## 5. Instalar as dependências do Flutter
 - Na raiz do projeto, execute:
@@ -330,7 +354,13 @@ cd ..
 ```
 
 ## 8. Rodar o projeto no Chrome
-- Com tudo configurado, execute:
+- Com tudo configurado, entre na pasta do aplicativo Flutter:
+  
+```bash
+cd mescla_invest_app
+```
+
+- Depois rode:
 
 ```bash
 flutter run -d chrome
@@ -344,6 +374,11 @@ flutter run -d chrome
 
 ```bash
 flutter devices
+```
+- Entre na pasta do aplicativo Flutter:
+  
+```bash
+cd mescla_invest_app
 ```
 
 - Depois rode:
