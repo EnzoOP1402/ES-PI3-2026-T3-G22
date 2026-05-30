@@ -7,9 +7,47 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:185047983787:android:5d5cf24e09fdb9d93cf9ee",
+        "android_client_info": {
+          "package_name": "br.pro.mateus.appcamera"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7QgHGkrk-2uDOLERsQ1AN9_Pbmchz1SI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:185047983787:android:f429b85153849f5f3cf9ee",
         "android_client_info": {
           "package_name": "com.example.mescla_invest_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7QgHGkrk-2uDOLERsQ1AN9_Pbmchz1SI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:185047983787:android:e1542454cdf151b73cf9ee",
+        "android_client_info": {
+          "package_name": "com.example.mesclainvest"
         }
       },
       "oauth_client": [],

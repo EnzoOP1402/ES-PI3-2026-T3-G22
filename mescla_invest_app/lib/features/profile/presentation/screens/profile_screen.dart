@@ -1,16 +1,19 @@
+/* Autor: Murillo Iamarino Caravita */
+
 import 'package:flutter/material.dart';
-import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
-import 'package:mescla_invest_app/features/auth/data/models/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mescla_invest_app/routes/app_routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
+import 'package:mescla_invest_app/features/auth/data/models/user_model.dart';
+import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
+import 'package:mescla_invest_app/features/auth/presentation/screens/enable_2fa_screen.dart';
 import 'package:mescla_invest_app/features/profile/presentation/screens/camera_screen.dart';
+import 'package:mescla_invest_app/routes/app_routes.dart';
 
 Future<UserModel?> getCurrentUserData() async {
   final user = FirebaseAuth.instance.currentUser;
-
   if (user == null) return null;
 
   final doc = await FirebaseFirestore.instance
@@ -34,6 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   UserModel? _userData;
   bool _isLoading = true;
   bool _isUpdatingPhoto = false;
+  bool _isTwoFactorEnabled = false;
 
   @override
   void initState() {
@@ -41,13 +45,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadUserData();
   }
 
+  Future<bool> _verificarSeTem2FA() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return false;
+
+      await user.reload();
+
+      final updatedUser = FirebaseAuth.instance.currentUser;
+      if (updatedUser == null) return false;
+
+      final factors = await updatedUser.multiFactor.getEnrolledFactors();
+      return factors.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> _loadUserData() async {
     final userData = await getCurrentUserData();
+
+    bool isTwoFactorEnabled = false;
+    try {
+      isTwoFactorEnabled = await _verificarSeTem2FA();
+    } catch (_) {
+      isTwoFactorEnabled = false;
+    }
 
     if (!mounted) return;
 
     setState(() {
       _userData = userData;
+      _isTwoFactorEnabled = isTwoFactorEnabled;
       _isLoading = false;
     });
   }
@@ -78,13 +107,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Foto de perfil atualizada com sucesso!')),
+        const SnackBar(
+          content: Text('Foto de perfil atualizada com sucesso!'),
+        ),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Erro ao atualizar foto: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao atualizar foto: $e')),
+      );
     } finally {
       if (!mounted) return;
       setState(() {
@@ -93,16 +124,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Future<void> _abrirTela2FA() async {
+    final telefoneAtual = _userData?.phone ?? '';
+
+    if (telefoneAtual.isEmpty) {
+      _showMessage('Cadastre um telefone antes de ativar o 2FA.');
+      return;
+    }
+
+    if (_isTwoFactorEnabled) {
+      _showMessage('A autenticação em duas etapas já está ativada.');
+      return;
+    }
+
+    final bool? result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EnableTwoFAScreen(
+          phone: telefoneAtual,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      await _loadUserData();
+    }
+  }
+
   String get nome => _userData?.fullName ?? 'Usuário';
   String get email => _userData?.email ?? 'usuario@gmail.com';
   String get cpf => _userData?.cpf ?? '000.000.000-00';
   String get phone => _userData?.phone ?? '(00) 00000-0000';
-  String get inicial => nome.isNotEmpty ? nome[0].toUpperCase() : '?';
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
@@ -130,11 +187,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Center(
                         child: CircleAvatar(
                           radius: 60,
-                          backgroundImage: photoUrl.isNotEmpty
-                              ? NetworkImage(photoUrl)
-                              : null,
+                          backgroundColor: const Color(0xFFE6D9FA),
+                          backgroundImage:
+                              photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
                           child: photoUrl.isEmpty
-                              ? const Icon(Icons.person, size: 60)
+                              ? const Icon(
+                                  Icons.person,
+                                  size: 60,
+                                  color: Color(0xFF3F3D99),
+                                )
                               : null,
                         ),
                       ),
@@ -144,9 +205,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           width: 240,
                           height: 40,
                           child: OutlinedButton.icon(
-                            onPressed: _isUpdatingPhoto
-                                ? null
-                                : _alterarFotoPerfil,
+                            onPressed:
+                                _isUpdatingPhoto ? null : _alterarFotoPerfil,
                             icon: _isUpdatingPhoto
                                 ? const SizedBox(
                                     width: 18,
@@ -173,7 +233,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             style: OutlinedButton.styleFrom(
                               backgroundColor: const Color(0xFFF4F4F4),
-                              side: const BorderSide(color: Color(0xFF3F3D99)),
+                              side: const BorderSide(
+                                color: Color(0xFF3F3D99),
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
@@ -194,7 +256,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _InfoItem(label: 'CPF:', value: cpf),
                       const SizedBox(height: 12),
                       _InfoItem(label: 'Telefone:', value: phone),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 20),
+                      _SecurityCard(
+                        isEnabled: _isTwoFactorEnabled,
+                        onTap: _abrirTela2FA,
+                      ),
+                      const SizedBox(height: 20),
                       const Divider(color: Color(0xFFC9C9C9), thickness: 1),
                       const SizedBox(height: 30),
                       Center(
@@ -211,26 +278,155 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           label: 'Sair da conta',
                           onTap: () async {
                             await AuthRepository.instance.logout();
+
+                            if (!mounted) return;
                             Navigator.pushReplacementNamed(
                               context,
                               AppRoutes.login,
-                              );
-                            }
-                          )
-                          )
-                    ]
+                            );
+                          },
+                        ),
                       ),
+                    ],
                   ),
                 ),
               ),
-      );
-}}
+      ),
+    );
+  }
+}
+
+class _SecurityCard extends StatelessWidget {
+  final bool isEnabled;
+  final VoidCallback onTap;
+
+  const _SecurityCard({
+    required this.isEnabled,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final Color statusColor =
+        isEnabled ? const Color(0xFF2E7D32) : const Color(0xFFB26A00);
+
+    final String statusText = isEnabled ? 'Ativada' : 'Desativada';
+    final String actionText =
+        isEnabled ? '2FA já habilitado' : 'Habilitar autenticação';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F4F4),
+        border: Border.all(color: const Color(0xFF3F3D99)),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.shield_outlined,
+                color: Color(0xFF3F3D99),
+                size: 22,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Segurança da conta',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14,
+                    color: const Color(0xFF3F3D99),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Autenticação em duas etapas',
+            style: GoogleFonts.montserrat(
+              fontSize: 14,
+              color: Colors.black87,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Adicione uma camada extra de segurança à sua conta ao exigir um código de verificação por SMS no login.',
+            style: GoogleFonts.montserrat(
+              fontSize: 13,
+              color: Colors.black87,
+              fontWeight: FontWeight.w500,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  statusText,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    color: statusColor,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              TextButton.icon(
+                onPressed: isEnabled ? null : onTap,
+                icon: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: isEnabled
+                      ? Colors.grey
+                      : const Color(0xFF3F3D99),
+                ),
+                label: Text(
+                  actionText,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    color: isEnabled
+                        ? Colors.grey
+                        : const Color(0xFF3F3D99),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(0, 36),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _InfoItem extends StatelessWidget {
   final String label;
   final String value;
 
-  const _InfoItem({required this.label, required this.value});
+  const _InfoItem({
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -277,7 +473,11 @@ class _ActionButton extends StatelessWidget {
       height: 40,
       child: OutlinedButton.icon(
         onPressed: onTap,
-        icon: Icon(icon, size: 24, color: const Color(0xFF3F3D99)),
+        icon: Icon(
+          icon,
+          size: 24,
+          color: const Color(0xFF3F3D99),
+        ),
         label: Text(
           label,
           style: GoogleFonts.montserrat(
