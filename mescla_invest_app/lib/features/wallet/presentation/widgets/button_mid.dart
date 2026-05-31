@@ -3,13 +3,21 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-
 class CustomOutlinedButton extends StatelessWidget {
+
+  // Texto exibido no botão.
   final String text;
+
+  // Ícone exibido ao lado do texto.
   final IconData icon;
+
+  // Página para a qual o usuário será redirecionado ao clicar.
   final Widget page;
 
+  // Cor utilizada na borda, ícone e texto do botão.
   final Color color;
+
+  // Largura personalizada do botão.
   final double width;
 
   const CustomOutlinedButton({
@@ -27,6 +35,8 @@ class CustomOutlinedButton extends StatelessWidget {
       child: SizedBox(
         width: width,
         child: OutlinedButton.icon(
+
+          // Navega para a página informada ao pressionar o botão.
           onPressed: () {
             Navigator.push(
               context,
@@ -35,10 +45,14 @@ class CustomOutlinedButton extends StatelessWidget {
               ),
             );
           },
+
+          // Ícone exibido no botão.
           icon: Icon(
             icon,
             color: color,
           ),
+
+          // Texto exibido no botão.
           label: Text(
             text,
             style: GoogleFonts.montserrat(
@@ -47,14 +61,20 @@ class CustomOutlinedButton extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
+
+          // Estilização do botão.
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.symmetric(
               vertical: 12,
             ),
+
+            // Configuração da borda.
             side: BorderSide(
               color: color,
               width: 2,
             ),
+
+            // Define o arredondamento dos cantos.
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),

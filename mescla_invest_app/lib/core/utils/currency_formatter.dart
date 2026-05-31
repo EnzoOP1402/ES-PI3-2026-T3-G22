@@ -2,10 +2,9 @@
 
 import 'package:intl/intl.dart';
 
-class CurrencyFormatter {
-  static String format(double value) {
+  // Formata o valor monetário para o padrão brasileiro.
+String formatCurrency(double value) {
     return NumberFormat.simpleCurrency(
       locale: 'pt_BR',
     ).format(value);
   }
-}

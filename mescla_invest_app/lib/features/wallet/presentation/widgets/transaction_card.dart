@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mescla_invest_app/core/utils/currency_formatter.dart';
 import '../../data/models/transaction_model.dart';
 
 class TransactionCard extends StatelessWidget {
@@ -47,7 +48,7 @@ class TransactionCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'R\$ ${transaction.amount.toStringAsFixed(2)}',
+                  'R\$ ${formatCurrency(transaction.amount)}',
                   style: GoogleFonts.montserrat(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,

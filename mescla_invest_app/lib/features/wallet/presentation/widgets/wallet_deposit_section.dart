@@ -3,8 +3,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// Widget responsável por exibir a seção de depósito
+// da carteira do usuário.
 class WalletDepositSection extends StatelessWidget {
+
+  // Função executada quando o botão de depósito é pressionado.
   final VoidCallback onDeposit;
+
   const WalletDepositSection({
     super.key,
     required this.onDeposit,
@@ -14,6 +19,9 @@ class WalletDepositSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
+
+        // Texto informativo orientando o usuário
+        // a realizar um depósito.
         Text(
           'Clique abaixo para depositar um\nvalor para seu saldo:',
           textAlign: TextAlign.center,
@@ -23,13 +31,19 @@ class WalletDepositSection extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
+
         const SizedBox(height: 16),
+
+        // Área que define o tamanho do botão.
         SizedBox(
           width: 187,
           height: 65,
+
           child: DecoratedBox(
+
+            // Aplica o gradiente de fundo ao botão.
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: [
                   Color(0xFF5157D6),
                   Color(0xFF353988),
@@ -37,10 +51,14 @@ class WalletDepositSection extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-                borderRadius: BorderRadius.circular(15),
+
+              // Define o arredondamento das bordas.
+              borderRadius: BorderRadius.circular(15),
             ),
 
             child: ElevatedButton(
+
+              // Configurações visuais do botão.
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
                 shadowColor: Colors.transparent,
@@ -48,16 +66,19 @@ class WalletDepositSection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-            onPressed: onDeposit,
-            child: Text(
-              'Depositar',
-              style: GoogleFonts.montserrat(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
+
+              // Executa a ação de depósito.
+              onPressed: onDeposit,
+
+              child: Text(
+                'Depositar',
+                style: GoogleFonts.montserrat(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-            )
           ),
         ),
       ],
