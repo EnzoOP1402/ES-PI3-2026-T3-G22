@@ -1,3 +1,5 @@
+/*Gabriela Sichiroli Ferrari*/
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';

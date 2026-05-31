@@ -1,3 +1,5 @@
+/* Autor: Bernardo Castro Brandão de Oliveira */
+
 // Importa o pacote principal do Flutter com widgets visuais(Text, Collumn, etc)
 import 'package:flutter/material.dart';
 
@@ -16,7 +18,6 @@ import 'package:mescla_invest_app/features/wallet/presentation/screens/qrcode_pi
 import 'package:mescla_invest_app/features/wallet/data/repositories/wallet_repository.dart';
 import 'package:mescla_invest_app/core/widgets/confirm_exit_dialog.dart';
 import 'package:mescla_invest_app/routes/app_routes.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 // StatefulWidget porque a interface muda dinamicamente
 class WalletUser extends StatefulWidget {

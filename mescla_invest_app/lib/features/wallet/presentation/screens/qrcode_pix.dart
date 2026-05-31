@@ -1,3 +1,4 @@
+/* Autor: Bernardo Castro Brandão de Oliveira */
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mescla_invest_app/core/widgets/confirm_exit_dialog.dart';

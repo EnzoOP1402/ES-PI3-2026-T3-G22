@@ -1,10 +1,11 @@
+/*Gabriela Sichiroli Ferrari*/
+
 import 'package:flutter/material.dart';
 import '../../data/models/transaction_model.dart';
 import 'transaction_card.dart';
 
 class TransactionList extends StatelessWidget {
   final List<TransactionModel> transactions;
-
   const TransactionList({
     super.key,
     required this.transactions,
