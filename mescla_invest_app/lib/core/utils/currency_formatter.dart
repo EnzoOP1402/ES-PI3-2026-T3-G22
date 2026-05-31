@@ -1,4 +1,4 @@
-/* Autor: Gabriela Sichiroli Ferrari */
+/* Autor: Gabriela Sichiroli Ferrari - RA: 25013763 */
 
 import 'package:intl/intl.dart';
 

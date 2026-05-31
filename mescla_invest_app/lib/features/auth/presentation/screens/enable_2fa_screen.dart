@@ -40,7 +40,7 @@ class _EnableTwoFAScreenState extends State<EnableTwoFAScreen> {
 
   String _formatPhone(String phone) {
     final numbers = phone.replaceAll(RegExp(r'[^0-9]'), '');
-    return '+55$numbers';
+    return '+$numbers';
   }
 
   Future<void> _carregarStatusEmail() async {

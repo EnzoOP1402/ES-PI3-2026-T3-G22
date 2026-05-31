@@ -1,4 +1,6 @@
 /* eslint-disable require-jsdoc */
+/* Autor: Mateus Dias*/
+
 export function normalizeString(value: unknown): string | undefined {
   if (typeof value !== "string") {
     return undefined;

@@ -1,4 +1,6 @@
 /* eslint-disable require-jsdoc */
+/* Autor: Mateus Dias */
+
 import {FieldValue, Transaction} from "firebase-admin/firestore";
 
 import {

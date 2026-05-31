@@ -1,4 +1,4 @@
-/* Autor: Enzo Olivato Pazian */
+/* Autor: Enzo Olivato Pazian - 25001654 */
 
 import {FieldValue} from "firebase-admin/firestore";
 import {HttpsError, onCall} from "firebase-functions/v2/https";

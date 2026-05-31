@@ -1,4 +1,4 @@
-/*Gabriela Sichiroli Ferrari*/
+/*Gabriela Sichiroli Ferrari - RA: 25013763*/
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -48,7 +48,7 @@ class TransactionCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  formatCurrency(transaction.amount),
+                  "${transaction.isNegative ? '-' : '+'} ${formatCurrency(transaction.amount)}",
                   style: GoogleFonts.montserrat(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
@@ -65,13 +65,20 @@ class TransactionCard extends StatelessWidget {
               ],
             ),
           ),
-          Text(
-            '${transaction.quantity} tokens',
-            style: GoogleFonts.montserrat(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          Column(
+            children: [
+              Text(
+                '${transaction.quantity} tokens',
+                style: GoogleFonts.montserrat(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                '${transaction.operationType == "compra" ? "Compra" : "Venda"}'
+              ),
+            ],
+          )
         ],
       ),
     );

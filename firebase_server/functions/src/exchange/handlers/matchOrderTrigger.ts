@@ -1,4 +1,4 @@
-/* Autor: Enzo Olivato Pazian */
+/* Autor: Enzo Olivato Pazian - 25001654 */
 
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import {OfferDocument, TradeDocument} from "../types";

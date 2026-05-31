@@ -1,4 +1,4 @@
-/* Autor: Enzo Olivato Pazian */
+/* Autor: Enzo Olivato Pazian - 25001654 */
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -79,12 +79,16 @@ class DetailedCatalogModalLayout extends StatelessWidget {
                       ),
                     ),
                     if(subtitle != null)
-                    Text(
-                      subtitle ?? '',
-                      style: GoogleFonts.montserrat(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w400,
-                        fontSize: 16,
+                    SizedBox(
+                      width: 180,
+                      child: Text(
+                        subtitle ?? '',
+                        textAlign: .center,
+                        style: GoogleFonts.montserrat(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w400,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ],

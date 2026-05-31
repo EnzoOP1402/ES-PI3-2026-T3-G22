@@ -1,4 +1,4 @@
-/* Autor: Enzo Olivato Pazian */
+/* Autor: Enzo Olivato Pazian - 25001654 */
 
 import {onSchedule} from "firebase-functions/v2/scheduler";
 import {db} from "../../shared/firebase";

@@ -1,4 +1,4 @@
-/* Autor: Enzo Olivato Pazian */
+/* Autor: Enzo Olivato Pazian - 25001654 */
 
 import {HttpsError, onCall} from "firebase-functions/v2/https";
 import {normalizeString} from "../../shared/validation";

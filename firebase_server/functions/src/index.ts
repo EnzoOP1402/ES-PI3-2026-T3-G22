@@ -1,8 +1,8 @@
-/* Autor: Enzo Olivato Pazian */
+/* Autor: Enzo Olivato Pazian - 25001654 */
 
 import * as admin from "firebase-admin";
-import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { setGlobalOptions } from "firebase-functions/v2";
+import {onCall, HttpsError} from "firebase-functions/v2/https";
+import {setGlobalOptions} from "firebase-functions/v2";
 
 admin.initializeApp();
 const db = admin.firestore();

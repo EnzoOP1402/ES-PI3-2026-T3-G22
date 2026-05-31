@@ -306,6 +306,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: _handleLogout
                         ),
                       ),
+                      SizedBox(height: 40,),
                     ],
                   ),
                 ),
@@ -464,7 +465,7 @@ class _InfoItem extends StatelessWidget {
         Text(
           value,
           style: GoogleFonts.montserrat(
-            fontSize: 14,
+            fontSize: 18,
             color: Colors.black87,
             fontWeight: FontWeight.w500,
           ),

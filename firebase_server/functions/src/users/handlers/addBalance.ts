@@ -1,4 +1,4 @@
-/* Autor: Gabriela Sichiroli Ferrari */
+/* Autor: Gabriela Sichiroli Ferrari - RA: 25013763 */
 
 import {onCall, HttpsError} from "firebase-functions/v2/https";
 import {FieldValue} from "firebase-admin/firestore";

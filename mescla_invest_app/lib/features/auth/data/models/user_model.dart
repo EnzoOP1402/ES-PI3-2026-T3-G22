@@ -1,4 +1,4 @@
-/* Autor: Enzo Olivato Pazian */
+/* Autor: Enzo Olivato Pazian - 25001654 */
 
 // Classe com o o modelo de dados dos usuários cadastrados
 // Aqui definimos os atributos e métodos relacionados à padronização das

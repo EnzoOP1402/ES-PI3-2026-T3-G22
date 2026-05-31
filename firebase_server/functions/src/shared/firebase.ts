@@ -1,3 +1,5 @@
+/* Autor: Mateus Dias */
+
 import {getAuth} from "firebase-admin/auth";
 import {getApps, initializeApp} from "firebase-admin/app";
 import {getFirestore} from "firebase-admin/firestore";

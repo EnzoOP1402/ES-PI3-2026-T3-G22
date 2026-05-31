@@ -89,7 +89,7 @@ class FoundersCard extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: backgroundColor,
+                  color: Color(0xFFF4F4F4),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -160,15 +160,18 @@ class FoundersCard extends StatelessWidget {
                                   subtitle: cargo,
                                   // Conteúdo do modal
                                   children: [
-                                    Expanded(
-                                      // Perguntas
-                                      child: Text(
-                                        bio,
-                                        style: GoogleFonts.montserrat(
-                                          fontSize: 14,
-                                          color: Colors.black,
-                                        ),
-                                      )
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 20),
+                                      child: Expanded(
+                                        // Perguntas
+                                        child: Text(
+                                          bio,
+                                          style: GoogleFonts.montserrat(
+                                            fontSize: 14,
+                                            color: Colors.black,
+                                          ),
+                                        )
+                                      ),
                                     ),
                                   ]
                                 );  

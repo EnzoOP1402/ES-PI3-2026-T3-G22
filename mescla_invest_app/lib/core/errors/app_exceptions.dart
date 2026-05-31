@@ -1,8 +1,6 @@
-/* Autor: Enzo Olivato Pazian */
+/* Autor: Enzo Olivato Pazian - 25001654 */
 
-// Arquivo contendo as exceções autorais do projeto
-
-// Um arquivo simples chamado app_exception.dart ou dentro do repositório
+// Exceção para problemas de autenticação
 class AuthException implements Exception {
   final String message;
   AuthException(this.message);

@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-/* Autor: Enzo Olivato Pazian */
+/* Autor: Enzo Olivato Pazian - 25001654 */
 
 // Importando os recursos principais para o uso do firebase
 import * as functions from "firebase-functions";

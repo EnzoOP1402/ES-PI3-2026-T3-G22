@@ -202,7 +202,7 @@ class _CatalogoState extends State<Catalogo> {
 
     return Scaffold(
       backgroundColor:
-          const Color(0xFFE2E2E2),
+          const Color(0xFFE8E9EB),
       appBar: CustomAppBar(
         title: 'Catálogo',
       ),

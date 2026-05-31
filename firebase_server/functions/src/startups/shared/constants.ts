@@ -1,3 +1,5 @@
+/* Autor: Mateus Dias */
+
 import {QuestionVisibility, StartupStage} from "../types";
 export const allowedStages: StartupStage[] = [
   "nova",

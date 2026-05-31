@@ -1,4 +1,6 @@
 /* eslint-disable require-jsdoc */
+/* Autor: Mateus Dias */
+
 import {CallableRequest, HttpsError} from "firebase-functions/https";
 import {AuthenticatedUser} from "../exchange/types";
 

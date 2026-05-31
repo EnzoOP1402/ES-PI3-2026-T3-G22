@@ -82,7 +82,8 @@ class SuccessScreen extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        'Menu Principal',
+                        'Voltar para a carteira',
+                        textAlign: .center,
                         style: GoogleFonts.montserrat(
                           fontSize: 20,
                           color: Colors.white,

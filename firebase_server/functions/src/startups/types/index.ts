@@ -1,3 +1,5 @@
+/* Autor: Mateus Dias */
+
 // Importação das dependências
 import {FieldValue, Timestamp} from "firebase-admin/firestore";
 
