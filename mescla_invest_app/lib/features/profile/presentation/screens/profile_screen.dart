@@ -11,6 +11,7 @@ import 'package:mescla_invest_app/features/auth/data/models/user_model.dart';
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
 import 'package:mescla_invest_app/features/auth/presentation/screens/enable_2fa_screen.dart';
 import 'package:mescla_invest_app/features/profile/presentation/screens/camera_screen.dart';
+import 'package:mescla_invest_app/features/wallet/presentation/screens/transaction_history_screen.dart';
 import 'package:mescla_invest_app/routes/app_routes.dart';
 
 Future<UserModel?> getCurrentUserData() async {
@@ -284,10 +285,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 30),
                       Center(
                         child: ActionButton(
-                          icon: Icons.history,
-                          label: 'Histórico de compras',
-                          onTap: () => _showMessage('Histórico de compras'),
-                        ),
+                        icon: Icons.history,
+                        label: 'Histórico de compras',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const TransactionHistoryScreen(),
+                            ),
+                          );
+                        },
+                      ),
                       ),
                       const SizedBox(height: 12),
                       Center(
