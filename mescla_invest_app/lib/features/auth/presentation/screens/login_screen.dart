@@ -1,11 +1,11 @@
 /* Autor: Livia Lucizano */
 import 'package:flutter/material.dart';
-
-import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_button.dart';
 import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_input.dart';
 import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_layout.dart';
+import 'package:mescla_invest_app/features/auth/presentation/screens/2fa_screen.dart';
 import 'package:mescla_invest_app/routes/app_routes.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,70 +16,97 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // Chave do formulário para validar os campos antes do login
   final _formKey = GlobalKey<FormState>();
-  
-  // Variável controladora do carregamento da página
-  // Quando o login entra em operação, ela muda de valor e aciona a tela de carregamento,
-  // fazendo com que o usuário não consiga apertar múltiplas vezes o mesmo botão e enviar
-  // várias requisições ao Firebase
-  bool _isLoading = false;
 
+  // Controla estado de carregamento e visibilidade da senha
+  bool _isLoading = false;
+  bool obscureText = true;
+
+  // Controllers dos campos de e-mail e senha
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  // Variável controladora da propriedade de visibilidade da senha
-  bool obscureText = true;
-
-  // Método usado para eliminar variáveis, objetos, etc da árvore de elementos para liberar memória.
-  // Ele é chamado quando o widget é removido da Widget tree, por exemplo, quando saímos dessa página
   @override
   void dispose() {
-    // Elimina os controladores
+    // Libera os controllers ao destruir a tela
     _emailController.dispose();
     _passwordController.dispose();
-    // Elimina todas as variáveis usadas na página
     super.dispose();
   }
 
-  // Função que lida com o Login dos usuários
-  // Ela é responsável por acionar a função do repositório que lida com a autenticação do app
-  // e exibe a snackbar com os erros encontrados
-  Future<void> _handleLogin() async{
-    // Se o estado atual do formulário com os campos validados for nulo,
-    // executa as operações
-    if (_formKey.currentState?.validate() ?? false) {
-      try {
-        // Muda o estado para mudar o valor do indicador de carregamento e acionar
-        // a renderização da tela de carregamento no Scaffold
-        setState( () => _isLoading = true,);
+  // Traduz erros comuns do Firebase em mensagens mais amigáveis
+  String _mapFirebaseLoginError(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'invalid-email':
+        return 'E-mail inválido.';
+      case 'user-not-found':
+        return 'Usuário não encontrado.';
+      case 'wrong-password':
+      case 'invalid-credential':
+        return 'E-mail ou senha inválidos.';
+      case 'user-disabled':
+        return 'Esta conta foi desativada.';
+      case 'too-many-requests':
+        return 'Muitas tentativas. Aguarde alguns minutos e tente novamente.';
+      case 'network-request-failed':
+        return 'Sem conexão com a internet. Verifique sua rede.';
+      case 'multi-factor-auth-required':
+      case 'second-factor-required':
+        return 'É necessário confirmar o segundo fator de autenticação.';
+      default:
+        return e.message ?? 'Erro ao fazer login.';
+    }
+  }
 
-        // Executando o login do usuário
-        // Invoca a instância do repositório de autenticação e aciona o método de login,
-        // passando como parâmetro os valores obtidos dos controladores dos inputs
-        await AuthRepository.instance.login(_emailController.text.trim(), _passwordController.text.trim());
+  Future<void> _handleLogin() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
 
-        // Se a operação foi bem sucedida e o widget não foi destruído, volta para a base da pilha de telas,
-        // permitindo que o AuthWrapper perceba o login e mostre a tela inicial
-        if (mounted) {
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        }
-      }
-      catch (e) {
-        // Se o Widget foi destruído, encerra a função
-        if(!mounted) return;
-        // Chama a função responsável por exibir erros na snackbar, passando como parâmetro o erro encontrado
-        showErrorSnackBar(context, e.toString());
-      }
-      finally {
-        // Se a operação foi bem sucedida e o widget não foi destruído, atualiza o controlador de carregamento
-        if (mounted) setState(() => _isLoading = false,);
-      }
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    try {
+      setState(() => _isLoading = true);
+
+      await FirebaseAuth.instance.setPersistence(Persistence.SESSION);
+
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      if (!mounted) return;
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } on FirebaseAuthMultiFactorException catch (e) {
+      if (!mounted) return;
+
+      showErrorSnackBar(
+        context,
+        'Segundo fator necessário. Confirme o código enviado ao seu celular.',
+      );
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => TwoFAScreen(
+            resolver: e.resolver,
+          ),
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(context, _mapFirebaseLoginError(e));
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(context, 'Erro inesperado: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Se estiver carregando, ainda precisamos do AuthLayout para manter o fundo/estilo
+    // Exibe loading enquanto o login está em andamento
     if (_isLoading) {
       return const AuthLayout(
         title: "Seja bem-vindo!",
@@ -96,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
           key: _formKey,
           child: Column(
             children: [
-              // EMAIL
+              // Campo de e-mail
               AuthInput(
                 hint: "E-mail",
                 controller: _emailController,
@@ -110,10 +137,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
               ),
-
               const SizedBox(height: 16),
 
-              // SENHA
+              // Campo de senha
               AuthInput(
                 hint: "Senha",
                 controller: _passwordController,
@@ -125,9 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     });
                   },
                   icon: Icon(
-                    obscureText
-                        ? Icons.visibility
-                        : Icons.visibility_off,
+                    obscureText ? Icons.visibility : Icons.visibility_off,
                   ),
                 ),
                 validator: (value) {
@@ -137,10 +161,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
               ),
-
               const SizedBox(height: 10),
 
-              // ESQUECEU SENHA
+              // Link para recuperação de senha
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton(
@@ -153,40 +176,38 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
 
-              // BOTÃO LOGIN
+              // Botão principal de login
               AuthButton(
                 text: "Entrar",
                 onPressed: _handleLogin,
               ),
-
               const SizedBox(height: 20),
 
-              // IR PARA CADASTRO
+              // Link para cadastro
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text("Não tem conta?"),
                   TextButton(
                     onPressed: () {
-                        Navigator.pushNamed(context, AppRoutes.register);
-                      },
-                    child: Text(
+                      Navigator.pushNamed(context, AppRoutes.register);
+                    },
+                    child: const Text(
                       " Cadastrar",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Color(0xFFE60073),
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ],
           ),
         ),
-      ) 
+      ),
     );
   }
 }
