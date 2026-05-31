@@ -1,7 +1,6 @@
 /* Autor: Rafael Henrique dos Santos Inácio */
 
 import 'package:flutter/material.dart';
-import 'package:mescla_invest_app/features/auth/presentation/theme/background_painter.dart';
 import 'package:mescla_invest_app/routes/app_routes.dart';
 
 class WelcomeScreen extends StatelessWidget {

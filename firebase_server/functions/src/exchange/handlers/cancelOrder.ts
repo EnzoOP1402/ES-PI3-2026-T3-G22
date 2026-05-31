@@ -64,11 +64,6 @@ export const cancelOrder = onCall(
           );
         }
 
-        // Mudando o status da ordem para "canceled"
-        transaction.update(order.ref, {
-          status: "canceled" as OrderStatus,
-        });
-
         // Se a ordem for de compra, realiza a operação atômica
         // de estorno do valor para o saldo do usuário
         if (order.data.type === "buy") {
@@ -91,6 +86,11 @@ export const cancelOrder = onCall(
           // de tokens pendentes multiplicada pelo preço da ordem
           const refund = order.data.remainingQuantity *
             order.data.priceCents;
+
+          // Mudando o status da ordem para "canceled"
+          transaction.update(order.ref, {
+            status: "canceled" as OrderStatus,
+          });
 
           // Devolvendo o valor calculado do saldo congelado para o
           // saldo disponível
@@ -117,6 +117,11 @@ export const cancelOrder = onCall(
               "Não foram encontrados tokens dessa startup em sua carteira."
             );
           }
+
+          // Mudando o status da ordem para "canceled"
+          transaction.update(order.ref, {
+            status: "canceled" as OrderStatus,
+          });
 
           // Devolvendo os tokens da quantidade indisponível para
           // a quantidade disponível

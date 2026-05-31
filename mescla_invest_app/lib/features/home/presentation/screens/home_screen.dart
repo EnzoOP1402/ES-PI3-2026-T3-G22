@@ -14,14 +14,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   Future<void> _handleLogout() async {
     try {
+      // Efetua o sign out no Firebase Auth
       await AuthRepository.instance.logout();
 
-      // Se o widget ainda está montado, navega de volta para a raiz
       if (mounted) {
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        // Voltando para o início da pilha (tela inicial)
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
     } catch (e) {
-      // Trata erros se necessário
       if (mounted) {
         showErrorSnackBar(context, 'Erro ao sair: $e');
       }
@@ -37,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             const Text('Tela Home', style: TextStyle(fontSize: 24)),
-            TextButton(onPressed: () async => _handleLogout, child: const Text("Sair")),
+            TextButton(onPressed: () async => _handleLogout(), child: const Text("Sair")),
           ],
         ),
       ),

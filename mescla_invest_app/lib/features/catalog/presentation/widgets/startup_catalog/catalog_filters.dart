@@ -66,8 +66,6 @@ class CatalogFilters extends StatelessWidget {
         
         const SizedBox(height: 10),
 
-        
-
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
@@ -100,19 +98,6 @@ class CatalogFilters extends StatelessWidget {
                 selectedValue: selectedStage,
                 onSelected: onStageChanged,
               ),
-              // filterSpacing,
-              // IconButton(
-              //   tooltip: 'Limpar filtros',
-              //   onPressed: onClear,
-              //   style: IconButton.styleFrom(
-              //     backgroundColor: Colors.white,
-              //     foregroundColor: const Color(0xFF353988),
-              //     shape: RoundedRectangleBorder(
-              //       borderRadius: BorderRadius.circular(12),
-              //     ),
-              //   ),
-              //   icon: const Icon(Icons.close_rounded),
-              // ),
             ],
           ),
         ),
