@@ -63,6 +63,8 @@ Future<void> _handleLogout() async {
       if (mounted) {
         // Voltando para o início da pilha (tela inicial)
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+        // Voltando para o início da pilha (tela inicial)
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
     } catch (e) {
       if (mounted) {

@@ -1,6 +1,6 @@
 /* Autor: Enzo Olivato Pazian */
 
-import {onDocumentCreated} from "firebase-functions/firestore";
+import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import {OfferDocument, TradeDocument} from "../types";
 import {logger} from "firebase-functions";
 import {db} from "../../shared/firebase";
@@ -385,9 +385,29 @@ export const matchOrderTrigger = onDocumentCreated(
               // aos privilégios de investidor
               transaction.delete(sellerInvestorRef);
 
+              // Emitindo a mensagem de sucesso da exclusão
               logger.info(
                 `Usuário [${sellerId}] deixou de ser investidor da `+
                 `startup ${startupId} (Posição zerada).`
+              );
+
+              // Se seu saldo zerou, removemos o documento da startup
+              // de sua carteira
+
+              // Obtendo a referência do documento da startup da carteira
+              // do usuário
+              const sellerWalletRef = db.collection("users")
+                .doc(sellerId)
+                .collection("wallet")
+                .doc(startupId);
+
+              // Excluindo o documento da carteira
+              transaction.delete(sellerWalletRef);
+
+              // Emitindo a mensagem de sucesso da exclusão
+              logger.info(
+                `Revisão de carteira: Documento do token [${startupId}] `+
+                `removido da wallet do usuário [${sellerId}] por chegar a zero.`
               );
             } else {
               // Se ele ainda possui tokens restantes, ele continua

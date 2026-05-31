@@ -1,7 +1,7 @@
 /* Autor: Enzo Olivato Pazian */
 
 import {FieldValue} from "firebase-admin/firestore";
-import {HttpsError, onCall} from "firebase-functions/https";
+import {HttpsError, onCall} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import {allowedVisibilities} from "../shared/constants";
 import {requireAuthenticatedUser} from "../../shared/auth";

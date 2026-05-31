@@ -1,6 +1,6 @@
 /* Autor: Enzo Olivato Pazian */
 
-import {HttpsError, onCall} from "firebase-functions/https";
+import {HttpsError, onCall} from "firebase-functions/v2/https";
 import {requireAuthenticatedUser} from "../../shared/auth";
 import {logger} from "firebase-functions";
 import {db} from "../../shared/firebase";

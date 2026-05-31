@@ -38,6 +38,22 @@
         { "fieldPath": "status", "order": "ASCENDING" },
         { "fieldPath": "startupName", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "trades",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "startupId", "order": "ASCENDING" },
+        { "fieldPath": "registeredAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "wallet",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "availableQuantity", "order": "DESCENDING" },
+        { "fieldPath": "startupName", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

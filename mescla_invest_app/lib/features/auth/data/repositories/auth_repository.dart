@@ -1,7 +1,6 @@
 /* Autor: Enzo Olivato Pazian */
 
 // Implementando as dependências
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mescla_invest_app/core/errors/app_exceptions.dart';
@@ -21,8 +20,6 @@ class AuthRepository {
 
   // Criando uma instância do Firebase Authentication para a utilização de seus recursos
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  // Criando uma instância do Firebase Firestore para a utilização de seus recursos
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   // Stream para monitorar se o usuário está logado ou não
   // Alimenta o AuthWrapper com o monitoramento do estado da autenticação
@@ -121,12 +118,27 @@ class AuthRepository {
   /// senha através do recurso nativo do Firebase Auth de recuperação de senha
   Future<void> recoverPassword(String email) async {
     try {
-      // Passo 1 para a recuperação de senha: Validação extra via Firestore
+      // Passo 1 para a recuperação de senha: Validação extra via Function
       // para existência do e-mail na base de dados
-      final emailCheck = await _db.collection('users').where('email', isEqualTo: email).limit(1).get();
 
-      // Se não existir, emite um erro autoral que será tratado na UI
-      if (emailCheck.docs.isEmpty) {
+      // Formatando o e-mail recebido
+      final String formattedEmail = email.trim().toLowerCase();
+
+      // Invocando a Cloud Function para validar a existência do e-mail de forma segura
+      final HttpsCallable callable = FirebaseFunctions
+        .instanceFor(region: 'southamerica-east1')
+        .httpsCallable('checkEmailExists');
+      
+      // Obtendo o resultado retornado
+      final HttpsCallableResult result = await callable.call({
+        'email': formattedEmail,
+      });
+
+      // Extrai o boolean retornado pela Function
+      final bool exists = result.data['exists'] ?? false;
+
+      // Se não existir, emite o seu erro autoral tratado pela UI
+      if (!exists) {
         throw AuthException("E-mail não encontrado em nossa base.");
       }
 
@@ -137,6 +149,9 @@ class AuthRepository {
     // o erro identificado através do método de tratamento de erro 
     on FirebaseAuthException catch (e) {
       throw _handleAuthError(e);
+    }
+    on FirebaseFunctionsException catch (e) {
+      throw AuthException("Não foi possível enviar o e-mail de recuperação. ${e.message}");
     }
     // Se erros genéricos forem identificados, dispara o erro identificado,
     // convertendo-o em uma exceção autoral para tratar a mensagem de erro,

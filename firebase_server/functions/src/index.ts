@@ -17,3 +17,5 @@ export * from "./users";
 export * from "./startups";
 
 export * from "./exchange";
+
+export * from "./dashboards";
