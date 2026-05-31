@@ -9,6 +9,7 @@ import 'package:mescla_invest_app/features/wallet/data/models/token_model.dart';
 import 'package:mescla_invest_app/features/wallet/data/models/wallet_model.dart';
 import 'package:mescla_invest_app/features/wallet/data/repositories/wallet_repository.dart';
 import 'package:mescla_invest_app/features/wallet/presentation/screens/my_offers_screen.dart';
+import 'package:mescla_invest_app/features/wallet/presentation/screens/transaction_history_screen.dart';
 import 'package:mescla_invest_app/features/wallet/presentation/widgets/button_mid.dart';
 import 'package:mescla_invest_app/features/wallet/presentation/widgets/wallet_balance_section.dart';
 import 'package:mescla_invest_app/features/wallet/presentation/widgets/wallet_deposit_section.dart';
@@ -131,7 +132,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     child: CustomOutlinedButton(
                       text: 'Histórico de compras',
                       icon: Icons.history,
-                      page: const MyOffersScreen(),
+                      page: const TransactionHistoryScreen(),
                     ),
                   ),
                   Divider(color: Colors.transparent,thickness: 40,),

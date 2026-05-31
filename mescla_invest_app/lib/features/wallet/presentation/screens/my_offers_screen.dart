@@ -11,14 +11,12 @@ import 'package:mescla_invest_app/features/wallet/presentation/widgets/offers_he
 
 class MyOffersScreen extends StatefulWidget {
   const MyOffersScreen({super.key});
-
   @override
   State<MyOffersScreen> createState() => _MyOffersScreenState();
 }
 
 class _MyOffersScreenState extends State<MyOffersScreen> {
   final Color _backgroundColor = const Color(0xFFE6E6E6);
-
   // Lista simulada de ofertas baseada no seu protótipo
   List<OfferModel> _minhasOfertas = [];
   bool _isLoading = true;
@@ -34,7 +32,6 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
   Future<void> _loadOffers() async {
     try {
       final offers = await WalletRepository.instance.getUserOffers();
-
       setState(() {
         _minhasOfertas = offers;
         _isLoading = false;
@@ -50,65 +47,48 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
       );
     }
   }
+
   Future<bool>_confirmCancelOrder( OfferModel offer) async {
-  final result = await showDialog<bool>(
-    context: context,
-    barrierDismissible: false,
-    builder: (_) {
-      return ConfirmExitDialog(
-        title: 'Cancelar oferta',
-        message:
-            'Você está prestes a cancelar sua oferta de ${offer.tokenTicker}.',
-        question:
-            'Tem certeza que deseja continuar?',
-        onConfirm: () {
-          Navigator.pop(
-            context,
-            true,
-          );
-        },
-        onCancel: () {
-          Navigator.pop(
-            context,
-            false,
-          );
-        },
-      );
-    },
-  );
-  return result ?? false;
-}
+    final result = await showDialog <bool> (
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return ConfirmExitDialog(
+          title: 'Cancelar oferta',
+          message:
+              'Você está prestes a cancelar sua oferta de ${offer.tokenTicker}.',
+          question:
+              'Tem certeza que deseja continuar?',
+          onConfirm: () {
+            Navigator.pop(
+              context,
+              true,
+            );
+          },
+          onCancel: () {
+            Navigator.pop(
+              context,
+              false,
+            );
+          },
+        );
+      },
+    );
+    return result ?? false;
+  }
 
   Future<bool> _cancelOffer( OfferModel offer,
-  ) async {
-  try {
-    debugPrint(
-      'Tentando cancelar ordem ${offer.id}',
-    );
-
-    await WalletRepository.instance.cancelOrder(
-      orderId: offer.id,
-    );
-
-    debugPrint(
-      'Ordem cancelada com sucesso',
-    );
-
-    return true;
-  } catch (e, stackTrace) {
-    debugPrint(
-      'ERRO AO CANCELAR: $e',
-    );
-
-    debugPrint(
-      stackTrace.toString(),
-    );
-
-    showErrorSnackBar(
-      context,
-      e.toString(),
-    );
-
+    ) async {
+    try {
+      await WalletRepository.instance.cancelOrder(
+        orderId: offer.id,
+      );
+      return true;
+      } catch (e) {
+      showErrorSnackBar(
+        context,
+        e.toString(),
+      );
     return false;
   }
 }

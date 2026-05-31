@@ -3,6 +3,7 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:mescla_invest_app/features/wallet/data/models/offer_model.dart';
 import 'package:mescla_invest_app/features/wallet/data/models/token_model.dart';
+import 'package:mescla_invest_app/features/wallet/data/models/transaction_model.dart';
 import '../models/wallet_model.dart';
 
 class WalletRepository {
@@ -10,34 +11,27 @@ class WalletRepository {
 
   static final instance = WalletRepository._();
 
-  final FirebaseFunctions _functions =
-      FirebaseFunctions.instanceFor(
-        region: 'southamerica-east1',
-      );
+  final FirebaseFunctions _functions = FirebaseFunctions.instanceFor( region: 'southamerica-east1');
 
 Future<WalletDetails> getWalletData() async {
   try {
-    final callable =
-        _functions.httpsCallable(
-          'getUserBalance',
-        );
+    final callable = _functions.httpsCallable(
+      'getUserBalance' 
+      );
+
     final result = await callable.call();
-
     final data = Map<String, dynamic>.from(result.data);
-
     final int balanceAvailableCents = data['balanceAvailableCents'] ?? 0;
-
     final wallet = WalletDetails(
       balance: balanceAvailableCents / 100,
       tokens: [],
     );
-
     return wallet;
   } on FirebaseFunctionsException catch (e) {
 
     throw Exception(
       e.message ??
-          'Erro ao carregar carteira',
+        'Erro ao carregar carteira',
     );
   } catch (e) {
     rethrow;
@@ -46,10 +40,9 @@ Future<WalletDetails> getWalletData() async {
 
 Future<void> addBalance(int amountCents,) async {
     try {
-      final callable =
-          _functions.httpsCallable(
-            'addBalance',
-          );
+      final callable = _functions.httpsCallable(
+          'addBalance',
+        );
 
       await callable.call({
         'amountCents': amountCents,
@@ -122,4 +115,28 @@ Future<void> addBalance(int amountCents,) async {
         );
       }
     }
+    
+Future<List<TransactionModel>> getTransactionHistory() async {
+  try {
+    final result = await _functions
+        .httpsCallable(
+          'getUserTradesHistory',
+        )
+        .call();
+    final List transactions = result.data['transactions'];
+    return transactions.map((transaction) {
+      return TransactionModel.fromJson(
+        Map<String, dynamic>.from(
+          transaction,
+        ),
+      );
+    }).toList();
+  } on FirebaseFunctionsException catch (e) {
+    throw Exception(
+      e.message ??
+      'Erro ao carregar histórico',
+    );
+  }
 }
+}
+
