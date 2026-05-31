@@ -1,3 +1,5 @@
+/*Gabriela Sichiroli Ferrari*/
+
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:mescla_invest_app/features/wallet/data/models/offer_model.dart';
 import 'package:mescla_invest_app/features/wallet/data/models/token_model.dart';
@@ -20,10 +22,11 @@ Future<WalletDetails> getWalletData() async {
           'getUserBalance',
         );
     final result = await callable.call();
-    final data =
-    Map<String, dynamic>.from(result.data);
-    final int balanceAvailableCents =
-      data['balanceAvailableCents'] ?? 0;
+
+    final data = Map<String, dynamic>.from(result.data);
+
+    final int balanceAvailableCents = data['balanceAvailableCents'] ?? 0;
+
     final wallet = WalletDetails(
       balance: balanceAvailableCents / 100,
       tokens: [],
@@ -103,4 +106,20 @@ Future<void> addBalance(int amountCents,) async {
       throw Exception('Erro ao carregar tokens: $e');
     }
   }
+    Future<void> cancelOrder({required String orderId}) async {
+      try {
+        final callable = _functions.httpsCallable(
+          'cancelOrder',
+        );
+        await callable.call({
+          'orderId': orderId,
+        });
+
+      } on FirebaseFunctionsException catch (e) {
+        throw Exception(
+          e.message ??
+          'Erro ao cancelar oferta',
+        );
+      }
+    }
 }

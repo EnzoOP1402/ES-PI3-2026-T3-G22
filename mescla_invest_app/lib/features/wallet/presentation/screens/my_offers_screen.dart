@@ -1,11 +1,13 @@
 /* Autor: Rafael Henrique dos Santos Inácio */
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
+import 'package:mescla_invest_app/core/widgets/confirm_exit_dialog.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mescla_invest_app/features/wallet/data/models/offer_model.dart';
 import 'package:mescla_invest_app/features/wallet/data/repositories/wallet_repository.dart';
+import 'package:mescla_invest_app/features/wallet/presentation/widgets/offers_header.dart';
 
 class MyOffersScreen extends StatefulWidget {
   const MyOffersScreen({super.key});
@@ -15,7 +17,6 @@ class MyOffersScreen extends StatefulWidget {
 }
 
 class _MyOffersScreenState extends State<MyOffersScreen> {
-  final Color _primaryBlue = const Color(0xFF353988);
   final Color _backgroundColor = const Color(0xFFE6E6E6);
 
   // Lista simulada de ofertas baseada no seu protótipo
@@ -49,7 +50,68 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
       );
     }
   }
+  Future<bool>_confirmCancelOrder( OfferModel offer) async {
+  final result = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) {
+      return ConfirmExitDialog(
+        title: 'Cancelar oferta',
+        message:
+            'Você está prestes a cancelar sua oferta de ${offer.tokenTicker}.',
+        question:
+            'Tem certeza que deseja continuar?',
+        onConfirm: () {
+          Navigator.pop(
+            context,
+            true,
+          );
+        },
+        onCancel: () {
+          Navigator.pop(
+            context,
+            false,
+          );
+        },
+      );
+    },
+  );
+  return result ?? false;
+}
 
+  Future<bool> _cancelOffer( OfferModel offer,
+  ) async {
+  try {
+    debugPrint(
+      'Tentando cancelar ordem ${offer.id}',
+    );
+
+    await WalletRepository.instance.cancelOrder(
+      orderId: offer.id,
+    );
+
+    debugPrint(
+      'Ordem cancelada com sucesso',
+    );
+
+    return true;
+  } catch (e, stackTrace) {
+    debugPrint(
+      'ERRO AO CANCELAR: $e',
+    );
+
+    debugPrint(
+      stackTrace.toString(),
+    );
+
+    showErrorSnackBar(
+      context,
+      e.toString(),
+    );
+
+    return false;
+  }
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,38 +126,14 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Cabeçalho da página
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Minhas Ofertas',
-                    style: GoogleFonts.montserrat(
-                    color: _primaryBlue,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Confira suas ofertas ativas esperando por ser realizadas. Para cancelá-las, basta arrastá-las para a direita.',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 14,
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          OffersHeader(),
           // Lista de Ofertas com o Dismissible
           Expanded(
             child: _minhasOfertas.isEmpty
                 ? Center(
                     child: Text(
                       'Você não possui ofertas ativas no momento.',
-                      style: GoogleFonts.montserrat(fontSize: 16, color: Colors.black54),
+                      style: GoogleFonts.montserrat(fontSize: 16, color: Colors.black),
                     ),
                   )
                 : ListView.builder(
@@ -131,36 +169,28 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
                         ),
 
                         // Função disparada quando o usuário termina de arrastar
-                        onDismissed: (direction) {
-                          final removedOffer = offer;
-                          final removedIndex = index;
-
-                          setState(() {
-                            _minhasOfertas.removeAt(index);
-                          });
-
-                          // Feedback visual usando SnackBar (igual ao exemplo do SoccerTeams)
-                          ScaffoldMessenger.of(context).clearSnackBars();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Oferta de ${removedOffer.tokenTicker} cancelada.',
-                              ),
-                              duration: const Duration(seconds: 4),
-                              action: SnackBarAction(
-                                label: 'Desfazer',
-                                onPressed: () {
-                                  setState(() {
-                                    _minhasOfertas.insert(
-                                      removedIndex,
-                                      removedOffer,
-                                    );
-                                  });
-                                },
-                              ),
-                            ),
-                          );
-                        },
+                        confirmDismiss: (_) async {
+                            final confirmed = await _confirmCancelOrder(
+                              offer,
+                            );
+                            if (!confirmed) {
+                              return false;
+                            }
+                            return await _cancelOffer(
+                              offer,
+                            );
+                          },
+                          onDismissed: (_) {
+                            setState(() {
+                              _minhasOfertas.removeWhere(
+                                (item) => item.id == offer.id,
+                              );
+                            });
+                            showSuccessSnackBar(
+                              context,
+                                'Oferta de ${offer.tokenTicker} cancelada.',
+                            );
+                          },
                         // O Card visual da oferta em si
                         child: Card(
                           margin: const EdgeInsets.symmetric(vertical: 6),

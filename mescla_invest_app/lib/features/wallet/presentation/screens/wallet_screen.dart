@@ -98,6 +98,8 @@ class _WalletScreenState extends State<WalletScreen> {
             }
             final wallet = snapshot.data;
             return SingleChildScrollView(
+              child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 30),
               child: Column(
                 children: [
                   WalletBalanceSection(
@@ -154,12 +156,13 @@ class _WalletScreenState extends State<WalletScreen> {
                   const SizedBox(height: 20),
                 ],
               ),
+             )
             );
           },
         ),
       ),
       bottomNavigationBar:
-          const AppBottomNavigation(
+        const AppBottomNavigation(
         selectedIndex: 4,
       ),
     );
