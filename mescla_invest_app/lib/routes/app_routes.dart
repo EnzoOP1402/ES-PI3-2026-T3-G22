@@ -1,4 +1,5 @@
-/* Autor: Gabriela Sichiroli Ferrari */
+/*Autor: Gabriela Sichiroli Ferrari - RA: 25013763 */
+
 class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';

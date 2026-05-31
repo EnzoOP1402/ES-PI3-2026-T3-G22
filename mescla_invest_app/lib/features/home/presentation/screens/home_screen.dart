@@ -1,3 +1,4 @@
+/* Autor: Bernardo Castro Brandão de Oliveira */
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -54,23 +55,18 @@ class HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _handleLogout() async {
+Future<void> _handleLogout() async {
     try {
+      // Efetua o sign out no Firebase Auth
       await AuthRepository.instance.logout();
 
       if (mounted) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.login,
-          (route) => false,
-        );
+        // Voltando para o início da pilha (tela inicial)
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
     } catch (e) {
       if (mounted) {
-        showErrorSnackBar(
-          context,
-          'Erro ao sair: $e',
-        );
+        showErrorSnackBar(context, 'Erro ao sair: $e');
       }
     }
   }
@@ -101,9 +97,7 @@ class HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 8),
 
               Text(
-                isLoadingBalance
-                    ? 'Carregando...'
-                    : mostrarSaldo
+                   mostrarSaldo
                         ? 'R\$ ${saldo.toStringAsFixed(2)}'
                         : '— —',
                 style: GoogleFonts.montserrat(

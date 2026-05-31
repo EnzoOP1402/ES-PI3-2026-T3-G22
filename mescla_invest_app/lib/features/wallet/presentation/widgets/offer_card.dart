@@ -1,4 +1,4 @@
-/*Gabriela Sichiroli Ferrari*/
+/*Autor: Gabriela Sichiroli Ferrari - RA: 25013763 */
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -72,7 +72,7 @@ class OfferCard extends StatelessWidget {
 
                   // Exibe o preço da oferta.
                   Text(
-                    'R\$ ${formatCurrency(offer.price)}',
+                    formatCurrency(offer.price),
                     style: GoogleFonts.montserrat(
                       fontWeight: FontWeight.w600,
                       fontSize: 15,

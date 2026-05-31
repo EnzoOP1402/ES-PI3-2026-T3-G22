@@ -1,4 +1,4 @@
-/*Gabriela Sichiroli Ferrari*/
+/*Autor: Gabriela Sichiroli Ferrari - RA: 25013763 */
 
 import 'package:flutter/material.dart';
 import '../../data/models/token_model.dart';

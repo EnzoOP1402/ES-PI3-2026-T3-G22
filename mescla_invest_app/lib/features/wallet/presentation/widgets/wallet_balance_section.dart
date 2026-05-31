@@ -1,8 +1,7 @@
-/*Gabriela Sichiroli Ferrari*/
+/*Autor: Gabriela Sichiroli Ferrari - RA: 25013763 */
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'package:mescla_invest_app/core/utils/currency_formatter.dart';
 
 // Widget responsável por exibir o saldo da carteira

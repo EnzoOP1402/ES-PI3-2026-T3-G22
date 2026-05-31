@@ -1,4 +1,5 @@
-/*Gabriela Sichiroli Ferrari*/
+/*Autor: Gabriela Sichiroli Ferrari - RA: 25013763 */
+
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:mescla_invest_app/features/wallet/data/models/offer_model.dart';

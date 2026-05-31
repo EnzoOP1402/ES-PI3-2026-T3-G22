@@ -48,7 +48,7 @@ class TransactionCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'R\$ ${formatCurrency(transaction.amount)}',
+                  formatCurrency(transaction.amount),
                   style: GoogleFonts.montserrat(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,

@@ -1,4 +1,5 @@
-/*Gabriela Sichiroli Ferrari*/
+/*Autor: Gabriela Sichiroli Ferrari - RA: 25013763 */
+
 
 // Modelo responsável por representar uma transação
 // realizada pelo usuário.

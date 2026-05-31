@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
-import 'package:mescla_invest_app/features/auth/presentation/data/models/question_model.dart';
+import 'package:mescla_invest_app/features/catalog/data/models/question_model.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/detailed_catalog_card_section.dart';
 
 class PublicQuestions extends StatefulWidget {
