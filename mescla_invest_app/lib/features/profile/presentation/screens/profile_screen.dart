@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
 import 'package:mescla_invest_app/features/auth/data/models/user_model.dart';
@@ -121,6 +122,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _isUpdatingPhoto = false;
       });
+    }
+  }
+  Future<void> _handleLogout() async {
+    try {
+      // Efetua o sign out no Firebase Auth
+      await AuthRepository.instance.logout();
+
+      if (mounted) {
+        // Voltando para o início da pilha (tela inicial)
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+        // Voltando para o início da pilha (tela inicial)
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+      }
+    } catch (e) {
+      if (mounted) {
+        showErrorSnackBar(context, 'Erro ao sair: $e');
+      }
     }
   }
 
@@ -276,15 +294,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: ActionButton(
                           icon: Icons.logout_outlined,
                           label: 'Sair da conta',
-                          onTap: () async {
-                            await AuthRepository.instance.logout();
-
-                            if (!mounted) return;
-                            Navigator.pushReplacementNamed(
-                              context,
-                              AppRoutes.login,
-                            );
-                          },
+                          onTap: _handleLogout
                         ),
                       ),
                     ],
