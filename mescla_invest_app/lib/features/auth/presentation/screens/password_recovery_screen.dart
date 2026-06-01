@@ -1,20 +1,36 @@
-/* Autor: Bernardo Castro Brandão de Oliveira */
+/* Autor: Bernardo Castro Brandão de Oliveira - RA: 25014953*/
 
+// Importação do pacote principal do Flutter para construção da interface gráfica
 import 'package:flutter/material.dart';
+
+// Importação do repositório responsável pelas operações de autenticação
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
+
+// Importação do utilitário responsável pela exibição de mensagens de erro
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
+
+// Importação do botão customizado utilizado nas telas de autenticação
 import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_button.dart';
+
+// Importação do campo de entrada customizado utilizado nas telas de autenticação
 import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_input.dart';
+
+// Importação do layout padrão das telas de autenticação
 import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_layout.dart';
 
+// Tela responsável pelo processo de recuperação de senha
 class PasswordRecoveryScreen extends StatefulWidget {
+  // Construtor da tela
   const PasswordRecoveryScreen({super.key});
 
+  // Cria o estado associado ao widget
   @override
   State<PasswordRecoveryScreen> createState() => _PasswordRecoveryScreenState();
 }
 
+// Classe responsável pelo gerenciamento dos estados da tela
 class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
+  // Chave utilizada para validação do formulário
   final _formKey = GlobalKey<FormState>();
 
   // Variável controladora do carregamento da página
@@ -37,28 +53,37 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
   // Função que lida com a recuperação de senha dos usuários
   // Ela é responsável por acionar a função do repositório que lida com a recuperação de senha
   // referente à autenticação do app e exibe a snackbar com os erros encontrados
-  Future<void> _handlePasswordRecovery() async{
+  Future<void> _handlePasswordRecovery() async {
     // Se o estado atual do formulário com os campos validados for nulo,
     // executa as operações
     if (_formKey.currentState?.validate() ?? false) {
       try {
         // Muda o estado para mudar o valor do indicador de carregamento e acionar
         // a renderização da tela de carregamento no Scaffold
-        setState( () => _isLoading = true,);
+        setState(() => _isLoading = true);
 
         // Executando a recuperação de senha do usuário
         // Invoca a instância do repositório de autenticação e aciona o método de
         // recuperação de senha, passando como parâmetro o valor obtido do controlador do input
-        await AuthRepository.instance.recoverPassword(_recoveryEmailController.text.trim());
-        
+        await AuthRepository.instance.recoverPassword(
+          _recoveryEmailController.text.trim(),
+        );
+
         // Mostra um diálogo de sucesso e volta para o login
         if (mounted) {
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
+              // Título da caixa de diálogo
               title: const Text("E-mail Enviado"),
-              content: const Text("Verifique sua caixa de entrada para redefinir sua senha (não se esqueça de verificar o Spam)."),
+
+              // Mensagem exibida ao usuário
+              content: const Text(
+                "Verifique sua caixa de entrada para redefinir sua senha (não se esqueça de verificar o Spam).",
+              ),
               actions: [
+                // Botão responsável por fechar o diálogo e retornar
+                // para a tela de login
                 TextButton(
                   onPressed: () {
                     // Fecha o diálogo
@@ -72,16 +97,14 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
             ),
           );
         }
-      }
-      catch (e) {
+      } catch (e) {
         // Se o Widget foi destruído, encerra a função
-        if(!mounted) return;
+        if (!mounted) return;
         // Chama a função responsável por exibir erros na snackbar
         showErrorSnackBar(context, e.toString());
-      }
-      finally {
+      } finally {
         // Se deu certo e o widget não foi destruído, atualiza o controlador de carregamento
-        if (mounted) setState(() => _isLoading = false,);
+        if (mounted) setState(() => _isLoading = false);
       }
     }
   }
@@ -92,40 +115,56 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
     if (_isLoading) {
       return const AuthLayout(
         title: "Recuperar senha",
-        subtitle: "Insira o e-mail utilizado em seu cadastro para enviarmos um link de recuperação.",
+        subtitle:
+            "Insira o e-mail utilizado em seu cadastro para enviarmos um link de recuperação.",
         child: Center(child: CircularProgressIndicator()),
       );
     }
 
+    // Interface principal da tela
     return AuthLayout(
+      // Título exibido no topo da página
       title: "Recuperar senha",
-      subtitle: "Insira o e-mail utilizado em seu cadastro para enviarmos um link de recuperação.",
+
+      // Texto explicativo da funcionalidade
+      subtitle:
+          "Insira o e-mail utilizado em seu cadastro para enviarmos um link de recuperação.",
       child: SingleChildScrollView(
         child: Form(
+          // Chave utilizada para validação do formulário
           key: _formKey,
           child: Column(
             children: [
-              AuthInput(hint: "E-mail *",
-                    controller:_recoveryEmailController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Informe o e-mail';
-                      }
-                      if (!value.contains('@')) {
-                        return 'E-mail inválido';
-                      }
-                      return null;
-                    },
-                  ),
-              const SizedBox(height: 20),
-              AuthButton(
-                text: "Enviar",
-                onPressed:_handlePasswordRecovery,
+              // Campo para digitação do e-mail cadastrado
+              AuthInput(
+                hint: "E-mail *",
+                controller: _recoveryEmailController,
+
+                // Validação do campo de e-mail
+                validator: (value) {
+                  // Verifica se o campo está vazio
+                  if (value == null || value.isEmpty) {
+                    return 'Informe o e-mail';
+                  }
+
+                  // Validação básica do formato do e-mail
+                  if (!value.contains('@')) {
+                    return 'E-mail inválido';
+                  }
+                  return null;
+                },
               ),
+
+              // Espaçamento entre os componentes
+              const SizedBox(height: 20),
+
+              // Botão responsável por iniciar o processo
+              // de recuperação de senha
+              AuthButton(text: "Enviar", onPressed: _handlePasswordRecovery),
             ],
           ),
         ),
-      ) 
+      ),
     );
   }
 }

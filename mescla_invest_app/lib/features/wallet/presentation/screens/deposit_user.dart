@@ -1,4 +1,4 @@
-/* Autor: Bernardo Castro Brandão de Oliveira */
+/* Autor: Bernardo Castro Brandão de Oliveira - RA: 25014953*/
 
 // Importa o pacote principal do Flutter com widgets visuais(Text, Collumn, etc)
 import 'package:flutter/material.dart';
@@ -43,28 +43,26 @@ class _WalletUserState extends State<WalletUser> {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F3F3),
       appBar: CustomAppBar(
-      title: 'Carteira',
-      // Função executada ao clicar no botão de voltar.
-      onBackPressed: () {
-      showDialog(
-        context: context,
-        builder: (_) {
-        return ConfirmExitDialog(
-          title: 'Cancelar depósito',
-          message:'Se você sair, todos os dados preenchidos serão perdidos.',
-          question: 'Tem certeza que deseja sair?',
-            onConfirm: () {
-            Navigator.pop(context);
-            Navigator.pushNamed(
-            context,
-            AppRoutes.wallet,
+        title: 'Carteira',
+        // Função executada ao clicar no botão de voltar.
+        onBackPressed: () {
+          showDialog(
+            context: context,
+            builder: (_) {
+              return ConfirmExitDialog(
+                title: 'Cancelar depósito',
+                message:
+                    'Se você sair, todos os dados preenchidos serão perdidos.',
+                question: 'Tem certeza que deseja sair?',
+                onConfirm: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, AppRoutes.wallet);
+                },
               );
             },
           );
         },
-      );
-    },
-  ),
+      ),
       // Conteúdo principal da tela.
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -124,8 +122,8 @@ class _WalletUserState extends State<WalletUser> {
                         child: Text(
                           "Pix powered by Banco Central",
                           style: GoogleFonts.montserrat(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ),
@@ -153,7 +151,7 @@ class _WalletUserState extends State<WalletUser> {
                   padding: const EdgeInsets.all(18),
 
                   decoration: BoxDecoration(
-                    color:Colors.white,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(50),
                     border: Border.all(
                       color: _selectedPayment == 2
@@ -163,7 +161,7 @@ class _WalletUserState extends State<WalletUser> {
                     ),
                   ),
 
-                  child:Row(
+                  child: Row(
                     children: [
                       // Ícone de transferência
                       Icon(Icons.compare_arrows_rounded, size: 34),
@@ -172,8 +170,8 @@ class _WalletUserState extends State<WalletUser> {
                         child: Text(
                           "Transferência Eletrônica Disponível",
                           style: GoogleFonts.montserrat(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ),
@@ -321,7 +319,10 @@ class _WalletUserState extends State<WalletUser> {
                       //Texto ser for TED
                       : 'Informe quanto deseja depositar via TED',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.montserrat(fontSize: 15, color: Colors.black54),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 15,
+                    color: Colors.black54,
+                  ),
                 ),
 
                 const SizedBox(height: 28),
@@ -396,65 +397,57 @@ class _WalletUserState extends State<WalletUser> {
                     ),
                     child: ElevatedButton(
                       onPressed: () async {
-                          final valor = valueController.text.trim();
-                          if (valor.isEmpty || valor == '0,00') {
-                            showErrorSnackBar(
+                        final valor = valueController.text.trim();
+                        if (valor.isEmpty || valor == '0,00') {
+                          showErrorSnackBar(
+                            context,
+                            'Digite um valor válido para depósito',
+                          );
+                          return;
+                        }
+
+                        try {
+                          final double valorDigitado =
+                              double.tryParse(
+                                valor.replaceAll('.', '').replaceAll(',', '.'),
+                              ) ??
+                              0.0;
+
+                          final int amountCents = (valorDigitado * 100).round();
+                          await WalletRepository.instance.addBalance(
+                            amountCents,
+                          );
+
+                          if (!mounted) return;
+
+                          Navigator.pop(modalContext);
+
+                          showSuccessSnackBar(
+                            context,
+                            'Saldo adicionado com sucesso!',
+                          );
+
+                          if (_selectedPayment == 1) {
+                            Navigator.push(
                               context,
-                              'Digite um valor válido para depósito',
+                              MaterialPageRoute(
+                                builder: (_) => Qrcode(valor: valor),
+                              ),
                             );
-                            return;
-                          }
-
-                          try {
-                            final double valorDigitado =
-                                double.tryParse(
-                                  valor.replaceAll('.', '').replaceAll(',', '.'),
-                                ) ??
-                                0.0;
-
-                            final int amountCents =
-                                (valorDigitado * 100).round();
-                            await WalletRepository.instance.addBalance(
-                              amountCents,
-                            );
-
-                            if (!mounted) return;
-
-                            Navigator.pop(modalContext);
-
-                            showSuccessSnackBar(
+                          } else if (_selectedPayment == 2) {
+                            Navigator.push(
                               context,
-                              'Saldo adicionado com sucesso!',
-                            );
-
-                            if (_selectedPayment == 1) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => Qrcode(
-                                    valor: valor,
-                                  ),
-                                ),
-                              );
-                            } else if (_selectedPayment == 2) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => Tedpay(
-                                    valor: valor,
-                                  ),
-                                ),
-                              );
-                            }
-                          } catch (e) {
-                            if (!mounted) return;
-
-                            showErrorSnackBar(
-                              context,
-                              e.toString(),
+                              MaterialPageRoute(
+                                builder: (_) => Tedpay(valor: valor),
+                              ),
                             );
                           }
-                        },
+                        } catch (e) {
+                          if (!mounted) return;
+
+                          showErrorSnackBar(context, e.toString());
+                        }
+                      },
                       //Botão Continuar
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
