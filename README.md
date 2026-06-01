@@ -7,9 +7,15 @@ O **MesclaInvest** é uma plataforma mobile desenvolvida para conectar a comunid
 A aplicação permite que usuários atuem como **Investidores Anjo** em um ambiente totalmente educacional, realizando investimentos simulados por meio da compra e venda de tokens representativos de participação em startups.
 
 O objetivo é proporcionar uma experiência prática sobre investimentos, empreendedorismo e mercado financeiro, incentivando a interação entre investidores e startups de forma segura, transparente e acessível.
+O **MesclaInvest** é uma plataforma mobile desenvolvida para conectar a comunidade ao ecossistema de startups do **Mescla** (Hub de Inovação da PUC-Campinas).
+
+A aplicação permite que usuários atuem como **Investidores Anjo** em um ambiente totalmente educacional, realizando investimentos simulados por meio da compra e venda de tokens representativos de participação em startups.
+
+O objetivo é proporcionar uma experiência prática sobre investimentos, empreendedorismo e mercado financeiro, incentivando a interação entre investidores e startups de forma segura, transparente e acessível.
 
 ---
 
+## 🚀 Objetivos do Projeto
 ## 🚀 Objetivos do Projeto
 
 Diferente de aplicativos de investimento comuns, o MesclaInvest foca na transparência e na experiência da **Tokenização**. Através de uma interface analítica, o investidor pode analisar informações detalhadas das startups, interagir com elas e negociar ativos no Balcão de Tokens.
@@ -20,7 +26,185 @@ Diferente de aplicativos de investimento comuns, o MesclaInvest foca na transpar
 * Promover educação financeira e empreendedorismo.
 * Oferecer uma experiência intuitiva e gamificada de investimento.
 
+* Aproximar a comunidade acadêmica do ecossistema de startups.
+* Simular operações de investimento em empresas inovadoras.
+* Permitir a negociação de tokens em um mercado secundário.
+* Promover educação financeira e empreendedorismo.
+* Oferecer uma experiência intuitiva e gamificada de investimento.
+
 ### 🖥️ Principais Funcionalidades
+
+🔐 **Autenticação e Segurança**
+
+* Cadastro de usuários.
+* Login seguro.
+* Recuperação de senha.
+* Controle de acesso para usuários autenticados.
+
+🏢 **Catálogo de Startups**
+
+Os usuários podem visualizar startups cadastradas na plataforma contendo:
+
+* Nome da startup.
+* Descrição.
+* Área de atuação.
+* Plano de negócio.
+* Estrutura societária.
+* Quantidade de tokens emitidos.
+* Valor unitário dos tokens.
+
+💰 **Investimento em Tokens**
+
+O investidor pode:
+
+* Comprar tokens diretamente das startups.
+* Visualizar informações detalhadas antes da compra.
+* Consultar o valor unitário dos ativos.
+
+📊 **Dashboard do Investidor**
+
+O dashboard apresenta:
+
+* Quantidade de tokens adquiridos.
+* Acompanhamento em tempo real da valorização dos tokens adquiridos.
+* Evolução dos investimentos.
+
+💼 **Carteira Simulada**
+
+A carteira permite:
+
+* Visualização do saldo disponível.
+* Depósitos simulados.
+* Lista dos tokens adquiridos.
+* Histórico de transações.
+* Histórico de ofertas
+* Cancelar ordens abertas.
+
+🏪 **Balcão de Tokens**
+
+Mercado secundário para negociação entre usuários.
+
+Funcionalidades:
+
+* Abrir ordens de compra.
+* Abrir ordens de venda.
+* Comprar tokens de outros investidores.
+* Visualizar ofertas disponíveis.
+
+❓ **Sistema de Perguntas**
+
+Os investidores podem interagir com as startups através de:
+
+* Perguntas Públicas
+
+Visíveis para todos os usuários.
+
+* Perguntas Privadas
+  
+Visíveis apenas para o investidor e a startup.
+
+### 📱 Principais Telas
+
+**Tela de Login**
+
+Permite autenticação e recuperação de senha.
+
+**Tela Inicial (Home)**
+
+Apresenta destaques do ecossistema.
+
+**Catálogo de Startups**
+
+Lista todas as startups disponíveis para investimento.
+
+**Detalhes da Startup**
+
+Exibe informações completas da empresa e opção de investimento.
+
+**Dashboard**
+
+Apresenta indicadores financeiros do investidor.
+
+**Carteira**
+
+Exibe saldo, ativos e histórico de transações.
+
+**Balcão de Tokens**
+
+Permite negociação entre investidores.
+
+**Perfil**
+
+Gerenciamento dos dados do usuário.
+
+---
+
+### 🏗️ Arquitetura do Sistema
+
+O MesclaInvest segue uma arquitetura baseada em serviços utilizando Firebase como backend.
+
+**Frontend**
+
+* Flutter
+* Dart
+  
+**Backend**
+
+* Firebase Functions
+* TypeScript
+
+**Autenticação**
+
+* Firebase Authentication
+
+**Banco de Dados**
+
+* Cloud Firestore
+
+----
+
+## 📂 Estrutura do Projeto
+
+O projeto está dividido em **duas pastas principais**:
+
+- `mescla_invest_app/`: raiz do aplicativo Flutter.
+  
+- `firebase_server/`: raiz do backend Firebase Functions.
+
+```bash
+ES-PI3-2026-T3-G22/
+├── mescla_invest_app/          # Aplicativo Flutter
+│   ├── lib/
+│   │   ├── core/
+│   │   ├── features/
+│   │   │   ├── auth/
+│   │   │   ├── catalog/
+│   │   │   ├── dashboard/
+│   │   │   ├── exchange/
+│   │   │   ├── wallet/
+│   │   │   ├── profile/
+│   │   │   └── startup/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── main.dart
+│   ├── android/
+│   ├── ios/
+│   ├── web/
+│   ├── pubspec.yaml
+│   └── firebase.json
+│
+├── firebase_server/            # Backend Firebase
+│   ├── functions/
+│   │   ├── src/
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   ├── firebase.json
+│   ├── firestore.rules
+│   ├── firestore.indexes.json
+│   └── storage.rules
+│
+└── README.md
+```
 
 🔐 **Autenticação e Segurança**
 
