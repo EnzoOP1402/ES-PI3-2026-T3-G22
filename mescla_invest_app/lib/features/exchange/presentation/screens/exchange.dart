@@ -14,6 +14,9 @@ import '../../data/models/board_order_model.dart';
 import '../../data/services/exchange_service.dart';
 import '../../data/models/exchange_model.dart';
 
+/// Tela principal do Balcão de negociações.
+/// Exibe ordens de compra e venda de tokens de startups,
+/// e permite ao usuário criar novas ordens de compra ou venda.
 class ExchangeScreen extends StatefulWidget {
   const ExchangeScreen({super.key});
 
@@ -22,32 +25,44 @@ class ExchangeScreen extends StatefulWidget {
 }
 
 class _ExchangeScreenState extends State<ExchangeScreen> {
+  /// Serviço responsável por buscar dados do balcão na API/Firebase.
   final ExchangeService _exchangeService = ExchangeService();
 
+  /// Future que carrega o quadro do balcão (ordens de compra e venda).
   Future<Map<String, List<BoardOrderModel>>>? _boardFuture;
 
+  /// ID da startup usada como filtro (passado via argumentos de rota).
   String? _startupFiltroId;
+
+  /// Nome da startup usada como filtro (passado via argumentos de rota).
   String? _startupFiltroNome;
+
+  /// Flag para evitar que os argumentos de rota sejam lidos mais de uma vez.
   bool _argumentosCarregados = false;
 
-  static const Color _primaryColor = Color(0xFF353988);
-  static const Color _accentColor = Color(0xFFDB0065);
-  static const Color _backgroundColor = Color(0xFFE8E9EB);
-  static const Color _sectionBackground = Color(0xFFE8E9EB);
-  static const Color _cardBackground = Color(0xFFF4F4F4);
+  // --- Paleta de cores da tela ---
+  static const Color _primaryColor = Color(0xFF353988);     // Azul escuro principal
+  static const Color _accentColor = Color(0xFFDB0065);      // Rosa/vermelho de destaque
+  static const Color _backgroundColor = Color(0xFFE8E9EB);  // Fundo geral da tela
+  static const Color _sectionBackground = Color(0xFFE8E9EB);// Fundo das seções de ordens
+  static const Color _cardBackground = Color(0xFFF4F4F4);   // Fundo dos cards de oferta
 
   @override
   void initState() {
     super.initState();
+    // Inicia o carregamento do quadro do balcão assim que o widget é criado.
     _boardFuture = _exchangeService.buscarQuadroBalcao();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    // Carrega os argumentos de filtro vindos da rota de navegação.
     _carregarArgumentosFiltro();
   }
 
+  /// Lê os argumentos da rota atual e extrai o ID e nome da startup para filtro.
+  /// Executa apenas uma vez graças ao flag [_argumentosCarregados].
   void _carregarArgumentosFiltro() {
     if (_argumentosCarregados) return;
 
@@ -59,6 +74,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
 
       final startupData = args['startupData'];
 
+      // Fallback: se o nome não vier direto, tenta extraí-lo do objeto startupData.
       if ((_startupFiltroNome == null || _startupFiltroNome!.trim().isEmpty) &&
           startupData is Map<String, dynamic>) {
         _startupFiltroNome = startupData['name']?.toString();
@@ -68,6 +84,8 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
     _argumentosCarregados = true;
   }
 
+  /// Normaliza uma string: remove espaços extras e converte para minúsculas.
+  /// Usado para comparações case-insensitive e tolerantes a espaços.
   String _normalizarTexto(String? valor) {
     if (valor == null) return '';
 
@@ -77,10 +95,14 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
         .replaceAll(RegExp(r'\s+'), ' ');
   }
 
+  /// Normaliza uma string removendo também todos os caracteres não alfanuméricos.
+  /// Permite comparar nomes ignorando pontuação, acentos e espaços.
   String _normalizarParaComparacao(String? valor) {
     return _normalizarTexto(valor).replaceAll(RegExp(r'[^a-z0-9]'), '');
   }
 
+  /// Filtra a lista de ordens pelo ID ou nome da startup definidos como filtro.
+  /// Se nenhum filtro estiver ativo, retorna todas as ordens sem alteração.
   List<BoardOrderModel> _filtrarOrdensPorStartup(
     List<BoardOrderModel> orders,
   ) {
@@ -90,6 +112,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
     final temFiltroId = filtroId != null && filtroId.isNotEmpty;
     final temFiltroNome = filtroNome != null && filtroNome.isNotEmpty;
 
+    // Sem filtro ativo: retorna tudo.
     if (!temFiltroId && !temFiltroNome) {
       return orders;
     }
@@ -104,19 +127,24 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
       final orderStartupNameComparacao =
           _normalizarParaComparacao(order.startupName);
 
+      // Verifica correspondência por ID.
       final idConfere = temFiltroId &&
           orderStartupIdNormalizado == filtroIdNormalizado;
 
+      // Verifica correspondência por nome (com espaços normalizados).
       final nomeConfere = temFiltroNome &&
           orderStartupNameNormalizado == filtroNomeNormalizado;
 
+      // Verifica correspondência por nome (sem caracteres especiais).
       final nomeConfereSemEspacos = temFiltroNome &&
           orderStartupNameComparacao == filtroNomeComparacao;
 
+      // A ordem passa no filtro se qualquer uma das comparações bater.
       return idConfere || nomeConfere || nomeConfereSemEspacos;
     }).toList();
   }
 
+  /// Recarrega os dados do balcão do servidor e atualiza o estado da tela.
   Future<void> _recarregarBalcao() async {
     setState(() {
       _boardFuture = _exchangeService.buscarQuadroBalcao();
@@ -125,6 +153,8 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
     await _boardFuture;
   }
 
+  /// Exibe um diálogo informando que o saldo do usuário é insuficiente
+  /// para concluir a operação, com opção de ir direto à carteira.
   void _mostrarMensagemSaldoInsuficiente() {
     if (!mounted) return;
 
@@ -161,6 +191,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Ícone decorativo de carteira
                 Container(
                   width: 72,
                   height: 72,
@@ -211,6 +242,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                   ),
                 ),
                 const SizedBox(height: 22),
+                // Botões de ação: cancelar ou ir para a carteira
                 Row(
                   children: [
                     Expanded(
@@ -258,6 +290,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
 
                           if (!mounted) return;
 
+                          // Navega para a tela de carteira.
                           Navigator.pushNamed(
                             context,
                             AppRoutes.wallet,
@@ -282,6 +315,8 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
     );
   }
 
+  /// Verifica se um erro capturado corresponde a um erro de saldo insuficiente,
+  /// seja via [FirebaseFunctionsException] ou por texto genérico da mensagem.
   bool _erroEhSaldoInsuficiente(Object erro) {
     final textoErro = erro.toString().toLowerCase();
 
@@ -289,6 +324,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
       final codigo = erro.code.toLowerCase();
       final mensagem = erro.message?.toLowerCase() ?? '';
 
+      // Código esperado do Firebase para pré-condição não atendida (saldo baixo).
       return codigo == 'failed-precondition' &&
           (mensagem.contains('saldo insuficiente') ||
               mensagem.contains('saldo suficiente') ||
@@ -300,6 +336,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
               textoErro.contains('insufficient balance'));
     }
 
+    // Fallback para erros não tipados que ainda carregam a mensagem esperada.
     return textoErro.contains('failed-precondition') &&
         (textoErro.contains('saldo insuficiente') ||
             textoErro.contains('saldo suficiente') ||
@@ -307,6 +344,9 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
             textoErro.contains('insufficient balance'));
   }
 
+  /// Navega para o formulário de criação de ordem (compra ou venda),
+  /// aguarda o resultado e recarrega o balcão em seguida.
+  /// Caso o retorno ou erro indique saldo insuficiente, exibe o diálogo adequado.
   Future<void> _abrirFormularioOrdem({
     required TipoOrdem tipo,
     required ModoOrdem modo,
@@ -323,11 +363,13 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
 
       if (!mounted) return;
 
+      // A tela de formulário pode retornar essa string como sinal de saldo insuficiente.
       if (resultado == 'saldo_insuficiente') {
         _mostrarMensagemSaldoInsuficiente();
         return;
       }
 
+      // Ordem criada com sucesso: recarrega o balcão.
       await _recarregarBalcao();
     } catch (erro) {
       if (!mounted) return;
@@ -343,6 +385,8 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
     }
   }
 
+  /// Exibe um bottom sheet para o usuário escolher entre
+  /// "Ordem a mercado" ou "Ordem limitada" antes de investir.
   void _abrirModalTipoInvestimento() {
     ModoOrdem modoSelecionado = ModoOrdem.mercado;
 
@@ -362,6 +406,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
                     children: [
+                      // Opção 1: compra pelo preço da startup (mercado).
                       OpcaoInvestimentoRadio(
                         titulo: 'Ordem a mercado',
                         descricao:
@@ -374,6 +419,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                           });
                         },
                       ),
+                      // Opção 2: negociação entre investidores (limitada).
                       OpcaoInvestimentoRadio(
                         titulo: 'Ordem limitada',
                         descricao:
@@ -387,6 +433,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                         },
                       ),
                       const SizedBox(height: 12),
+                      // Botão de confirmação: fecha o modal e abre o formulário.
                       SizedBox(
                         width: 180,
                         height: 42,
@@ -427,6 +474,8 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
     );
   }
 
+  /// Converte um preço em centavos para o formato monetário brasileiro.
+  /// Exemplo: 15050 → "R$ 150,50 / token"
   String _formatarPrecoCentavos(int priceCents) {
     final valor = priceCents / 100;
     return 'R\$ ${valor.toStringAsFixed(2).replaceAll('.', ',')} / token';
@@ -445,12 +494,14 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
               child: FutureBuilder<Map<String, List<BoardOrderModel>>>(
                 future: _boardFuture,
                 builder: (context, snapshot) {
+                  // Estado de carregamento.
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(
                       child: CircularProgressIndicator(color: _primaryColor),
                     );
                   }
 
+                  // Estado de erro na requisição.
                   if (snapshot.hasError) {
                     return Center(
                       child: Padding(
@@ -468,6 +519,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                     );
                   }
 
+                  // Dados carregados: separa e filtra ordens de venda e compra.
                   final todasSellOrders = snapshot.data?['sellOrders'] ?? [];
                   final todasBuyOrders = snapshot.data?['buyOrders'] ?? [];
 
@@ -479,12 +531,14 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                     todasBuyOrders,
                   );
 
+                  // Lista principal com pull-to-refresh.
                   return RefreshIndicator(
                     color: _primaryColor,
                     onRefresh: _recarregarBalcao,
                     child: ListView(
                       padding: const EdgeInsets.fromLTRB(18, 16, 18, 20),
                       children: [
+                        // Seção de ordens de venda.
                         _buildSecaoOrdens(
                           titulo: 'Ordens de Venda',
                           descricao:
@@ -494,6 +548,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                           isVenda: true,
                         ),
                         const SizedBox(height: 16),
+                        // Seção de ordens de compra.
                         _buildSecaoOrdens(
                           titulo: 'Ordens de Compra',
                           descricao:
@@ -508,6 +563,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                 },
               ),
             ),
+            // Barra de ações fixada na parte inferior: Investir e Vender.
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 22, vertical: 8),
               child: Row(
@@ -525,6 +581,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                       texto: 'Vender',
                       cor: _accentColor,
                       onPressed: () {
+                        // Venda sempre usa modo limitado.
                         _abrirFormularioOrdem(
                           tipo: TipoOrdem.venda,
                           modo: ModoOrdem.limitada,
@@ -542,6 +599,8 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
     );
   }
 
+  /// Constrói uma seção do balcão (venda ou compra) com título, descrição,
+  /// botão de info e lista horizontal rolável de cards de ordens.
   Widget _buildSecaoOrdens({
     required String titulo,
     required String descricao,
@@ -572,6 +631,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
                   height: 1,
                 ),
               ),
+              // Botão de informação: abre um AlertDialog explicando o tipo de ordem.
               IconButton(
                 onPressed: () async {
                   await showDialog(
@@ -607,6 +667,7 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
             ),
           ),
           const SizedBox(height: 12),
+          // Exibe mensagem vazia ou lista de cards dependendo da disponibilidade de ordens.
           orders.isEmpty
             ? Padding(
                 padding: EdgeInsets.symmetric(vertical: 14),
@@ -640,12 +701,18 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
     );
   }
 
+/// Constrói um card individual de oferta (ordem de compra ou venda).
+/// Exibe nome da startup, quantidade de tokens, nome do token, preço
+/// e um ícone de tendência de preço (alta, baixa ou estável).
 Widget _buildCardOferta(
   BoardOrderModel order, {
   required bool isVenda,
 }) {
   final bool isAlta = order.appreciated;
   final String priceTrend = order.priceTrend;
+
+  // Define a cor do indicador de preço:
+  // vermelho para queda, cinza para estável, verde para alta.
   final Color indicatorColor =
       !isAlta ? Color(0xFFD70000) : priceTrend == "equal" ? Color(0xFF757575) : Color(0xFF008A01);
 
@@ -669,14 +736,14 @@ Widget _buildCardOferta(
       contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
       dense: true,
       
-      // Ícone lateral esquerdo
+      // Ícone lateral esquerdo fixo.
       leading: const Icon(
         Icons.attach_money_rounded,
         color: Colors.black,
         size: 24,
       ),
 
-      // Título Principal
+      // Título: nome da startup truncado se muito longo.
       title: Text(
         order.startupName,
         maxLines: 1,
@@ -688,7 +755,7 @@ Widget _buildCardOferta(
         ),
       ),
 
-      // Subtítulo descritivo
+      // Subtítulo: quantidade restante e nome do token.
       subtitle: Padding(
         padding: const EdgeInsets.only(top: 2),
         child: Text(
@@ -701,7 +768,7 @@ Widget _buildCardOferta(
         ),
       ),
 
-      // Lado direito: Preço e Indicador de tendência juntos
+      // Lado direito: preço formatado + ícone de tendência (↑ ↓ ou vazio).
       trailing: Row(
         mainAxisSize: MainAxisSize.min, // Impede que a Row ocupe todo o espaço horizontal
         children: [
@@ -719,7 +786,7 @@ Widget _buildCardOferta(
               ? Icons.arrow_upward_rounded
               : priceTrend == "down"
               ? Icons.arrow_downward_rounded
-              : null,
+              : null, // Sem ícone quando o preço está estável ("equal").
             color: indicatorColor,
             size: 24,
           ),
@@ -729,6 +796,8 @@ Widget _buildCardOferta(
   );
 }
 
+  /// Constrói um botão de ação estilizado (Investir ou Vender)
+  /// com cor, texto e callback configuráveis.
   Widget _buildBotaoAcao({
     required String texto,
     required Color cor,

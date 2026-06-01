@@ -1,9 +1,12 @@
-/* Autor: Livia Lucizano */
+/* Autor: Livia Lucizano RA:25017514*/
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// Widget reutilizável que exibe uma tag/etiqueta estilizada para categorizar startups.
+/// Apresenta o texto em um container azul claro com bordas arredondadas.
 class TagStartup extends StatelessWidget {
+  /// Texto exibido dentro da tag.
   final String texto;
 
   const TagStartup({
@@ -19,7 +22,7 @@ class TagStartup extends StatelessWidget {
         vertical: 4,
       ),
       decoration: BoxDecoration(
-        color: Color(0xFF9FCEFF),
+        color: Color(0xFF9FCEFF), // Azul claro de fundo da tag.
         borderRadius: BorderRadius.circular(7.5),
       ),
       child: Text(

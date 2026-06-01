@@ -1,5 +1,6 @@
-/* Autor: Livia Lucizano */
+/* Autor: Livia Lucizano - RA: 25017514 */
 
+// Imports necessários para a tela de detalhes da startup
 import 'package:flutter/material.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -16,7 +17,9 @@ import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/priv_questions_card.dart';
 import 'package:mescla_invest_app/routes/app_routes.dart';
 
+// Tela responsável por exibir os detalhes completos de uma startup
 class StartupDetailScreen extends StatefulWidget {
+  // ID da startup recebida pela tela anterior
   final String startupId;
 
   const StartupDetailScreen({
@@ -30,26 +33,33 @@ class StartupDetailScreen extends StatefulWidget {
 
 class _StartupDetailScreenState extends State<StartupDetailScreen> {
 
+// Future que guarda a busca dos dados da startup no backend
   late final Future<Map<String, dynamic>> _startupDetailsFuture;
 
   @override
   void initState() {
     super.initState();
+    // Ao abrir a tela, inicia a busca dos detalhes da startup
     _startupDetailsFuture = getStartupDetails();
   }
 
+ // Busca os dados completos da startup usando uma Cloud Function
   Future<Map<String, dynamic>> getStartupDetails() async {
     try {
+      // Define a região onde a função Firebase está publicada
       final functions = FirebaseFunctions.instanceFor(
         region: 'southamerica-east1',
       );
 
+      // Prepara a chamada da função getStartupDetails
       final HttpsCallable callable = functions.httpsCallable(
         'getStartupDetails',
       );
+       // Chama a função enviando o ID da startup
       final result = await callable.call(<String, dynamic>{
         'id': widget.startupId,
       });
+      // Converte a resposta para Map
       return Map<String, dynamic>.from(result.data);
     } on FirebaseFunctionsException catch (e) {
       // O backend lança HttpsError específicos (ex: 'invalid-argument', 'not-found')
@@ -61,6 +71,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
         );
       }
 
+      // Repassa o erro para o FutureBuilder tratar visualmente
       rethrow;
     } catch (e) {
       if (mounted) {
@@ -74,6 +85,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
     }
   }
 
+ // Busca um campo que deve ser uma lista, testando várias chaves possíveis
   List<dynamic> _getListField(
     Map<String, dynamic> data,
     List<String> possibleKeys,
@@ -87,6 +99,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
     return <dynamic>[];
   }
 
+// Busca um campo de texto, testando várias chaves possíveis
   String _getStringField(
     Map<String, dynamic> data,
     List<String> possibleKeys,
@@ -103,13 +116,16 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
     return fallback;
   }
 
+  // Leva o usuário para a tela de exchange/balcão para investir na startup
   void _goToInvestScreen(Map<String, dynamic> startupData) {
+    // Pega o nome da startup para enviar junto na navegação
     final startupName = _getStringField(
       startupData,
       ['name'],
       'Nome da Startup',
     );
 
+// Navega para a tela de exchange levando os dados necessários
     Navigator.pushNamed(
       context,
       AppRoutes.exchange,
@@ -125,7 +141,9 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Cor de fundo padrão do projeto
       backgroundColor: backgroundColor,
+      // Barra superior da tela
       appBar: AppBar(
         backgroundColor: backgroundColor,
         elevation: 0,
@@ -138,6 +156,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
             fontWeight: FontWeight.w700,
           ),
         ),
+        // Botão de voltar
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new,
@@ -149,6 +168,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
           },
         ),
       ),
+      // FutureBuilder controla os estados de carregamento, erro e sucesso
       body: FutureBuilder<Map<String, dynamic>>(
         future: _startupDetailsFuture,
         builder: (context, snapshot) {
@@ -160,6 +180,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
             );
           }
 
+          // Estado de erro caso a busca falhe    
           if (snapshot.hasError) {
             return Center(
               child: Padding(
@@ -175,7 +196,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
               ),
             );
           }
-
+          // Estado vazio caso a startup não seja encontrada
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(
               child: Text(
@@ -188,34 +209,41 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
               ),
             );
           }
-
+          // Resposta completa retornada pelo backend
           final fullResponse = snapshot.data!;
+          // Dados reais da startup ficam dentro da chave "data"
           final startupData = Map<String, dynamic>.from(
             fullResponse['data'] ?? {},
           );
 
+          // Nome da startup
           final nome = _getStringField(
             startupData,
             ['name'],
             'Nome da Startup',
           );
 
+          // Descrição da startup
           final descricao = _getStringField(
             startupData,
             ['description'],
             'Descrição da startup não informada.',
           );
 
+          // Estágio atual da startup
           final estagio = _getStringField(
             startupData,
             ['stage'],
             'Em operação',
           );
 
+          // Tags relacionadas à startup
           final tags = _getListField(
             startupData,
             ['tags'],
           );
+
+          // Caminho ou URL da imagem/logo da startup
 
           final logoPath = _getStringField(
             startupData,
@@ -223,25 +251,35 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
             '',
           );
 
+          // Lista de sócios/fundadores
+
           final socios = _getListField(
             startupData,
             ['founders'],
           );
+
+           // Lista de membros externos
 
           final membrosExternos = _getListField(
             startupData,
             ['externalMembers'],
           );
 
+          // Lista de perguntas públicas
+
           final perguntasPublicas = _getListField(
             startupData,
             ['publicQuestions'],
           );
 
+          // Lista de perguntas privadas
+
           final perguntasPrivadas = _getListField(
             startupData,
             ['privateQuestions'],
           );
+
+          // Conteúdo principal com rolagem
 
           return SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(
@@ -280,6 +318,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
+                // Nome da startup
                 Text(
                   nome,
                   style: GoogleFonts.montserrat(
@@ -328,6 +367,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
+                 // Texto descritivo da startup
                 Text(
                   descricao,
                   style: GoogleFonts.montserrat(
@@ -338,6 +378,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+                // Card com informações financeiras e botão de investir
                 FinancialPanelCard(
                   startupData: startupData,
                   onInvestPressed: () {
@@ -346,20 +387,25 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
                     );
                   },
                 ),
+                // Card com os sócios/fundadores
                 FoundersCard(
                   socios: socios,
                 ),
+                // Card com membros externos
                 ExternalMembersCard(
                   membrosExternos: membrosExternos,
                 ),
+                // Card com mais informações sobre a startup
                 MoreAboutCard(
                   startupData: startupData,
                 ),
+                 // Card de perguntas públicas
                 PublicQuestionsCard(
                   startupId: widget.startupId,
                   perguntasPublicas: perguntasPublicas,
                 ),
                 if(startupData['access']['isInvestor']) 
+                // Mostra perguntas privadas apenas se o usuário for investidor da startup
                 PrivateQuestionsCard(
                   startupId: widget.startupId,
                   perguntasPrivadas: perguntasPrivadas,
@@ -369,6 +415,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
           );
         },
       ),
+      // Barra inferior com a aba de Catálogo selecionada
       bottomNavigationBar: const AppBottomNavigation(
         selectedIndex: 1,
       ),

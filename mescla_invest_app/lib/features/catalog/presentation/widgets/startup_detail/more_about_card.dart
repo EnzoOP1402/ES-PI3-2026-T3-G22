@@ -1,4 +1,4 @@
-/* Autor: Livia Lucizano */
+/* Autor: Livia Lucizano RA:25017514*/
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,7 +6,10 @@ import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_detail/detailed_catalog_modal_layout.dart';
 import 'startup_video_player.dart';
 
+/// Card que exibe opções de conteúdo adicional sobre a startup,
+/// como sumário executivo e vídeo demo, cada um abrindo um modal ao ser tocado.
 class MoreAboutCard extends StatelessWidget {
+  /// Mapa com os dados da startup, incluindo sumário e URLs de vídeo.
   final Map<String, dynamic> startupData;
 
   const MoreAboutCard({
@@ -14,6 +17,8 @@ class MoreAboutCard extends StatelessWidget {
     required this.startupData,
   });
 
+  /// Busca um campo de texto em [startupData] tentando múltiplas chaves.
+  /// Retorna [fallback] se nenhuma chave produzir um valor não vazio.
   String _getTextField(List<String> keys, String fallback) {
     for (final key in keys) {
       final value = startupData[key];
@@ -25,6 +30,9 @@ class MoreAboutCard extends StatelessWidget {
     return fallback;
   }
 
+  /// Obtém a URL do vídeo demo da startup.
+  /// Prioriza a lista [demoVideos] e cai para o campo [videoDemo] como fallback.
+  /// Retorna string vazia se nenhum vídeo estiver disponível.
   String _getVideoUrl() {
     final demoVideos = startupData['demoVideos'];
 
@@ -41,6 +49,8 @@ class MoreAboutCard extends StatelessWidget {
     return '';
   }
 
+  /// Abre um modal de texto genérico com [title] e [content].
+  /// Usado para exibir o sumário executivo ou mensagens de conteúdo ausente.
   void _openTextModal({
     required BuildContext context,
     required String title,
@@ -64,6 +74,7 @@ class MoreAboutCard extends StatelessWidget {
     );
   }
 
+  /// Abre um modal com o player de vídeo demo da startup.
   void _openVideoModal({
     required BuildContext context,
     required String videoUrl,
@@ -73,10 +84,6 @@ class MoreAboutCard extends StatelessWidget {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) {
-        // return _MoreAboutBottomSheet(
-        //   title: 'Vídeo demo',
-        //   child: VideoDemoPlayer(videoUrl: videoUrl),
-        // );
         return DetailedCatalogModalLayout(
           title: 'Vídeo demo',
           children: [
@@ -92,17 +99,21 @@ class MoreAboutCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Obtém o sumário executivo com fallback para texto padrão.
     final sumario = _getTextField(
       ['executiveSummary'],
       'Sumário executivo não informado.',
     );
 
     final videoUrl = _getVideoUrl();
+
+    // Verifica se há vídeo disponível para exibir o player ou mensagem de ausência.
     final hasVideo = videoUrl.trim().isNotEmpty;
 
     return DetailedCatalogCardSection(
       title: 'Mais sobre a startup',
       children: [
+        // Opção de sumário executivo: sempre abre modal de texto.
         _MoreAboutOption(
           title: 'Sumário executivo',
           icon: Icons.article_outlined,
@@ -114,6 +125,7 @@ class MoreAboutCard extends StatelessWidget {
             );
           },
         ),
+        // Opção de vídeo demo: abre player se disponível, texto informativo caso contrário.
         _MoreAboutOption(
           title: 'Vídeo demo',
           icon: Icons.play_circle_outline_rounded,
@@ -137,9 +149,16 @@ class MoreAboutCard extends StatelessWidget {
   }
 }
 
+/// Widget interno que representa uma opção clicável do card "Mais sobre a startup".
+/// Exibe um ícone, título e seta de navegação com efeito de toque (InkWell).
 class _MoreAboutOption extends StatelessWidget {
+  /// Texto descritivo da opção.
   final String title;
+
+  /// Ícone exibido à esquerda da opção.
   final IconData icon;
+
+  /// Callback disparado ao tocar na opção.
   final VoidCallback onTap;
 
   const _MoreAboutOption({
@@ -174,12 +193,14 @@ class _MoreAboutOption extends StatelessWidget {
             ),
             child: Row(
               children: [
+                // Ícone identificador da opção.
                 Icon(
                   icon,
                   color: _primaryColor,
                   size: 24,
                 ),
                 const SizedBox(width: 10),
+                // Título da opção expandido para ocupar o espaço disponível.
                 Expanded(
                   child: Text(
                     title,
@@ -190,6 +211,7 @@ class _MoreAboutOption extends StatelessWidget {
                     ),
                   ),
                 ),
+                // Seta indicando que a opção é navegável.
                 const Icon(
                   Icons.arrow_forward_ios,
                   color: _primaryColor,

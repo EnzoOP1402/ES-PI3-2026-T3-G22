@@ -11,6 +11,9 @@ import 'package:mescla_invest_app/routes/app_routes.dart';
 import '../../data/services/exchange_service.dart';
 import '../../data/models/exchange_model.dart';
 
+/// Tela de formulário para abertura de ordens de compra ou venda de tokens.
+/// O comportamento e os textos exibidos variam conforme o [TipoOrdem] e o [ModoOrdem]
+/// recebidos via argumentos de rota.
 class OrdemFormScreen extends StatefulWidget {
   const OrdemFormScreen({super.key});
 
@@ -19,25 +22,42 @@ class OrdemFormScreen extends StatefulWidget {
 }
 
 class _OrdemFormScreenState extends State<OrdemFormScreen> {
+  /// Chave global do formulário para acionar validações.
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  /// Controller do campo de preço unitário.
   final TextEditingController _precoController = TextEditingController();
+
+  /// Controller do campo de quantidade de tokens.
   final TextEditingController _quantidadeController = TextEditingController();
 
+  /// Serviço responsável por buscar dados de startups e saldo do usuário.
   final ExchangeService _exchangeService = ExchangeService();
 
+  /// Future que carrega a lista de startups disponíveis para a ordem.
   Future<List<StartupExchangeOption>>? _startupsFuture;
+
+  /// Flag para evitar que os argumentos de rota sejam lidos mais de uma vez.
   bool _argumentosCarregados = false;
-  bool _verificandoSaldo = false; // Novo estado de loading para botão de avançar
 
-  static const Color _primaryColor = Color(0xFF353988);
-  static const Color _accentColor = Color(0xFFDB0065);
-  static const Color _backgroundColor = Color(0xFFE8E9EB);
+  /// Indica se a verificação de saldo está em andamento (controla loading do botão).
+  bool _verificandoSaldo = false;
 
+  // --- Paleta de cores da tela ---
+  static const Color _primaryColor = Color(0xFF353988);    // Azul escuro principal
+  static const Color _accentColor = Color(0xFFDB0065);     // Rosa/vermelho de destaque
+  static const Color _backgroundColor = Color(0xFFE8E9EB); // Fundo geral da tela
+
+  /// Tipo da ordem (compra ou venda), definido pelos argumentos de rota.
   TipoOrdem _tipo = TipoOrdem.compra;
+
+  /// Modo da ordem (mercado ou limitada), definido pelos argumentos de rota.
   ModoOrdem _modo = ModoOrdem.mercado;
 
+  /// Startup atualmente selecionada no dropdown.
   StartupExchangeOption? _startupSelecionada;
 
+  /// Atalho para verificar se a ordem é do tipo "a mercado".
   bool get _isOrdemMercado => _modo == ModoOrdem.mercado;
 
   @override
@@ -46,6 +66,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
 
     if (_argumentosCarregados) return;
 
+    // Lê o tipo e modo da ordem a partir dos argumentos de navegação.
     final args = ModalRoute.of(context)?.settings.arguments;
 
     if (args is Map<String, dynamic>) {
@@ -53,23 +74,27 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
       _modo = ModoOrdemExtension.fromString(args['modo']?.toString() ?? 'mercado');
     }
 
+    // Inicia o carregamento das startups compatíveis com o tipo de ordem.
     _startupsFuture = _exchangeService.buscarStartupsParaOrdem(tipo: _tipo);
     _argumentosCarregados = true;
   }
 
   @override
   void dispose() {
+    // Libera os controllers para evitar vazamentos de memória.
     _precoController.dispose();
     _quantidadeController.dispose();
     super.dispose();
   }
 
+  /// Retorna o título da tela com base no tipo e modo da ordem.
   String get _tituloTela {
     if (_tipo == TipoOrdem.venda) return 'Abertura de Ordem de Venda';
     if (_modo == ModoOrdem.mercado) return 'Abertura de Ordem de Compra a Mercado';
     return 'Abertura de Ordem de Compra Limitada';
   }
 
+  /// Retorna a descrição explicativa da tela com base no tipo e modo da ordem.
   String get _descricaoTela {
     if (_tipo == TipoOrdem.venda) {
       return 'Preencha os dados necessários para cadastrar uma oferta de venda de tokens.';
@@ -80,6 +105,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
     return 'Preencha os dados necessários para prosseguir com a criação da oferta de compra de tokens.';
   }
 
+  /// Retorna o texto de instrução acima do dropdown de seleção de startup.
   String get _textoSelecaoStartup {
     if (_tipo == TipoOrdem.venda) {
       return 'Selecione uma startup que você possui tokens para vender.';
@@ -87,11 +113,14 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
     return 'Você deseja abrir uma ordem para qual startup?';
   }
 
+  /// Retorna o label do campo de preço conforme o modo da ordem.
   String get _textoCampoPreco {
     if (_isOrdemMercado) return 'Valor unitário definido pela startup';
     return 'Informe o valor unitário de cada token';
   }
 
+  /// Converte a string digitada no campo de preço para [double].
+  /// Suporta tanto vírgula quanto ponto como separador decimal.
   double _converterPreco(String valor) {
     final texto = valor.replaceAll('R\$', '').trim();
     if (texto.contains(',')) {
@@ -100,10 +129,14 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
     return double.tryParse(texto) ?? 0;
   }
 
+  /// Converte a string digitada no campo de quantidade para [int].
   int _converterQuantidade(String valor) => int.tryParse(valor.trim()) ?? 0;
 
+  /// Formata um valor [double] para exibição no campo de preço (ex: 12,50).
   String _formatarPrecoInput(double valor) => valor.toStringAsFixed(2).replaceAll('.', ',');
 
+  /// Atualiza o campo de preço com o valor do token da startup selecionada,
+  /// mas apenas se a ordem for do tipo "a mercado".
   void _atualizarPrecoMercado() {
     if (!_isOrdemMercado) return;
     
@@ -114,6 +147,8 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
     _precoController.text = _formatarPrecoInput(_startupSelecionada!.valorToken);
   }
 
+  /// Redireciona o usuário para o formulário de ordem de compra a mercado,
+  /// substituindo a rota atual (usado quando não há tokens para vender).
   Future<void> _abrirOrdemCompra() async {
     await Navigator.pushReplacementNamed(
       context,
@@ -125,8 +160,11 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
     );
   }
 
+  /// Navega para a tela de catálogo de startups.
   void _acessarCatalogo() => Navigator.pushNamed(context, AppRoutes.catalog);
 
+  /// Valida o formulário, verifica o saldo disponível (para ordens de compra)
+  /// e exibe o modal de confirmação da ordem caso tudo esteja correto.
   Future<void> _avancarParaResumo() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -143,6 +181,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
       return;
     }
 
+    // Para ordens de compra, verifica antecipadamente se o saldo é suficiente.
     if (_tipo == TipoOrdem.compra) {
       setState(() => _verificandoSaldo = true);
       try {
@@ -163,7 +202,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
     }
 
     if (_formKey.currentState!.validate()) {
-
+      // Exibe o modal de resumo e confirmação da ordem.
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -183,6 +222,8 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
     if (!mounted) return;
   }
 
+  /// Constrói o estado vazio exibido quando o usuário não possui tokens para vender.
+  /// Oferece atalhos para abrir uma ordem de compra ou acessar o catálogo.
   Widget _buildEstadoSemTokensParaVenda() {
      return Container(
       width: double.infinity,
@@ -204,6 +245,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
       ),
       child: Column(
         children: [
+          // Ícone decorativo de carteira.
           Container(
             width: 66, height: 66,
             decoration: BoxDecoration(
@@ -237,6 +279,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
             )
           ),
           const SizedBox(height: 18),
+          // Botão primário: redireciona para abertura de ordem de compra.
           SizedBox(
             width: double.infinity,
             height: 42,
@@ -258,6 +301,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
             )
           ),
           const SizedBox(height: 10),
+          // Botão secundário: navega para o catálogo de startups.
           SizedBox(
             width: double.infinity,
             height: 42,
@@ -284,6 +328,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
     );
   }
 
+  /// Constrói o estado vazio exibido quando não há startups cadastradas para compra.
   Widget _buildEstadoSemStartupsCompra() {
     return Container(
       width: double.infinity,
@@ -306,6 +351,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
     );
   }
 
+  /// Retorna um [InputDecoration] padronizado para os campos de texto do formulário.
   InputDecoration _inputDecoration({String? hintText, Widget? suffixIcon}) {
     return InputDecoration(
       hintText: hintText,
@@ -325,10 +371,13 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
     );
   }
 
+  /// Constrói o formulário principal quando há startups disponíveis.
+  /// Inclui dropdown de startup, campo de preço, campo de quantidade e botão de avançar.
   Widget _buildFormularioComStartups(List<StartupExchangeOption> startups) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Dropdown de seleção de startup.
         DropdownButtonFormField<StartupExchangeOption>(
           initialValue: _startupSelecionada,
           isExpanded: true,
@@ -344,6 +393,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
           borderRadius: BorderRadius.circular(10),
           items: startups.map(
             (startup) {
+              // Exibe preço formatado ou "sem preço" se o valor não estiver cadastrado.
               final precoTexto = startup.valorToken > 0 ? 'R\$ ${_formatarPrecoInput(startup.valorToken)}' : 'sem preço';
               return DropdownMenuItem<StartupExchangeOption>(
                 value: startup,
@@ -359,6 +409,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
           onChanged: (value) {
             setState(() { 
               _startupSelecionada = value;
+              // Atualiza o campo de preço automaticamente se for ordem a mercado.
               _atualizarPrecoMercado();
               }
             );
@@ -375,6 +426,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
           )
         ),
         const SizedBox(height: 6),
+        // Campo de preço: somente leitura em ordens a mercado, com ícone de cadeado.
         TextFormField(
           controller: _precoController,
           readOnly: _isOrdemMercado,
@@ -403,6 +455,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
           )
         ),
         const SizedBox(height: 6),
+        // Campo de quantidade: aceita apenas números inteiros.
         TextFormField(
           controller: _quantidadeController,
           keyboardType: TextInputType.number,
@@ -413,6 +466,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
           },
         ),
         const SizedBox(height: 28),
+        // Botão de avançar: desabilitado e com loading durante a verificação de saldo.
         Center(
           child: SizedBox(
             width: 160, height: 42,
@@ -449,14 +503,18 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
     );
   }
 
+  /// Constrói o conteúdo da seção de startups usando [FutureBuilder].
+  /// Gerencia os estados de carregamento, erro, lista vazia e lista preenchida.
   Widget _buildConteudoStartups() {
-    return FutureBuilder<List<StartupExchangeOption>>( // Mudança para consumir o Future
+    return FutureBuilder<List<StartupExchangeOption>>(
       future: _startupsFuture,
       builder: (context, snapshot) {
+        // Estado de carregamento.
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(padding: EdgeInsets.symmetric(vertical: 28), child: Center(child: CircularProgressIndicator(color: _primaryColor)));
         }
 
+        // Estado de erro na requisição.
         if (snapshot.hasError) {
           return Padding(
             padding: const EdgeInsets.only(top: 6),
@@ -474,14 +532,18 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
         final startups = snapshot.data ?? [];
 
         // Sem mais 'try/catches' nas mensagens de erro do Firestore! A function manda a lista vazia se for o caso.
+
+        // Usuário quer vender mas não possui tokens em nenhuma startup.
         if (_tipo == TipoOrdem.venda && startups.isEmpty) {
           return _buildEstadoSemTokensParaVenda();
         }
 
+        // Nenhuma startup cadastrada disponível para compra.
         if (startups.isEmpty) {
           return _buildEstadoSemStartupsCompra();
         }
 
+        // Lista carregada com sucesso: exibe o formulário.
         return _buildFormularioComStartups(startups);
       },
     );
@@ -501,6 +563,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Título dinâmico conforme tipo e modo da ordem.
                 Text(
                   _tituloTela,
                   style: GoogleFonts.montserrat(
@@ -510,6 +573,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
                   )
                 ),
                 const SizedBox(height: 4),
+                // Descrição explicativa do fluxo atual.
                 Text(
                   _descricaoTela,
                   style: GoogleFonts.montserrat(
@@ -520,6 +584,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
                   )
                 ),
                 const SizedBox(height: 18),
+                // Instrução acima do dropdown de startup.
                 Text(
                   _textoSelecaoStartup,
                   style: GoogleFonts.montserrat(
@@ -529,6 +594,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
                   )
                 ),
                 const SizedBox(height: 6),
+                // Conteúdo dinâmico: loading, erro, vazio ou formulário.
                 _buildConteudoStartups(),
               ],
             ),

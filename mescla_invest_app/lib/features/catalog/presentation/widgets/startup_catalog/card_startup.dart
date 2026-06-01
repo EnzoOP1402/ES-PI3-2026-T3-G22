@@ -1,12 +1,17 @@
-/* Autor: Livia Lucizano */
+/* Autor: Livia Lucizano - RA:25017514 */
 
+// Imports necessários para construção da interface do card de startup
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/features/catalog/data/models/startup_model.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_catalog/mini_info.dart';
 
+// Widget responsável por exibir um card resumido de uma startup no catálogo
 class CardStartup extends StatefulWidget {
+  // Dados da startup que serão exibidos no card
   final StartupModel startup;
+
+  // Função executada ao abrir os detalhes da startup
   final VoidCallback onOpenDetails;
 
   const CardStartup({
@@ -20,8 +25,10 @@ class CardStartup extends StatefulWidget {
 }
 
 class _CardStartupState extends State<CardStartup> {
+  // Controla se as informações extras estão expandidas ou recolhidas
   bool expandido = false;
 
+  // Converte valores armazenados em centavos para formato monetário
   String _formatCurrencyFromCents(num cents) {
     final value = cents / 100;
     return 'R\$ ${value.toStringAsFixed(2).replaceAll('.', ',')}';
@@ -29,9 +36,11 @@ class _CardStartupState extends State<CardStartup> {
 
   @override
   Widget build(BuildContext context) {
+    // Facilita o acesso aos dados da startup
     final startup = widget.startup;
 
     return Card(
+      // Configuração visual do card
       color: const Color(0xFFF4F4F4),
       margin: const EdgeInsets.only(bottom: 10),
       elevation: 0,
@@ -39,17 +48,23 @@ class _CardStartupState extends State<CardStartup> {
         borderRadius: BorderRadius.circular(14),
       ),
       clipBehavior: Clip.antiAlias,
+
       child: InkWell(
+        // Permite clicar em todo o card
         borderRadius: BorderRadius.circular(14),
         onTap: widget.onOpenDetails,
+
         child: Padding(
           padding: const EdgeInsets.all(12),
+
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Área principal do card
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Ícone padrão da startup
                   const CircleAvatar(
                     radius: 22,
                     backgroundColor: Colors.white,
@@ -62,10 +77,12 @@ class _CardStartupState extends State<CardStartup> {
 
                   const SizedBox(width: 10),
 
+                  // Informações principais da startup
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Nome da startup
                         Text(
                           startup.name,
                           style: GoogleFonts.montserrat(
@@ -77,12 +94,17 @@ class _CardStartupState extends State<CardStartup> {
 
                         const SizedBox(height: 4),
 
+                        // Breve descrição da startup
                         Text(
                           startup.shortDescription,
+
+                          // Quando expandido mostra tudo, caso contrário limita a duas linhas
                           maxLines: expandido ? null : 2,
+
                           overflow: expandido
                               ? TextOverflow.visible
                               : TextOverflow.ellipsis,
+
                           style: GoogleFonts.montserrat(
                             fontSize: 14,
                             color: Colors.black,
@@ -92,6 +114,7 @@ class _CardStartupState extends State<CardStartup> {
 
                         const SizedBox(height: 6),
 
+                        // Exibe o estágio atual da startup
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
@@ -114,6 +137,7 @@ class _CardStartupState extends State<CardStartup> {
                     ),
                   ),
 
+                  // Botão para expandir ou recolher informações adicionais
                   IconButton(
                     icon: Icon(
                       expandido
@@ -122,6 +146,7 @@ class _CardStartupState extends State<CardStartup> {
                       color: Colors.black,
                       size: 20,
                     ),
+
                     onPressed: () {
                       setState(() {
                         expandido = !expandido;
@@ -131,24 +156,32 @@ class _CardStartupState extends State<CardStartup> {
                 ],
               ),
 
+              // Área expandida com informações complementares
               AnimatedCrossFade(
                 firstChild: const SizedBox.shrink(),
+
                 secondChild: Padding(
                   padding: const EdgeInsets.only(top: 5),
+
                   child: Column(
                     children: [
+                      // Indicadores financeiros resumidos
                       Row(
                         children: [
-                          SizedBox(width: 48,),
+                          const SizedBox(width: 48),
+
                           Expanded(
                             child: MiniInfo(
                               label: 'Tokens emitidos',
-                              value: '${startup.totalTokensIssued} tokens',
+                              value:
+                                  '${startup.totalTokensIssued} tokens',
                               titleSize: 12,
                               contentSize: 16,
                             ),
                           ),
+
                           const SizedBox(width: 10),
+
                           Expanded(
                             child: MiniInfo(
                               label: 'Capital aportado',
@@ -161,26 +194,34 @@ class _CardStartupState extends State<CardStartup> {
                           ),
                         ],
                       ),
+
+                      // Exibe as tags da startup, caso existam
                       if (startup.tags.isNotEmpty) ...[
                         const SizedBox(height: 4),
+
                         Row(
                           children: [
                             SizedBox(width: 50,),
+
                             Align(
                               alignment: Alignment.centerLeft,
+
                               child: Wrap(
                                 spacing: 6,
                                 runSpacing: 6,
+
                                 children: startup.tags.map((tag) {
                                   return Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 8,
                                       vertical: 4,
                                     ),
+
                                     decoration: BoxDecoration(
                                       color: Color(0xFF9FCEFF),
                                       borderRadius: BorderRadius.circular(7.5),
                                     ),
+
                                     child: Text(
                                       tag,
                                       style: GoogleFonts.montserrat(
@@ -194,20 +235,27 @@ class _CardStartupState extends State<CardStartup> {
                               ),
                             ),
                           ],
-                        )
+                        ),
                       ],
+
                       const SizedBox(height: 10),
                     ],
                   ),
                 ),
+
+                // Define qual conteúdo será mostrado
                 crossFadeState: expandido
                     ? CrossFadeState.showSecond
                     : CrossFadeState.showFirst,
+
+                // Duração da animação
                 duration: const Duration(milliseconds: 250),
               ),
 
+              // Botão para acessar a tela completa de detalhes
               Align(
                 alignment: Alignment.centerRight,
+
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF353988),
@@ -221,7 +269,9 @@ class _CardStartupState extends State<CardStartup> {
                       borderRadius: BorderRadius.circular(9),
                     ),
                   ),
+
                   onPressed: widget.onOpenDetails,
+
                   child: Text(
                     'Ver Mais',
                     style: GoogleFonts.montserrat(

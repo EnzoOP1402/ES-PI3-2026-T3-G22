@@ -1,9 +1,11 @@
-/* Autor: Livia Lucizano */
+/* Autor: Livia Lucizano - RA:25017514 */
 
+// Imports utilizados para construir a interface e aplicar fontes personalizadas
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_catalog/bottom_nav_item.dart';
 
+// Widget responsável por criar a barra de navegação inferior do catálogo
 class BottomCatalogNavigation extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onTap;
@@ -16,6 +18,7 @@ class BottomCatalogNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Lista com os itens exibidos na barra inferior
     final items = [
       const BottomNavItem(
         icon: Icons.home_outlined,
@@ -39,6 +42,7 @@ class BottomCatalogNavigation extends StatelessWidget {
       ),
     ];
 
+    // Estrutura visual da barra inferior
     return Container(
       height: 72,
       decoration: const BoxDecoration(
@@ -50,11 +54,14 @@ class BottomCatalogNavigation extends StatelessWidget {
           ),
         ),
       ),
+      // Organiza os itens lado a lado
       child: Row(
         children: List.generate(items.length, (index) {
           final item = items[index];
+          // Verifica se o item atual é o selecionado
           final isSelected = index == selectedIndex;
 
+          // Cada item ocupa o mesmo espaço dentro da barra
           return Expanded(
             child: InkWell(
               onTap: () => onTap(index),
@@ -69,12 +76,15 @@ class BottomCatalogNavigation extends StatelessWidget {
                         : const Color(0xFF353988),
                   ),
                   const SizedBox(height: 3),
+                  // Texto do item da navegação
                   Text(
                     item.label,
                     style: GoogleFonts.montserrat(
                       fontSize: 10,
+                      // Destaca o item selecionado com peso maior
                       fontWeight:
                           isSelected ? FontWeight.w800 : FontWeight.w600,
+                          // Altera a cor conforme o item esteja selecionado ou não
                       color: isSelected
                           ? const Color(0xFFDB0065)
                           : const Color(0xFF353988),

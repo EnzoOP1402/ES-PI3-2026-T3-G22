@@ -4,11 +4,22 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/features/exchange/data/models/exchange_model.dart';
 
+/// Widget reutilizável que representa uma opção de seleção de modo de ordem
+/// (mercado ou limitada) no formato de radio button com título e descrição.
 class OpcaoInvestimentoRadio extends StatelessWidget {
+  /// Texto principal da opção exibido em destaque.
   final String titulo;
+
+  /// Texto descritivo secundário que explica a opção ao usuário.
   final String descricao;
+
+  /// Valor do [ModoOrdem] que este widget representa.
   final ModoOrdem value;
+
+  /// Valor atualmente selecionado no grupo de radio buttons.
   final ModoOrdem groupValue;
+
+  /// Callback disparado quando o usuário seleciona esta opção.
   final ValueChanged<ModoOrdem> onChanged;
 
   const OpcaoInvestimentoRadio({
@@ -21,16 +32,19 @@ class OpcaoInvestimentoRadio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Verifica se esta opção está atualmente selecionada.
     final bool selecionado = value == groupValue;
 
     return InkWell(
       borderRadius: BorderRadius.circular(12),
+      // Permite selecionar a opção tocando em qualquer área do widget.
       onTap: () => onChanged(value),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 7),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Radio button com cor de destaque rosa/vermelho quando ativo.
             Radio<ModoOrdem>(
               value: value,
               groupValue: groupValue,
@@ -47,6 +61,7 @@ class OpcaoInvestimentoRadio extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Título em negrito maior quando selecionado, menor quando não.
                   Text(
                     titulo,
                     style: GoogleFonts.montserrat(
@@ -57,6 +72,7 @@ class OpcaoInvestimentoRadio extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 2),
+                  // Descrição sempre com estilo mais suave, independente da seleção.
                   Text(
                     descricao,
                     style: GoogleFonts.montserrat(

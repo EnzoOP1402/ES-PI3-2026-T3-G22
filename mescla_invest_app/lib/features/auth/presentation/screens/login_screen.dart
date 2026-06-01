@@ -1,4 +1,6 @@
-/* Autor: Livia Lucizano */
+/* Autor: Livia Lucizano - RA: 25017514*/
+
+// Importa os pacotes e arquivos necessários para a tela de login
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
@@ -8,6 +10,7 @@ import 'package:mescla_invest_app/features/auth/presentation/widgets/auth_layout
 import 'package:mescla_invest_app/features/auth/presentation/screens/2fa_screen.dart';
 import 'package:mescla_invest_app/routes/app_routes.dart';
 
+// Tela de login do aplicativo
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -15,6 +18,7 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
+// Estado da tela de login
 class _LoginScreenState extends State<LoginScreen> {
   // Chave do formulário para validar os campos antes do login
   final _formKey = GlobalKey<FormState>();
@@ -35,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // Traduz erros comuns do Firebase em mensagens mais amigáveis
+   // Converte os códigos de erro do Firebase em mensagens mais claras para o usuário
   String _mapFirebaseLoginError(FirebaseAuthException e) {
     switch (e.code) {
       case 'invalid-email':
@@ -58,33 +62,44 @@ class _LoginScreenState extends State<LoginScreen> {
         return e.message ?? 'Erro ao fazer login.';
     }
   }
-
+  // Função chamada quando o usuário clica no botão "Entrar"
   Future<void> _handleLogin() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
+    // Remove espaços extras do e-mail e pega a senha digitada
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
     try {
+      // Ativa o estado de carregamento
       setState(() => _isLoading = true);
 
+      // Define que a sessão do usuário será mantida apenas durante a sessão atual
       await FirebaseAuth.instance.setPersistence(Persistence.SESSION);
 
+      // Tenta fazer login com e-mail e senha no Firebase
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      if (!mounted) return;
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    } on FirebaseAuthMultiFactorException catch (e) {
+      // Verifica se a tela ainda está ativa antes de navegar
       if (!mounted) return;
 
+      // Após login bem-sucedido, volta para a primeira rota da pilha
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } on FirebaseAuthMultiFactorException catch (e) {
+      
+      // Caso a conta tenha autenticação de dois fatores ativada
+      if (!mounted) return;
+
+      // Exibe mensagem informando que o segundo fator é necessário
       showErrorSnackBar(
         context,
         'Segundo fator necessário. Confirme o código enviado ao seu celular.',
       );
 
+      // Abre a tela de verificação em duas etapas
       await Navigator.push(
         context,
         MaterialPageRoute(
@@ -93,13 +108,16 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       );
+      // Trata erros conhecidos do Firebase Auth
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       showErrorSnackBar(context, _mapFirebaseLoginError(e));
     } catch (e) {
+      // Trata qualquer erro inesperado
       if (!mounted) return;
       showErrorSnackBar(context, 'Erro inesperado: $e');
     } finally {
+      // Desativa o carregamento ao finalizar a tentativa de login
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -115,6 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     }
 
+    // Layout principal da tela de login
     return AuthLayout(
       title: "Seja bem-vindo!",
       subtitle: "É muito bom te ter de volta.",
@@ -128,9 +147,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 hint: "E-mail",
                 controller: _emailController,
                 validator: (value) {
+                  // Verifica se o campo está vazio
                   if (value == null || value.isEmpty) {
                     return 'Informe o email';
                   }
+                  // Verifica se o e-mail possui "@"
                   if (!value.contains('@')) {
                     return 'Email inválido';
                   }
@@ -144,6 +165,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 hint: "Senha",
                 controller: _passwordController,
                 obscure: obscureText,
+
+                // Ícone para mostrar ou esconder a senha
                 suffixIcon: IconButton(
                   onPressed: () {
                     setState(() {
@@ -155,6 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 validator: (value) {
+                  // Verifica se a senha foi informada
                   if (value == null || value.isEmpty) {
                     return 'Informe a senha';
                   }

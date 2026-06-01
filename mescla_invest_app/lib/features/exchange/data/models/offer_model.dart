@@ -1,17 +1,38 @@
 /* Autor: livia */
 
+// Importa o Timestamp do Firestore para armazenar data e hora da oferta
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// Modelo que representa uma oferta no balcão/marketplace
 class OfferModel {
+  // Identificador da startup relacionada à oferta
   final String startupId;
+
+  // Nome da startup exibido na oferta
   final String startupName;
+
+  // Nome do token negociado
   final String tokenName;
-  final String type; // buy ou sell
+
+  // Tipo da oferta: buy ou sell
+  final String type;
+
+  // Preço do token em centavos
   final int priceCents;
+
+  // Quantidade total de tokens da oferta
   final int quantity;
+
+  // Quantidade restante disponível
   final int remainingQuantity;
+
+  // Indica se a oferta está valorizada ou é uma boa oportunidade
   final bool appreciated;
-  final String status; // open, partial, completed ou canceled
+
+  // Status da oferta: open, partial, completed ou canceled
+  final String status;
+
+  // Data de criação da oferta
   final Timestamp createdAt;
 
   OfferModel({
@@ -27,6 +48,7 @@ class OfferModel {
     required this.createdAt,
   });
 
+  // Converte o objeto para Map, facilitando salvar no Firestore
   Map<String, dynamic> toMap() {
     return {
       'startupId': startupId,
@@ -42,6 +64,7 @@ class OfferModel {
     };
   }
 
+  // Cria um OfferModel a partir de um Map vindo do Firestore
   factory OfferModel.fromMap(Map<String, dynamic> map) {
     return OfferModel(
       startupId: map['startupId'] ?? '',
@@ -57,6 +80,7 @@ class OfferModel {
     );
   }
 
+  // Retorna o preço formatado em reais
   String get formattedPrice {
     return 'R\$ ${(priceCents / 100).toStringAsFixed(2).replaceAll('.', ',')}';
   }
