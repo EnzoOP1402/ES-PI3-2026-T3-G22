@@ -1,3 +1,5 @@
+/* Autor: Murillo Iamarino Caravita */
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -13,6 +15,7 @@ class EnableTwoFAScreen extends StatefulWidget {
   State<EnableTwoFAScreen> createState() => _EnableTwoFAScreenState();
 }
 
+// Tela para habilitar a autenticação em duas etapas (2FA) usando SMS, com verificação prévia do e-mail do usuário
 class _EnableTwoFAScreenState extends State<EnableTwoFAScreen> {
   final TextEditingController _codigoController = TextEditingController();
 
@@ -25,6 +28,8 @@ class _EnableTwoFAScreenState extends State<EnableTwoFAScreen> {
   String _telefoneFormatado = '';
   bool _emailVerificado = false;
 
+  // Inicialização da tela, formatando o telefone 
+  // e carregando o status de verificação do e-mail do usuário
   @override
   void initState() {
     super.initState();
@@ -43,6 +48,7 @@ class _EnableTwoFAScreenState extends State<EnableTwoFAScreen> {
     return '+$numbers';
   }
 
+  // Função para carregar o status de verificação do e-mail do usuário e atualizar a interface
   Future<void> _carregarStatusEmail() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -59,6 +65,7 @@ class _EnableTwoFAScreenState extends State<EnableTwoFAScreen> {
     } catch (_) {}
   }
 
+  // Função para enviar o código de verificação por SMS, com tratamento de erros e feedback para o usuário
   Future<void> _enviarEmailVerificacao() async {
     try {
       setState(() => _isSendingEmailVerification = true);
@@ -110,6 +117,7 @@ class _EnableTwoFAScreenState extends State<EnableTwoFAScreen> {
     }
   }
 
+  // Função para verificar novamente o status de verificação do e-mail do usuário
   Future<void> _verificarEmailNovamente() async {
     try {
       setState(() => _isCheckingEmailVerification = true);
@@ -153,6 +161,7 @@ class _EnableTwoFAScreenState extends State<EnableTwoFAScreen> {
     }
   }
 
+  // Função para enviar o código de verificação por SMS, com tratamento de erros
   Future<void> _enviarCodigo() async {
     try {
       setState(() => _isSendingCode = true);
@@ -251,6 +260,7 @@ class _EnableTwoFAScreenState extends State<EnableTwoFAScreen> {
     }
   }
 
+  // Função para validar o código de verificação SMS e ativar a autenticação em duas etapas
   Future<void> _confirmarCodigo() async {
     final codigo = _codigoController.text.trim();
 
@@ -322,6 +332,7 @@ class _EnableTwoFAScreenState extends State<EnableTwoFAScreen> {
     }
   }
 
+  // Função para enviar o código de verificação por SMS
   @override
   Widget build(BuildContext context) {
     return Scaffold(

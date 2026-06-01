@@ -1,3 +1,5 @@
+/* Autor: Murillo Iamarino Caravita */
+
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,12 +8,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 
+// Tela para tirar foto ou selecionar uma foto de perfil
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
 
   @override
   State<CameraScreen> createState() => _CameraScreenState();
 }
+
+// Estado da tela de câmera
 class _CameraScreenState extends State<CameraScreen> {
   CameraLensDirection _currentDirection = CameraLensDirection.back;
   List<CameraDescription>? _cameras;
@@ -30,6 +35,7 @@ class _CameraScreenState extends State<CameraScreen> {
     _initializeCamera();
   }
 
+  // Função para inicializar a câmera, buscando as câmeras disponíveis e configurando o controlador 
   Future<void> _initializeCamera() async {
     try {
       final cameras = await availableCameras();
@@ -69,6 +75,7 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
+  // Função para alternar entre a câmera frontal e traseira
   Future<void> _switchCamera() async {
     if (_cameras == null || _cameras!.isEmpty) return;
     final newDirection = _currentDirection == CameraLensDirection.back
@@ -127,6 +134,7 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
+  // Função para selecionar uma imagem da galeria
   Future<void> _pickImageFromGallery() async {
     try {
       final image = await _picker.pickImage(
@@ -147,7 +155,8 @@ class _CameraScreenState extends State<CameraScreen> {
       ).showSnackBar(SnackBar(content: Text('Erro ao selecionar imagem: $e')));
     }
   }
-
+ 
+  // Função para fazer upload da imagem para o Firebase Storage e obter a URL de download
   Future<void> _uploadImage() async {
     if (_imageFile == null) return;
 
@@ -197,6 +206,8 @@ class _CameraScreenState extends State<CameraScreen> {
     super.dispose();
   }
 
+  // Construção da interface da tela de câmera, mostrando a pré-visualização, 
+  // botões para tirar foto, alternar câmera e selecionar da galeria
   @override
   Widget build(BuildContext context) {
     if (_isLoadingCamera) {

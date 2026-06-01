@@ -1,3 +1,5 @@
+/* Autor: Murillo Iamarino Caravita */
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -13,6 +15,7 @@ class TwoFAScreen extends StatefulWidget {
   State<TwoFAScreen> createState() => _TwoFAScreenState();
 }
 
+// Tela de verificação em duas etapas, inserindo o código recebido por SMS para confirmar seu acesso
 class _TwoFAScreenState extends State<TwoFAScreen> {
   final TextEditingController _codigoController = TextEditingController();
 
@@ -83,6 +86,7 @@ class _TwoFAScreenState extends State<TwoFAScreen> {
     }
   }
 
+  // Função para validar o código de verificação SMS e confirmar o acesso do usuário
   Future<void> _validarCodigo() async {
     final codigo = _codigoController.text.trim();
 
@@ -137,6 +141,7 @@ class _TwoFAScreenState extends State<TwoFAScreen> {
     await _enviarCodigo();
   }
 
+  // Interface da tela de verificação em duas etapas
   @override
   Widget build(BuildContext context) {
     return Scaffold(

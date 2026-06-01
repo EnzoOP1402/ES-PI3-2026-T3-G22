@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
-
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
 import 'package:mescla_invest_app/features/auth/data/models/user_model.dart';
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
@@ -14,6 +13,8 @@ import 'package:mescla_invest_app/features/profile/presentation/screens/camera_s
 import 'package:mescla_invest_app/features/wallet/presentation/screens/transaction_history_screen.dart';
 import 'package:mescla_invest_app/routes/app_routes.dart';
 
+
+// Função para obter os dados do usuário logado
 Future<UserModel?> getCurrentUserData() async {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) return null;
@@ -35,6 +36,7 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
+// Tela de perfil do usuário, onde ele pode ver seus dados, alterar foto, ativar 2FA e acessar histórico de compras
 class _ProfileScreenState extends State<ProfileScreen> {
   UserModel? _userData;
   bool _isLoading = true;
@@ -47,6 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadUserData();
   }
 
+  // Verifica se o usuário tem 2FA habilitado 
   Future<bool> _verificarSeTem2FA() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -64,6 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // Carrega os dados do usuário e o status do 2FA
   Future<void> _loadUserData() async {
     final userData = await getCurrentUserData();
 
@@ -83,6 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  // Função para alterar a foto de perfil do usuário
   Future<void> _alterarFotoPerfil() async {
     if (_isUpdatingPhoto) return;
 
@@ -125,6 +130,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
     }
   }
+    
+  // Função para lidar com o logout do usuário e voltar para a tela inicial  
   Future<void> _handleLogout() async {
     try {
       // Efetua o sign out no Firebase Auth
@@ -143,6 +150,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // Função para abrir a tela de configuração do 2FA, passando o telefone atual do usuário  
   Future<void> _abrirTela2FA() async {
     final telefoneAtual = _userData?.phone ?? '';
 
@@ -170,17 +178,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // Getters para facilitar o acesso aos dados do usuário, mostrando valores padrão caso estejam nulos
   String get nome => _userData?.fullName ?? 'Usuário';
   String get email => _userData?.email ?? 'usuario@gmail.com';
   String get cpf => _userData?.cpf ?? '000.000.000-00';
   String get phone => _userData?.phone ?? '(00) 00000-0000';
 
+  // Função para mostrar mensagens de feedback para o usuário
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
   }
 
+  // Construção da interface do perfil, 
+  // mostrando os dados do usuário, foto, status do 2FA e opções de ações
   @override
   Widget build(BuildContext context) {
     final String photoUrl = _userData?.photoUrl ?? '';
@@ -316,6 +328,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
+// Widgets auxiliares para a construção da interface do perfil
 class _SecurityCard extends StatelessWidget {
   final bool isEnabled;
   final VoidCallback onTap;
@@ -439,6 +452,7 @@ class _SecurityCard extends StatelessWidget {
   }
 }
 
+// Widget para exibir itens de informação com label e valor formatados
 class _InfoItem extends StatelessWidget {
   final String label;
   final String value;
@@ -475,6 +489,7 @@ class _InfoItem extends StatelessWidget {
   }
 }
 
+// Widget para exibir botões de ação
 class ActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
