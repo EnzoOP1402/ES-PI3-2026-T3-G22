@@ -1,262 +1,111 @@
-/* Autor: Bernardo Castro Brandão de Oliveira - RA: 25014953*/
-
-// Importação do pacote principal do Flutter para construção da interface gráfica
+// Autor original: Gabriela Sichiroli Ferrari — RA 25013763.
+// HISTÓRICO: 02/11/2026 — Harmonização visual com o padrão de cards do HorseLife.
 import 'package:flutter/material.dart';
-
-// Importação da biblioteca de fontes personalizadas Google Fonts
-import 'package:google_fonts/google_fonts.dart';
-
-// Importação dos métodos responsáveis pela exibição de SnackBars
+import 'package:mescla_invest_app/core/navigation/app_navigation.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
+import 'package:mescla_invest_app/core/utils/currency_formatter.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
-
-// Importação da barra de navegação inferior personalizada
+import 'package:mescla_invest_app/core/widgets/app_section_card.dart';
 import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
-
-// Importação da AppBar personalizada utilizada na aplicação
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
-
-// Importação do repositório responsável pela autenticação
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
-
-// Importação da seção de exploração da tela inicial
 import 'package:mescla_invest_app/features/home/presentation/widgets/explore_section.dart';
-
-// Importação do repositório responsável pelas operações da carteira
 import 'package:mescla_invest_app/features/wallet/data/repositories/wallet_repository.dart';
-
-// Importação das rotas nomeadas da aplicação
 import 'package:mescla_invest_app/routes/app_routes.dart';
 
-// Tela principal da aplicação após o login do usuário
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-
   @override
   State<HomeScreen> createState() => HomeScreenState();
 }
 
-// Classe responsável pelo gerenciamento dos estados da tela Home
 class HomeScreenState extends State<HomeScreen> {
-  // Controla se o saldo deve estar visível ou oculto
   bool mostrarSaldo = false;
-
-  // Controla o estado de carregamento do saldo
   bool isLoadingBalance = true;
-
-  // Armazena o saldo atual do usuário
+  bool hasBalanceError = false;
   double saldo = 0;
+  bool _loggingOut = false;
 
-  // Método executado automaticamente ao abrir a tela
   @override
-  void initState() {
-    super.initState();
+  void initState() { super.initState(); _loadBalance(); }
 
-    // Carrega os dados da carteira
-    _loadBalance();
-  }
-
-  // Método responsável por buscar o saldo do usuário
   Future<void> _loadBalance() async {
+    if (mounted) setState(() { isLoadingBalance = true; hasBalanceError = false; });
     try {
-      // Obtém os dados da carteira através do repositório
       final wallet = await WalletRepository.instance.getWalletData();
-
-      // Atualiza os dados apenas se o widget ainda estiver montado
-      if (mounted) {
-        setState(() {
-          // Atualiza o saldo carregado
-          saldo = wallet.balance;
-
-          // Finaliza o estado de carregamento
-          isLoadingBalance = false;
-        });
-      }
-    } catch (e) {
-      // Trata possíveis erros durante a consulta
-      if (mounted) {
-        setState(() {
-          // Finaliza o carregamento mesmo em caso de erro
-          isLoadingBalance = false;
-        });
-
-        // Exibe mensagem de erro para o usuário
-        showErrorSnackBar(context, 'Erro ao carregar saldo');
-      }
+      if (!mounted) return;
+      setState(() { saldo = wallet.balance; isLoadingBalance = false; });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() { hasBalanceError = true; isLoadingBalance = false; });
     }
   }
 
-  // Método responsável por realizar o logout do usuário
   Future<void> _handleLogout() async {
+    if (_loggingOut) return;
+    setState(() => _loggingOut = true);
     try {
-      // Efetua o sign out no Firebase Auth
       await AuthRepository.instance.logout();
-
-      if (mounted) {
-        // Voltando para o início da pilha (tela inicial)
-        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
-        // Voltando para o início da pilha (tela inicial)
-        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
-      }
-    } catch (e) {
-      // Exibe mensagem caso ocorra erro no logout
-      if (mounted) {
-        showErrorSnackBar(context, 'Erro ao sair: $e');
-      }
+      if (!mounted) return;
+      Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
+    } catch (_) {
+      if (mounted) showErrorSnackBar(context, 'Não foi possível encerrar a sessão.');
+    } finally {
+      if (mounted) setState(() => _loggingOut = false);
     }
   }
 
-  // Método responsável pela construção da interface gráfica
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // Cor de fundo da tela
-      backgroundColor: const Color(0xFFD9D9D9),
-
-      // Barra superior personalizada
-      appBar: const CustomAppBar(title: 'MesclaInvest'),
-
-      // Conteúdo principal da tela
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              const SizedBox(height: 14),
-
-              // Título da área de saldo
-              Text(
-                'Saldo do Usuário:',
-                style: GoogleFonts.montserrat(
-                  fontSize: 25,
-                  color: Colors.black,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              // Exibição do saldo ou ocultação dos valores
-              Text(
-                mostrarSaldo ? 'R\$ ${saldo.toStringAsFixed(2)}' : '— —',
-                style: GoogleFonts.montserrat(
-                  fontSize: 24,
-                  color: Colors.black,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-
-              const SizedBox(height: 7),
-
-              // Botão para mostrar ou ocultar o saldo
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    // Alterna entre mostrar e ocultar saldo
-                    mostrarSaldo = !mostrarSaldo;
-                  });
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Ícone muda conforme o estado atual
-                    Icon(
-                      mostrarSaldo
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                      size: 18,
-                      color: Colors.black54,
-                    ),
-                    const SizedBox(width: 4),
-
-                    // Texto correspondente ao estado atual
-                    Text(
-                      mostrarSaldo ? 'Ocultar' : 'Mostrar',
-                      style: GoogleFonts.montserrat(
-                        color: Colors.black54,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              // Linha divisória da interface
-              const Divider(height: 1, thickness: 1, color: Colors.black),
-
-              const SizedBox(height: 28),
-
-              // Seção de atalhos principais da aplicação
-              ExploreSection(
-                title: 'Explore Mais',
-
-                buttons: [
-                  // Botão de acesso ao catálogo
-                  ExploreButtonData(
-                    icon: Icons.lightbulb_outline,
-                    label: 'Catálogo',
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.catalog);
-                    },
-                  ),
-
-                  // Botão de acesso ao balcão
-                  ExploreButtonData(
-                    icon: Icons.attach_money,
-                    label: 'Balcão',
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.exchange);
-                    },
-                  ),
-
-                  // Botão de acesso à carteira
-                  ExploreButtonData(
-                    icon: Icons.wallet_rounded,
-                    label: 'Carteira',
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.wallet);
-                    },
-                  ),
-
-                  // Botão de acesso ao dashboard
-                  ExploreButtonData(
-                    icon: Icons.bar_chart_rounded,
-                    label: 'Dashboard',
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.dashboard);
-                    },
-                  ),
-
-                  // Botão de acesso ao perfil do usuário
-                  ExploreButtonData(
-                    icon: Icons.person,
-                    label: 'Perfil',
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.profile);
-                    },
-                  ),
-
-                  // Botão responsável pelo logout
-                  ExploreButtonData(
-                    icon: Icons.logout,
-                    label: 'Sair',
-                    onTap: () async {
-                      // Executa o encerramento da sessão
-                      await _handleLogout();
-                    },
-                  ),
-                ],
-              ),
-            ],
+  Widget build(BuildContext context) => Scaffold(
+    appBar: const CustomAppBar(title: 'MesclaInvest', showBack: false),
+    body: SafeArea(child: Center(child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 740),
+      child: RefreshIndicator(
+        onRefresh: _loadBalance,
+        child: ListView(padding: const EdgeInsets.fromLTRB(20, 24, 20, 40), children: [
+          Text('Olá, seja bem-vindo!', style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: AppColors.primary, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 5),
+          const Text('Acompanhe seus investimentos e descubra oportunidades.', style: TextStyle(color: AppColors.textSecondary)),
+          const SizedBox(height: 24),
+          AppSectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              const Icon(Icons.account_balance_wallet_outlined, color: AppColors.primary),
+              const SizedBox(width: 10),
+              Expanded(child: Text('Saldo disponível', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700))),
+              IconButton(tooltip: mostrarSaldo ? 'Ocultar saldo' : 'Mostrar saldo', onPressed: () => setState(() => mostrarSaldo = !mostrarSaldo),
+                icon: Icon(mostrarSaldo ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.primary)),
+            ]),
+            const SizedBox(height: 8),
+            if (isLoadingBalance) const LinearProgressIndicator()
+            else if (hasBalanceError) ...[
+              const Text('Saldo indisponível no momento.', style: TextStyle(color: AppColors.error)),
+              TextButton.icon(onPressed: _loadBalance, icon: const Icon(Icons.refresh), label: const Text('Tentar novamente')),
+            ] else Text(mostrarSaldo ? formatCurrency(saldo) : 'R\$ ••••••',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppColors.primary, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 15),
+            SizedBox(width: double.infinity, child: OutlinedButton.icon(
+              onPressed: () => AppNavigation.openMainSection(context, AppRoutes.wallet),
+              icon: const Icon(Icons.arrow_forward_rounded),
+              label: const Text('Acessar carteira'),
+            )),
+          ])),
+          const SizedBox(height: 22),
+          AppSectionCard(child: ExploreSection(title: 'Explore o aplicativo', buttons: [
+            ExploreButtonData(icon: Icons.explore_outlined, label: 'Catálogo', onTap: () => AppNavigation.openMainSection(context, AppRoutes.catalog)),
+            ExploreButtonData(icon: Icons.swap_horiz_rounded, label: 'Balcão', onTap: () => AppNavigation.openMainSection(context, AppRoutes.exchange)),
+            ExploreButtonData(icon: Icons.wallet_outlined, label: 'Carteira', onTap: () => AppNavigation.openMainSection(context, AppRoutes.wallet)),
+            ExploreButtonData(icon: Icons.insights_rounded, label: 'Dashboard', onTap: () => AppNavigation.openMainSection(context, AppRoutes.dashboard)),
+            ExploreButtonData(icon: Icons.person_outline_rounded, label: 'Perfil', onTap: () => Navigator.of(context).pushNamed(AppRoutes.profile)),
+          ])),
+          const SizedBox(height: 22),
+          TextButton.icon(
+            onPressed: _loggingOut ? null : _handleLogout,
+            icon: const Icon(Icons.logout_rounded),
+            label: Text(_loggingOut ? 'Saindo…' : 'Sair da conta'),
           ),
-        ),
+        ]),
       ),
-
-      // Barra de navegação inferior
-      bottomNavigationBar: const AppBottomNavigation(
-        // Índice da tela Home
-        selectedIndex: 0,
-      ),
-    );
-  }
+    ))),
+    bottomNavigationBar: const AppBottomNavigation(selectedIndex: 0),
+  );
 }

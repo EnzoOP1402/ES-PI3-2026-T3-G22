@@ -1,10 +1,14 @@
 /* Autor: Livia Lucizano - RA: 25017514 */
 
+// HISTÓRICO DE ALTERAÇÕES
+// 02/11/2026 — Gabriela Sichiroli Ferrari (RA 25013763): refatoração estrutural e correções de manutenção.
 // Importa os pacotes e arquivos necessários para a tela
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:mescla_invest_app/features/catalog/data/repositories/catalog_repository.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
@@ -22,6 +26,7 @@ class Catalogo extends StatefulWidget {
 }
 
 class _CatalogoState extends State<Catalogo> {
+  final CatalogRepository _repository = CatalogRepository();
 
   // Controller responsável por capturar o texto digitado no campo de busca
   final TextEditingController _searchController =
@@ -74,19 +79,8 @@ class _CatalogoState extends State<Catalogo> {
 
     try {
 
-      // Define a região onde a função Firebase está publicada
-      final functions =
-          FirebaseFunctions.instanceFor(region: 'southamerica-east1');
-
-      // Prepara a chamada da função listStartups
-      final callable =
-          functions.httpsCallable(
-        'listStartups',
-      );
-
-      // Chama a função enviando filtros somente se eles existirem
-      final result =
-          await callable.call(
+      // Chama o repository enviando somente filtros preenchidos.
+      final response = await _repository.listStartups(
         <String, dynamic>{
 
           if (search != null &&
@@ -102,7 +96,7 @@ class _CatalogoState extends State<Catalogo> {
       // Converte a resposta da função para Map
       final resultData =
           Map<String, dynamic>.from(
-        result.data,
+        response,
       );
 
       // Pega a lista de startups dentro da chave "data"
@@ -232,8 +226,7 @@ class _CatalogoState extends State<Catalogo> {
 
     return Scaffold(
       // Define a cor de fundo da tela
-      backgroundColor:
-          const Color(0xFFE8E9EB),
+      backgroundColor: AppColors.background,
       // AppBar personalizada do projeto
       appBar: CustomAppBar(
         title: 'Catálogo',

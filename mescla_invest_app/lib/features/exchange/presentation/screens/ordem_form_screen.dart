@@ -1,6 +1,9 @@
 /* Autor: livia */
 
+// HISTÓRICO DE ALTERAÇÕES
+// 02/11/2026 — Gabriela Sichiroli Ferrari (RA 25013763): refatoração estrutural e correções de manutenção.
 import 'package:flutter/material.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
@@ -46,7 +49,7 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
   // --- Paleta de cores da tela ---
   static const Color _primaryColor = Color(0xFF353988);    // Azul escuro principal
   static const Color _accentColor = Color(0xFFDB0065);     // Rosa/vermelho de destaque
-  static const Color _backgroundColor = Color(0xFFE8E9EB); // Fundo geral da tela
+  static const Color _backgroundColor = AppColors.background; // Fundo geral da tela
 
   /// Tipo da ordem (compra ou venda), definido pelos argumentos de rota.
   TipoOrdem _tipo = TipoOrdem.compra;
@@ -181,45 +184,41 @@ class _OrdemFormScreenState extends State<OrdemFormScreen> {
       return;
     }
 
-    // Para ordens de compra, verifica antecipadamente se o saldo é suficiente.
+    // Validação de saldo é um pré-requisito para avançar; o backend revalida.
     if (_tipo == TipoOrdem.compra) {
       setState(() => _verificandoSaldo = true);
       try {
         final saldoDisponivel = await _exchangeService.obterSaldoDisponivel();
+        if (!mounted) return;
         final custoEstimado = preco * quantidade;
-
         if (custoEstimado > saldoDisponivel) {
-          if (!mounted) return;
-          // Retorna a flag para a tela anterior disparar o pop-up sem precisar estourar a function na nuvem
-          Navigator.pop(context, 'saldo_insuficiente'); 
+          showErrorSnackBar(context, 'Saldo insuficiente para a ordem. Ajuste o valor ou deposite na carteira.');
           return;
         }
-      } catch (e) {
-        // Se a verificação falhar, deixamos passar para que o próprio Trigger/Function no backend trave a ordem (camada extra de proteção).
+      } catch (_) {
+        if (!mounted) return;
+        showErrorSnackBar(context, 'Não foi possível validar o saldo. Tente novamente.');
+        return;
       } finally {
         if (mounted) setState(() => _verificandoSaldo = false);
       }
     }
 
-    if (_formKey.currentState!.validate()) {
-      // Exibe o modal de resumo e confirmação da ordem.
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (context) => OrderConfirmationModal(
-          tipo: _tipo,
-          modo: _modo,
-          startupId: _startupSelecionada!.id,
-          startupNome: _startupSelecionada!.nome,
-          simbolo: _startupSelecionada!.simbolo,
-          quantidadeTokens: int.parse(_quantidadeController.text),
-          precoUnitario: double.parse(_precoController.text.replaceAll(',', '.')),
-        ),
-      );
-    }
-
     if (!mounted) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => OrderConfirmationModal(
+        tipo: _tipo,
+        modo: _modo,
+        startupId: _startupSelecionada!.id,
+        startupNome: _startupSelecionada!.nome,
+        simbolo: _startupSelecionada!.simbolo,
+        quantidadeTokens: quantidade,
+        precoUnitario: preco,
+      ),
+    );
   }
 
   /// Constrói o estado vazio exibido quando o usuário não possui tokens para vender.

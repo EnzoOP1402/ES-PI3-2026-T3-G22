@@ -1,7 +1,10 @@
 /* Autor: Livia Lucizano */
 
+// HISTÓRICO DE ALTERAÇÕES
+// 02/11/2026 — Gabriela Sichiroli Ferrari (RA 25013763): refatoração estrutural e correções de manutenção.
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 import 'package:mescla_invest_app/features/exchange/data/services/exchange_service.dart';
 import 'package:mescla_invest_app/features/exchange/data/models/exchange_model.dart';
@@ -68,6 +71,7 @@ class _OrderConfirmationModalState extends State<OrderConfirmationModal> {
   /// Envia a ordem ao backend via [ExchangeService], exibe feedback ao usuário
   /// e navega para a tela de sucesso em caso de êxito.
   Future<void> _enviarOrdem() async {
+    if (_carregando) return;
     setState(() => _carregando = true);
 
     try {
@@ -77,8 +81,8 @@ class _OrderConfirmationModalState extends State<OrderConfirmationModal> {
         startupId: widget.startupId,
         quantidadeTokens: widget.quantidadeTokens,
         precoUnitario: widget.precoUnitario,
-        startupNome: '',
-        simbolo: '',
+        startupNome: widget.startupNome,
+        simbolo: widget.simbolo,
       );
 
       if (!mounted) return;
@@ -93,16 +97,19 @@ class _OrderConfirmationModalState extends State<OrderConfirmationModal> {
         }
       }
       else{
-        showSuccessSnackBar(context, 'Ordem de compra criada com sucesso!');
+        showSuccessSnackBar(context, 'Ordem de venda criada com sucesso!');
       }
 
-      // Fecha o modal de confirmação.
-      Navigator.pop(context);
-      // Retorna para a listagem do Balcão limpando o fluxo anterior.
-      Navigator.pushNamedAndRemoveUntil(
-        context, 
-        AppRoutes.ordemSucesso, 
-        (route) => false,
+      // Navega diretamente, removendo inclusive a rota do modal.
+      Navigator.of(context, rootNavigator: true).pushNamedAndRemoveUntil(
+        AppRoutes.ordemSucesso,
+        (_) => false,
+        arguments: {
+          'tipo': widget.tipo.value,
+          'modo': widget.modo.value,
+          'startupNome': widget.startupNome,
+          'valorTotal': _calcularTotal,
+        },
       );
     } catch (error) {
       if (!mounted) return;
@@ -124,9 +131,11 @@ class _OrderConfirmationModalState extends State<OrderConfirmationModal> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryColor = Color(0xFF353988);
+    const Color primaryColor = AppColors.primary;
 
-    return DetailedCatalogModalLayout(
+    return PopScope(
+      canPop: !_carregando,
+      child: DetailedCatalogModalLayout(
       title: 'Confirmação de Ordem',
       subtitle: 'Revise com atenção antes de prosseguir',
       height: 9, // Mantém o modal proporcional e compacto na base da tela
@@ -166,6 +175,12 @@ class _OrderConfirmationModalState extends State<OrderConfirmationModal> {
               
               const SizedBox(height: 12),
               
+              // Cancelar é um fechamento puro: nenhuma chamada ao Firebase.
+              SizedBox(width: double.infinity, child: OutlinedButton(
+                onPressed: _carregando ? null : () => Navigator.of(context).pop(),
+                child: const Text('Cancelar / corrigir valores'),
+              )),
+              const SizedBox(height: 8),
               // Botão de confirmação: desabilitado e com loading durante o envio.
               Center(
                 child: SizedBox(
@@ -175,7 +190,7 @@ class _OrderConfirmationModalState extends State<OrderConfirmationModal> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                     child: _carregando
@@ -199,7 +214,7 @@ class _OrderConfirmationModalState extends State<OrderConfirmationModal> {
           ),
         ),
       ],
-    );
+    ));
   }
 
   /// Constrói uma linha do resumo da ordem com um rótulo em negrito

@@ -1,7 +1,11 @@
 /*Autor: Gabriela Sichiroli Ferrari - RA: 25013763 */
 
 
+// HISTÓRICO DE ALTERAÇÕES
+// 02/11/2026 — Gabriela Sichiroli Ferrari (RA 25013763): refatoração estrutural e correções de manutenção.
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:mescla_invest_app/core/services/cloud_functions_client.dart';
+import 'package:mescla_invest_app/core/utils/cloud_function_data.dart';
 import 'package:mescla_invest_app/features/wallet/data/models/offer_model.dart';
 import 'package:mescla_invest_app/features/wallet/data/models/token_model.dart';
 import 'package:mescla_invest_app/features/wallet/data/models/transaction_model.dart';
@@ -11,33 +15,28 @@ import '../models/wallet_model.dart';
 // e as Firebase Functions relacionadas à carteira.
 class WalletRepository {
 
-  // Construtor privado para implementar Singleton.
-  WalletRepository._();
+  // Instância padrão para as telas existentes. Também aceita injeção nos testes.
+  WalletRepository({CloudFunctionsClient? functions})
+      : _functions = functions ?? CloudFunctionsClient();
 
-  // Instância única do repositório.
-  static final instance = WalletRepository._();
+  static final WalletRepository instance = WalletRepository();
 
-  // Referência para as Cloud Functions da região utilizada pelo projeto.
-  final FirebaseFunctions _functions = FirebaseFunctions.instanceFor(
-        region: 'southamerica-east1',
-      );
+  final CloudFunctionsClient _functions;
 
   // Obtém os dados da carteira do usuário.
   Future<WalletDetails> getWalletData() async {
     try {
-      final callable = _functions.httpsCallable(
+      final callable = _functions.callable(
         'getUserBalance',
       );
 
       final result = await callable.call();
 
-      final data = Map<String, dynamic>.from(
-        result.data,
-      );
+      final data = cloudFunctionDataMap(result.data);
 
-      // Saldo recebido em centavos.
+      // Nunca interpretar resposta malformada como saldo zero.
       final int balanceAvailableCents =
-          data['balanceAvailableCents'] ?? 0;
+          requiredIntegerField(data, 'balanceAvailableCents');
 
       // Conversão de centavos para reais.
       final wallet = WalletDetails(
@@ -63,8 +62,11 @@ class WalletRepository {
   // Adiciona saldo à carteira do usuário.
   Future<void> addBalance(int amountCents
   ) async {
+    if (amountCents <= 0) {
+      throw ArgumentError.value(amountCents, 'amountCents', 'Valor precisa ser positivo.');
+    }
     try {
-      final callable = _functions.httpsCallable(
+      final callable = _functions.callable(
         'addBalance',
       );
 
@@ -84,15 +86,13 @@ class WalletRepository {
   ) async {
     try {
       final result = await _functions
-          .httpsCallable(
+          .callable(
             'getUserOffers',
           )
           .call();
 
-      final data = result.data;
-
-      final List offers =
-          data['userOffers'];
+      final data = cloudFunctionDataMap(result.data);
+      final List offers = (data['userOffers'] as List?) ?? [];
 
       // Converte os dados retornados pela API
       // em uma lista de OfferModel.
@@ -128,13 +128,13 @@ class WalletRepository {
   ) async {
     try {
       final result = await _functions
-          .httpsCallable(
+          .callable(
             'getTokensListByUser',
           )
           .call();
 
-      final List tokenList =
-          result.data['tokenList'];
+      final data = cloudFunctionDataMap(result.data);
+      final List tokenList = (data['tokenList'] as List?) ?? [];
 
       // Converte os dados recebidos em objetos TokenModel.
       return tokenList.map((token) {
@@ -162,7 +162,7 @@ class WalletRepository {
   }) async {
     try {
       final callable = _functions
-          .httpsCallable(
+          .callable(
         'cancelOrder',
       );
 
@@ -182,12 +182,13 @@ class WalletRepository {
   ) async {
     try {
       final result = await _functions
-          .httpsCallable(
+          .callable(
             'getUserTradesHistory',
           )
           .call();
 
-      final List transactions = result.data['transactions'];
+      final data = cloudFunctionDataMap(result.data);
+      final List transactions = (data['transactions'] as List?) ?? [];
 
       // Converte cada item retornado pela API
       // para um objeto TransactionModel.

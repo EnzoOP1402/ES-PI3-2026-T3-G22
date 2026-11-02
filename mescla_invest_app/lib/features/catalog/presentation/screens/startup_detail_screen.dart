@@ -1,8 +1,11 @@
 /* Autor: Livia Lucizano - RA: 25017514 */
 
+// HISTÓRICO DE ALTERAÇÕES
+// 02/11/2026 — Gabriela Sichiroli Ferrari (RA 25013763): refatoração estrutural e correções de manutenção.
 // Imports necessários para a tela de detalhes da startup
 import 'package:flutter/material.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:mescla_invest_app/features/catalog/data/repositories/catalog_repository.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/core/utils/constants.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
@@ -32,6 +35,7 @@ class StartupDetailScreen extends StatefulWidget {
 }
 
 class _StartupDetailScreenState extends State<StartupDetailScreen> {
+  final CatalogRepository _repository = CatalogRepository();
 
 // Future que guarda a busca dos dados da startup no backend
   late final Future<Map<String, dynamic>> _startupDetailsFuture;
@@ -46,21 +50,9 @@ class _StartupDetailScreenState extends State<StartupDetailScreen> {
  // Busca os dados completos da startup usando uma Cloud Function
   Future<Map<String, dynamic>> getStartupDetails() async {
     try {
-      // Define a região onde a função Firebase está publicada
-      final functions = FirebaseFunctions.instanceFor(
-        region: 'southamerica-east1',
-      );
-
-      // Prepara a chamada da função getStartupDetails
-      final HttpsCallable callable = functions.httpsCallable(
-        'getStartupDetails',
-      );
-       // Chama a função enviando o ID da startup
-      final result = await callable.call(<String, dynamic>{
-        'id': widget.startupId,
-      });
-      // Converte a resposta para Map
-      return Map<String, dynamic>.from(result.data);
+      // Contrato com a API encapsulado no repository.
+      final data = await _repository.getStartupDetails(widget.startupId);
+      return Map<String, dynamic>.from(data);
     } on FirebaseFunctionsException catch (e) {
       // O backend lança HttpsError específicos (ex: 'invalid-argument', 'not-found')
       // O FirebaseFunctionsException captura esses erros do onCall para podermos tratá-los no app

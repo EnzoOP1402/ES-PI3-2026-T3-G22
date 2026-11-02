@@ -1,9 +1,14 @@
 /* Autor: Livia Lucizano */
 
+// HISTÓRICO DE ALTERAÇÕES
+// 02/11/2026 — Gabriela Sichiroli Ferrari (RA 25013763): refatoração estrutural e correções de manutenção.
 // Imports necessários para chamadas de backend, gráficos e interface
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:mescla_invest_app/features/dashboard/data/repositories/dashboard_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
@@ -22,9 +27,11 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  final DashboardRepository _repository = DashboardRepository();
+  int _latestRequestId = 0;
   // Cores utilizadas na tela
   final Color rosaPrincipal = const Color(0xFFE6006D);
-  final Color fundoTela = const Color(0xFFE2E2E2);
+  final Color fundoTela = AppColors.background;
 
   // Período atualmente selecionado para os gráficos
   String periodoSelecionado = 'Últimas 24hrs';
@@ -101,28 +108,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // Busca os dados do dashboard no backend
   Future<void> _carregarDashboard() async {
+    final requestId = ++_latestRequestId;
     setState(() {
       carregando = true;
       erro = null;
     });
 
     try {
-      // Chama a Cloud Function responsável pelos dados do dashboard
-      final callable = FirebaseFunctions.instanceFor(
-        region: 'southamerica-east1',
-      ).httpsCallable('getUserDashboardData');
+      // Backend acessado pelo Repository, não diretamente pelo Widget.
+      final dados = await _repository.getDashboard(
+        period: _periodoParaFunction(periodoSelecionado),
+        searchQuery: _searchController.text.trim(),
+      );
 
-      final result = await callable.call({
-        'period': _periodoParaFunction(periodoSelecionado),
-        'searchQuery': _searchController.text.trim(),
-      });
-
-      final dynamic response = result.data;
-
-      List<dynamic> dados =
-          response is List ? response : [];
-
-      if (!mounted) return;
+      if (!mounted || requestId != _latestRequestId) return;
 
       setState(() {
         // Converte os dados recebidos em objetos TokenDashboard
@@ -170,14 +169,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         carregando = false;
       });
     } on FirebaseFunctionsException catch (e) {
-      if (!mounted) return;
+      if (!mounted || requestId != _latestRequestId) return;
 
       setState(() {
         carregando = false;
         erro = e.message ?? e.code;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || requestId != _latestRequestId) return;
 
       setState(() {
         carregando = false;
@@ -188,14 +187,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // Executa a geração de dados históricos para testes
   Future<void> _rodarSeedDeDados() async {
+    if (!kDebugMode) return;
     setState(() => carregandoSeed = true);
 
     try {
-      final callable = FirebaseFunctions.instanceFor(
-        region: 'southamerica-east1',
-      ).httpsCallable('seedHistoricalData');
-
-      await callable.call();
+      await _repository.seedHistoricalData();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -277,7 +273,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
 
       // Botão para gerar dados históricos de teste
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: kDebugMode ? FloatingActionButton(
         onPressed:
             carregandoSeed ? null : _rodarSeedDeDados,
 
@@ -291,7 +287,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Icons.watch_later_outlined,
                 color: Colors.white,
               ),
-      ),
+      ) : null,
 
       // Barra de navegação inferior
       bottomNavigationBar:

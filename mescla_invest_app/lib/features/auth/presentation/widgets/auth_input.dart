@@ -1,6 +1,7 @@
 /*Autor: Gabriela Sichiroli Ferrari - RA: 25013763 */
 
 import 'package:flutter/material.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
 import 'package:flutter/services.dart';
 
 // Campo de entrada reutilizável utilizado
@@ -73,7 +74,7 @@ class AuthInput extends StatelessWidget {
 
           // Define o preenchimento do campo.
           filled: true,
-          fillColor: const Color(0xFFF4F4F4),
+          fillColor: AppColors.surface,
 
           // Espaçamento interno do campo.
           contentPadding: const EdgeInsets.symmetric(
@@ -82,8 +83,8 @@ class AuthInput extends StatelessWidget {
 
           // Configuração das bordas.
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
-            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: AppColors.border),
           ),
 
           // Widget opcional exibido ao final do campo.

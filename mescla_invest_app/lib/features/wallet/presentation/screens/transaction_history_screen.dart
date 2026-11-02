@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
 import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
 import 'package:mescla_invest_app/features/wallet/data/models/transaction_model.dart';
@@ -34,7 +35,7 @@ class TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Cor de fundo da tela.
-      backgroundColor: Color(0xFFE6E6E6),
+      backgroundColor: AppColors.background,
 
       // Barra superior personalizada.
       appBar: CustomAppBar(
@@ -93,11 +94,16 @@ class TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 
                   // Exibe mensagem caso ocorra algum erro.
                   if (snapshot.hasError) {
-                    return Center(
-                      child: Text(
-                        snapshot.error.toString(),
-                      ),
-                    );
+                    return Center(child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('Não foi possível carregar o histórico.'),
+                        const SizedBox(height: 12),
+                        FilledButton(onPressed: () => setState(() =>
+                          _transactionsFuture = WalletRepository.instance.getTransactionHistory()),
+                          child: const Text('Tentar novamente')),
+                      ],
+                    ));
                   }
 
                   // Exibe mensagem quando não há transações.

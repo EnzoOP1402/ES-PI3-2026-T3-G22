@@ -9,6 +9,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
+import 'package:mescla_invest_app/core/widgets/app_section_card.dart';
 
 // Importações de modelos, repositórios e telas/widgets específicos da funcionalidade de Carteira (Wallet)
 import 'package:mescla_invest_app/features/wallet/data/models/token_model.dart';
@@ -38,7 +40,7 @@ class _WalletScreenState extends State<WalletScreen> {
   Future<WalletDetails>? _walletFuture;
 
   // Cor de fundo padrão da tela
-  final Color _backgroundColor = const Color(0xFFE6E6E6);
+  final Color _backgroundColor = AppColors.background;
 
   // Lista que armazenará os tokens específicos que o usuário possui
   List<TokenModel> _tokens = [];
@@ -67,12 +69,14 @@ class _WalletScreenState extends State<WalletScreen> {
       // Aguarda a resposta do repositório com a lista
       final tokens = await WalletRepository.instance.getTokensListByUser();
 
-      // Atualiza o estado com os tokens recebidos e desativa o ícone de carregamento
+      // Atualiza somente se a rota continuar ativa.
+      if (!mounted) return;
       setState(() {
         _tokens = tokens;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       // Em caso de erro, garante que o loading pare
       setState(() {
         _isLoading = false;
@@ -84,11 +88,13 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   // Método de navegação que empilha a tela de depósito em cima da tela atual
-  void _goToDeposit() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => WalletUser(valor: '0,00')),
-    );
+  Future<void> _goToDeposit() async {
+    await Navigator.push(context, MaterialPageRoute<void>(
+      builder: (_) => const WalletUser(valor: '0,00'),
+    ));
+    if (!mounted) return;
+    setState(() => _walletFuture = WalletRepository.instance.getWalletData());
+    _loadTokens();
   }
 
   @override
@@ -110,9 +116,13 @@ class _WalletScreenState extends State<WalletScreen> {
             }
             // Estado 2: Erro na requisição (exibe a mensagem de erro)
             if (snapshot.hasError) {
-              return Center(
-                child: Text('Erro ao carregar carteira: ${snapshot.error}'),
-              );
+              return Center(child: Padding(padding: const EdgeInsets.all(24), child: Column(
+                mainAxisSize: MainAxisSize.min, children: [
+                  const Text('Não foi possível carregar a carteira.'),
+                  const SizedBox(height: 14),
+                  FilledButton(onPressed: () => setState(() => _walletFuture = WalletRepository.instance.getWalletData()), child: const Text('Tentar novamente')),
+                ],
+              )));
             }
 
             // Estado 3: Sucesso. Extrai os dados validados
@@ -128,13 +138,11 @@ class _WalletScreenState extends State<WalletScreen> {
                 child: Column(
                   children: [
                     // Componente visual do Saldo Total
-                    WalletBalanceSection(
+                    AppSectionCard(child: WalletBalanceSection(
                       isObscured: _isObscured,
-                      saldo:
-                          wallet?.balance ??
-                          0, // Usa 0 como valor de fallback caso o saldo retorne nulo
+                      saldo: wallet?.balance ?? 0,
                       onToggle: _toggleVisibility,
-                    ),
+                    )),
                     const SizedBox(height: 16),
 
                     // Linha divisória fina
@@ -142,9 +150,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     const SizedBox(height: 16),
 
                     // Componente para realizar depósitos, passando a função de navegação
-                    Center(
-                      child: WalletDepositSection(onDeposit: _goToDeposit),
-                    ),
+                    AppSectionCard(child: WalletDepositSection(onDeposit: _goToDeposit)),
 
                     const SizedBox(height: 16),
 

@@ -1,6 +1,7 @@
 /*Autor: Gabriela Sichiroli Ferrari - RA: 25013763 */
 
 import 'package:flutter/material.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
 
 // Layout base reutilizável para as telas de autenticação.
 // Define a estrutura visual padrão utilizada em login,
@@ -66,10 +67,10 @@ class AuthLayout extends StatelessWidget {
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Color(0xFF353988),
-                    Color(0xFFDB0065),
+                    AppColors.primary,
+                    AppColors.accent,
                   ],
-                  stops: [0.75, 1.0],
+                  stops: [0.30, 1.0],
                   begin: Alignment.bottomCenter,
                   end: Alignment.topLeft,
                 ),
@@ -86,10 +87,10 @@ class AuthLayout extends StatelessWidget {
                   // Área superior contendo título e subtítulo.
                   Padding(
                     padding: const EdgeInsets.fromLTRB(
-                      40,
-                      40,
-                      20,
-                      20,
+                      24,
+                      30,
+                      24,
+                      26,
                     ),
                     child: Column(
                       crossAxisAlignment:
@@ -129,18 +130,19 @@ class AuthLayout extends StatelessWidget {
                     child: Container(
                       width: double.infinity,
                       padding:
-                          const EdgeInsets.all(30),
+                          const EdgeInsets.all(24),
 
                       decoration:
                           const BoxDecoration(
-                        color: Color(0xFFD4D4D4),
+                        color: AppColors.background,
 
                         // Arredondamento aplicado apenas
                         // ao canto superior esquerdo.
                         borderRadius:
                             BorderRadius.only(
                           topLeft:
-                              Radius.circular(40),
+                              Radius.circular(30),
+                          topRight: Radius.circular(30),
                         ),
 
                         // Sombra para destacar a área

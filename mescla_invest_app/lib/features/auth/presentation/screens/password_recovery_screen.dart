@@ -2,6 +2,7 @@
 
 // Importação do pacote principal do Flutter para construção da interface gráfica
 import 'package:flutter/material.dart';
+import 'package:mescla_invest_app/routes/app_routes.dart';
 
 // Importação do repositório responsável pelas operações de autenticação
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
@@ -73,7 +74,7 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
         if (mounted) {
           showDialog(
             context: context,
-            builder: (context) => AlertDialog(
+            builder: (dialogContext) => AlertDialog(
               // Título da caixa de diálogo
               title: const Text("E-mail Enviado"),
 
@@ -86,10 +87,13 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
                 // para a tela de login
                 TextButton(
                   onPressed: () {
-                    // Fecha o diálogo
-                    Navigator.pop(context);
-                    // Volta para a tela de Login
-                    Navigator.pop(context);
+                    // Fecha o diálogo e limpa a pilha de recuperação.
+                    Navigator.of(dialogContext).pop();
+                    if (mounted) {
+                      Navigator.of(this.context).pushNamedAndRemoveUntil(
+                        AppRoutes.login, (_) => false,
+                      );
+                    }
                   },
                   child: const Text("OK"),
                 ),

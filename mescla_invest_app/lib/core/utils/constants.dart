@@ -1,11 +1,14 @@
 /* Autor: Enzo Olivato Pazian - 25001654 */
 
+// HISTÓRICO DE ALTERAÇÕES
+// 02/11/2026 — Gabriela Sichiroli Ferrari (RA 25013763): refatoração estrutural e correções de manutenção.
 import 'package:flutter/material.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
 
 // Cores
-const Color primaryColor = Color(0xFF2F3192);
-const Color accentColor = Color(0xFFE4007C);
-const Color backgroundColor = Color(0xFFE8E9EB);
+const Color primaryColor = AppColors.legacyPrimary;
+const Color accentColor = AppColors.legacyAccent;
+const Color backgroundColor = AppColors.background;
 
 // Sombra padrão para cards, inputs, botões, etc
 const BoxShadow fieldShadow = BoxShadow(

@@ -1,100 +1,35 @@
-/*Autor: Gabriela Sichiroli Ferrari - RA: 25013763 */
-
+// Autor original: Gabriela Sichiroli Ferrari — RA 25013763.
+// HISTÓRICO: 02/11/2026 — Harmonização visual com a organização de componentes do HorseLife.
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
 import 'package:mescla_invest_app/core/utils/currency_formatter.dart';
 
-// Widget responsável por exibir o saldo da carteira
-// e permitir que o usuário oculte ou visualize o valor.
 class WalletBalanceSection extends StatelessWidget {
-
-  // Define se o saldo está oculto ou visível.
+  const WalletBalanceSection({super.key, required this.isObscured, required this.saldo, required this.onToggle});
   final bool isObscured;
-
-  // Valor atual do saldo da carteira.
   final double saldo;
-
-  // Função chamada ao alternar a visualização do saldo.
   final VoidCallback onToggle;
-
-  const WalletBalanceSection({
-    super.key,
-    required this.isObscured,
-    required this.saldo,
-    required this.onToggle,
-  });
-
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-
-        // Texto identificando o saldo da carteira.
-        Text(
-          'Meu saldo:',
-          style: GoogleFonts.montserrat(
-            color: Colors.black,
-            fontSize: 16,
-          ),
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(children: [
+        const Icon(Icons.account_balance_wallet_outlined, color: AppColors.primary),
+        const SizedBox(width: 9),
+        Expanded(child: Text('Meu saldo', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700))),
+        IconButton(
+          tooltip: isObscured ? 'Mostrar saldo' : 'Ocultar saldo',
+          onPressed: onToggle,
+          icon: Icon(isObscured ? Icons.visibility_outlined : Icons.visibility_off_outlined, color: AppColors.primary),
         ),
-
-        const SizedBox(height: 4),
-
-        Row(
-          children: [
-
-            // Exibe o saldo formatado ou oculto,
-            // dependendo do estado atual.
-            Text(
-              isObscured
-                  ? 'R\$ _ _'
-                  : formatCurrency(saldo),
-              style: GoogleFonts.montserrat(
-                color: Colors.black,
-                fontSize: 24,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-
-            const SizedBox(width: 16),
-
-            // Área clicável para alternar entre
-            // mostrar e ocultar o saldo.
-            GestureDetector(
-              onTap: onToggle,
-              child: Row(
-                children: [
-
-                  // Ícone que representa o estado atual
-                  // de visualização do saldo.
-                  Icon(
-                    isObscured
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
-                    size: 18,
-                  ),
-
-                  const SizedBox(width: 6),
-
-                  // Texto que informa a ação disponível
-                  // para o usuário.
-                  Text(
-                    isObscured
-                        ? 'Mostrar'
-                        : 'Ocultar',
-                    style: GoogleFonts.montserrat(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+      ]),
+      const SizedBox(height: 8),
+      Text(isObscured ? 'R\$ ••••••' : formatCurrency(saldo),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppColors.primary, fontWeight: FontWeight.w800)),
+      const SizedBox(height: 6),
+      const Text('Valores atualizados conforme sua carteira.', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+    ],
+  );
 }

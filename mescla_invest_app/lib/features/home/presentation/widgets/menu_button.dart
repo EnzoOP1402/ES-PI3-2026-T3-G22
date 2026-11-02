@@ -1,95 +1,33 @@
-/*Autor: Gabriela Sichiroli Ferrari - RA: 25013763 */
-
+// Autor original: Gabriela Sichiroli Ferrari — RA 25013763.
+// HISTÓRICO: 02/11/2026 — Harmonização visual com o padrão de cards do HorseLife.
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
 
-// Widget reutilizável utilizado para exibir
-// opções de menu na interface do aplicativo.
 class MenuButton extends StatelessWidget {
-
-  // Ícone exibido no botão.
+  const MenuButton({super.key, required this.icon, required this.label, required this.onTap});
   final IconData icon;
-
-  // Texto exibido abaixo do ícone.
   final String label;
-
-  // Função executada quando o botão é pressionado.
   final VoidCallback onTap;
-
-  const MenuButton({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
   @override
-  Widget build(BuildContext context) {
-
-    // Cor principal utilizada nos ícones e textos.
-    const Color primaryBlue =
-        Color(0xFF34379B);
-
-    return GestureDetector(
-
-      // Executa a ação associada ao botão.
+  Widget build(BuildContext context) => Material(
+    color: AppColors.surfaceAlt,
+    borderRadius: BorderRadius.circular(16),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(16),
       onTap: onTap,
-
-      child: Container(
-
-        // Dimensões fixas do botão.
-        width: 104,
-        height: 112,
-
-        decoration: BoxDecoration(
-
-          // Cor de fundo do botão.
-          color: const Color(0xFFE8E9EB),
-
-          // Borda externa do botão.
-          border: Border.all(
-            color: const Color.fromARGB(
-              36,
-              0,
-              0,
-              0,
-            ),
-            width: 3,
-          ),
-
-          // Arredondamento dos cantos.
-          borderRadius:
-              BorderRadius.circular(20),
-        ),
-
-        child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
-          children: [
-
-            // Ícone representativo da ação.
-            Icon(
-              icon,
-              color: primaryBlue,
-              size: 28,
-            ),
-
-            const SizedBox(height: 6),
-
-            // Texto descritivo da ação.
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.montserrat(
-                fontSize: 16,
-                color: primaryBlue,
-                fontWeight:
-                    FontWeight.w400,
-              ),
-            ),
-          ],
+      child: SizedBox(
+        width: 135,
+        height: 110,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 9),
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(icon, color: AppColors.primary, size: 30),
+            const SizedBox(height: 8),
+            Text(label, textAlign: TextAlign.center, maxLines: 2,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700, color: AppColors.primary)),
+          ]),
         ),
       ),
-    );
-  }
+    ),
+  );
 }

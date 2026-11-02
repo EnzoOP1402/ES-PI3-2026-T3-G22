@@ -7,6 +7,7 @@ import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 import 'package:mescla_invest_app/core/widgets/confirm_exit_dialog.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
 import 'package:intl/intl.dart';
 
 // Importações dos modelos, repositórios e widgets específicos da funcionalidade de carteira
@@ -24,7 +25,7 @@ class MyOffersScreen extends StatefulWidget {
 // Classe de estado que gerencia a lógica, as variáveis e a interface da tela de ofertas
 class _MyOffersScreenState extends State<MyOffersScreen> {
   // Define a cor de fundo padrão utilizada em toda a extensão da tela
-  final Color _backgroundColor = const Color(0xFFE6E6E6);
+  final Color _backgroundColor = AppColors.background;
 
   // Lista simulada de ofertas baseada no seu protótipo
   // Variável que armazenará os dados das ofertas recebidas da API/Repositório
@@ -50,6 +51,7 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
     try {
       // Comunica-se com a camada de dados para obter a lista atualizada
       final offers = await WalletRepository.instance.getUserOffers();
+      if (!mounted) return;
 
       // Atualiza o estado da tela com os dados recebidos e remove o indicador de carregamento
       setState(() {
@@ -57,6 +59,7 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       // Em caso de erro na requisição, garante que o loading seja desativado
       setState(() {
         _isLoading = false;
@@ -101,8 +104,8 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
       await WalletRepository.instance.cancelOrder(orderId: offer.id);
       return true;
     } catch (e) {
-      // Se ocorrer uma falha durante o cancelamento, notifica o usuário com o erro retornado
-      showErrorSnackBar(context, e.toString());
+      // Não acessa context depois de desmontar a tela.
+      if (mounted) showErrorSnackBar(context, 'Não foi possível cancelar a oferta.');
       return false;
     }
   }

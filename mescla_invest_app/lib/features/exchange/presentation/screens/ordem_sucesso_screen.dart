@@ -1,6 +1,7 @@
 /* Autor: livia */
 
 import 'package:flutter/material.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
 import 'package:mescla_invest_app/core/widgets/custom_app_bar.dart';
@@ -16,7 +17,7 @@ class OrdemSucessoScreen extends StatelessWidget {
 
   // --- Paleta de cores da tela ---
   static const Color _primaryColor = Color(0xFF353988);    // Azul escuro principal
-  static const Color _backgroundColor = Color(0xFFDEDEDE); // Fundo geral da tela
+  static const Color _backgroundColor = AppColors.background; // Fundo geral da tela
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +108,7 @@ class OrdemSucessoScreen extends StatelessWidget {
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(7),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                       ),
                       onPressed: () {
@@ -142,7 +143,7 @@ class OrdemSucessoScreen extends StatelessWidget {
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(7),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                     onPressed: () {

@@ -1,6 +1,7 @@
 /*Autor: Gabriela Sichiroli Ferrari - RA: 25013763 */
 
 import 'package:flutter/material.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
 
 // Botão reutilizável utilizado nas telas de autenticação
 // (login, cadastro e recuperação de senha).
@@ -42,11 +43,11 @@ class AuthButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
 
           // Cor principal do botão.
-          backgroundColor: const Color(0xFFE60073),
+          backgroundColor: AppColors.accent,
 
           // Arredondamento das bordas.
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(16),
           ),
         ),
 

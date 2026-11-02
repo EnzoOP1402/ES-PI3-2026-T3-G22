@@ -2,6 +2,7 @@
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 import 'package:mescla_invest_app/core/widgets/app_bottom_navigation.dart';
@@ -43,9 +44,9 @@ class _ExchangeScreenState extends State<ExchangeScreen> {
   // --- Paleta de cores da tela ---
   static const Color _primaryColor = Color(0xFF353988);     // Azul escuro principal
   static const Color _accentColor = Color(0xFFDB0065);      // Rosa/vermelho de destaque
-  static const Color _backgroundColor = Color(0xFFE8E9EB);  // Fundo geral da tela
-  static const Color _sectionBackground = Color(0xFFE8E9EB);// Fundo das seções de ordens
-  static const Color _cardBackground = Color(0xFFF4F4F4);   // Fundo dos cards de oferta
+  static const Color _backgroundColor = AppColors.background;  // Fundo geral da tela
+  static const Color _sectionBackground = AppColors.surface;// Fundo das seções de ordens
+  static const Color _cardBackground = AppColors.surfaceAlt;   // Fundo dos cards de oferta
 
   @override
   void initState() {

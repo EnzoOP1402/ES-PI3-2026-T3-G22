@@ -1,18 +1,23 @@
 /* Autor: livia */
 
+// HISTÓRICO DE ALTERAÇÕES
+// 02/11/2026 — Gabriela Sichiroli Ferrari (RA 25013763): refatoração estrutural e correções de manutenção.
 // Imports necessários para chamadas das Firebase Functions e modelos utilizados
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:mescla_invest_app/core/services/cloud_functions_client.dart';
 import 'package:mescla_invest_app/features/exchange/data/models/board_order_model.dart';
 import 'package:mescla_invest_app/features/exchange/data/models/exchange_model.dart';
 
 // Serviço responsável por toda a comunicação entre a tela de Exchange e o backend
 class ExchangeService {
+  ExchangeService({CloudFunctionsClient? functions})
+      : _functions = functions ?? CloudFunctionsClient();
+
+  final CloudFunctionsClient _functions;
 
   // Busca todas as ordens abertas de compra e venda do marketplace
   Future<Map<String, List<BoardOrderModel>>> buscarQuadroBalcao() async {
-    final result = await FirebaseFunctions.instanceFor(
-      region: 'southamerica-east1',
-    ).httpsCallable('getExchangeBoard').call();
+    final result = await _functions.callable('getExchangeBoard').call();
 
     // Converte a resposta para Map
     final resultData = Map<String, dynamic>.from(result.data);
@@ -54,9 +59,7 @@ class ExchangeService {
     // Caso seja uma ordem de venda
     if (tipo == TipoOrdem.venda) {
       // Busca apenas startups que o usuário possui na carteira
-      final callable = FirebaseFunctions.instanceFor(
-        region: 'southamerica-east1',
-      ).httpsCallable('getStartupsForSellOrders');
+      final callable = _functions.callable('getStartupsForSellOrders');
 
       final response = await callable.call();
 
@@ -83,9 +86,7 @@ class ExchangeService {
       }).toList();
     } else {
       // Busca startups disponíveis para compra
-      final callable = FirebaseFunctions.instanceFor(
-        region: 'southamerica-east1',
-      ).httpsCallable('getStartupsForBuyOrders');
+      final callable = _functions.callable('getStartupsForBuyOrders');
 
       final response = await callable.call();
 
@@ -119,9 +120,7 @@ class ExchangeService {
 
   // Obtém o saldo disponível do usuário
   Future<double> obterSaldoDisponivel() async {
-    final callable = FirebaseFunctions.instanceFor(
-      region: 'southamerica-east1',
-    ).httpsCallable('getUserBalance');
+    final callable = _functions.callable('getUserBalance');
 
     final response = await callable.call();
 
@@ -149,15 +148,18 @@ class ExchangeService {
     required int quantidadeTokens,
     required double precoUnitario,
   }) async {
+    if (startupId.trim().isEmpty || quantidadeTokens <= 0 ||
+        !precoUnitario.isFinite || precoUnitario <= 0) {
+      throw ArgumentError('Ordem inválida: confira a startup, quantidade e preço.');
+    }
+
     late final HttpsCallable callable;
     late final Map<String, dynamic> payload;
 
     // Compra a mercado
     if (tipo == TipoOrdem.compra &&
         modo == ModoOrdem.mercado) {
-      callable = FirebaseFunctions.instanceFor(
-        region: 'southamerica-east1',
-      ).httpsCallable('buyFromStartupMarket');
+      callable = _functions.callable('buyFromStartupMarket');
 
       payload = {
         'startupId': startupId,
@@ -166,9 +168,7 @@ class ExchangeService {
 
       // Compra limitada
     } else if (tipo == TipoOrdem.compra) {
-      callable = FirebaseFunctions.instanceFor(
-        region: 'southamerica-east1',
-      ).httpsCallable('createBuyOrder');
+      callable = _functions.callable('createBuyOrder');
 
       payload = {
         'startupId': startupId,
@@ -178,9 +178,7 @@ class ExchangeService {
 
       // Ordem de venda
     } else {
-      callable = FirebaseFunctions.instanceFor(
-        region: 'southamerica-east1',
-      ).httpsCallable('createSellOrder');
+      callable = _functions.callable('createSellOrder');
 
       payload = {
         'startupId': startupId,
@@ -205,9 +203,7 @@ class ExchangeService {
 
   // Cancela uma ordem existente
   Future<void> cancelarOrdem(String ordemId) async {
-    final callable = FirebaseFunctions.instanceFor(
-      region: 'southamerica-east1',
-    ).httpsCallable('cancelOrder');
+    final callable = _functions.callable('cancelOrder');
 
     await callable.call({
       'orderId': ordemId,

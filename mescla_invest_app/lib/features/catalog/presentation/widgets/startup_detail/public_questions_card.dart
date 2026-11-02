@@ -1,9 +1,12 @@
 /* Autor: Enzo Olivato Pazian - 25001654 */
 
+// HISTÓRICO DE ALTERAÇÕES
+// 02/11/2026 — Gabriela Sichiroli Ferrari (RA 25013763): refatoração estrutural e correções de manutenção.
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:mescla_invest_app/features/catalog/data/repositories/catalog_repository.dart';
 import 'package:mescla_invest_app/core/utils/snackbar_utils.dart';
 import 'package:mescla_invest_app/features/auth/data/repositories/auth_repository.dart';
 import 'package:mescla_invest_app/features/catalog/data/models/question_model.dart';
@@ -33,6 +36,7 @@ class _PublicQuestionsCardState extends State<PublicQuestionsCard> {
   late List<dynamic> _localQuestions;
   final _modalPublicQuestionController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final CatalogRepository _repository = CatalogRepository();
 
   // Variável controladora do carregamento dos dados da página
   // Quando a página é acessada, el muda de valor e aciona a tela de carregamento,
@@ -90,7 +94,8 @@ class _PublicQuestionsCardState extends State<PublicQuestionsCard> {
       );
 
       // Armazenando o acesso à Function de criação de perguntas
-      final HttpsCallable callable = FirebaseFunctions.instanceFor(region: 'southamerica-east1').httpsCallable('createStartupQuestion');
+      // A postagem é delegada à camada de dados.
+
 
       // Adicionando o id da startup ao objeto que será passado como
       // parâmetro pela função
@@ -98,7 +103,7 @@ class _PublicQuestionsCardState extends State<PublicQuestionsCard> {
       payload['startupId'] = widget.startupId; 
 
       // Chamando a Function
-      await callable.call(payload);
+      await _repository.createStartupQuestion(payload);
 
       // Exibe uma mensagem de sucesso
       if (mounted) {

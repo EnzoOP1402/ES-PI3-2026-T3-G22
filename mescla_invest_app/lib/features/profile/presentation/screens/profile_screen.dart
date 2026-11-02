@@ -1,6 +1,9 @@
 /* Autor: Murillo Iamarino Caravita  RA: 25014012*/
 
+// HISTÓRICO DE ALTERAÇÕES
+// 02/11/2026 — Gabriela Sichiroli Ferrari (RA 25013763): refatoração estrutural e correções de manutenção.
 import 'package:flutter/material.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -138,9 +141,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await AuthRepository.instance.logout();
 
       if (mounted) {
-        // Voltando para o início da pilha (tela inicial)
-        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
-        // Voltando para o início da pilha (tela inicial)
+        // Limpa a pilha apenas uma vez, retornando ao AuthWrapper.
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
     } catch (e) {
@@ -198,7 +199,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final String photoUrl = _userData?.photoUrl ?? '';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE9E9E9),
+      backgroundColor: AppColors.background,
       appBar: CustomAppBar(
         title: 'Conta',
       ),

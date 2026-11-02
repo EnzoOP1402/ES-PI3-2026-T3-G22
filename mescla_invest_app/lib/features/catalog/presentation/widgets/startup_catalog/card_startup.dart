@@ -2,6 +2,7 @@
 
 // Imports necessários para construção da interface do card de startup
 import 'package:flutter/material.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mescla_invest_app/features/catalog/data/models/startup_model.dart';
 import 'package:mescla_invest_app/features/catalog/presentation/widgets/startup_catalog/mini_info.dart';
@@ -41,17 +42,17 @@ class _CardStartupState extends State<CardStartup> {
 
     return Card(
       // Configuração visual do card
-      color: const Color(0xFFF4F4F4),
+      color: AppColors.surface,
       margin: const EdgeInsets.only(bottom: 10),
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(20),
       ),
       clipBehavior: Clip.antiAlias,
 
       child: InkWell(
         // Permite clicar em todo o card
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(20),
         onTap: widget.onOpenDetails,
 
         child: Padding(

@@ -1,9 +1,12 @@
 /* Autor: Enzo Olivato Pazian - 25001654 */
 
+// HISTÓRICO DE ALTERAÇÕES
+// 02/11/2026 — Gabriela Sichiroli Ferrari (RA 25013763): refatoração estrutural e correções de manutenção.
 // Implementando as dependências
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mescla_invest_app/core/errors/app_exceptions.dart';
+import 'package:mescla_invest_app/core/services/cloud_functions_client.dart';
 import '../models/user_model.dart';
 
 // Classe que representa o Repositório com as funções relacionadas à autenticação de usuários investidores na plataforma
@@ -20,6 +23,7 @@ class AuthRepository {
 
   // Criando uma instância do Firebase Authentication para a utilização de seus recursos
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final CloudFunctionsClient _functions = CloudFunctionsClient();
 
   // Stream para monitorar se o usuário está logado ou não
   // Alimenta o AuthWrapper com o monitoramento do estado da autenticação
@@ -42,7 +46,7 @@ class AuthRepository {
     // dispara o erro identificado através do método de tratamento de erro 
     on FirebaseAuthException catch (e) {
       // Lança a String amigável para ser capturada pelo catch da UI
-      throw _handleAuthError(e);
+      throw AuthException(_handleAuthError(e));
     }
     // Se algum erro de outra natureza for identificado, dispara a mensagem de erro genérica
     // convertida para String através do construtor da exceção autoral definida ára o tratamento
@@ -59,9 +63,7 @@ class AuthRepository {
   Future<void> register(UserModel user, String password) async {
     try {
       // Fazendo a chamada à função de cadastro do Firebase
-      await FirebaseFunctions
-      .instanceFor(region: 'southamerica-east1')
-      .httpsCallable('registerUser')
+      await _functions.callable('registerUser')
       .call({
         'email': user.email,
         'password': password,
@@ -83,7 +85,7 @@ class AuthRepository {
     // dispara o erro identificado através do método de tratamento de erro 
     on FirebaseAuthException catch (e) {
       // Lança a String amigável para ser capturada pelo catch da UI
-      throw _handleAuthError(e);
+      throw AuthException(_handleAuthError(e));
     }
     // Se erros específicos do Firestore (Permissão, banco fora do ar) forem identificados,
     // dispara o erro identificado, convertendo-o em uma exceção autoral para tratar
@@ -96,7 +98,7 @@ class AuthRepository {
     // em uma exceção autoral para tratar a mensagem de erro 
     catch (e) {
       // Lança a exceção
-      throw AuthException("Ocorreu um erro inesperado. Tente novamente. ${e.toString()}");
+      throw AuthException("Ocorreu um erro inesperado. Tente novamente.");
     }
   }
 
@@ -125,9 +127,7 @@ class AuthRepository {
       final String formattedEmail = email.trim().toLowerCase();
 
       // Invocando a Cloud Function para validar a existência do e-mail de forma segura
-      final HttpsCallable callable = FirebaseFunctions
-        .instanceFor(region: 'southamerica-east1')
-        .httpsCallable('checkEmailExists');
+      final HttpsCallable callable = _functions.callable('checkEmailExists');
       
       // Obtendo o resultado retornado
       final HttpsCallableResult result = await callable.call({
@@ -148,7 +148,7 @@ class AuthRepository {
     // Se erros específicos do Firebase Auth (como "e-mail inválido") forem identificados, dispara
     // o erro identificado através do método de tratamento de erro 
     on FirebaseAuthException catch (e) {
-      throw _handleAuthError(e);
+      throw AuthException(_handleAuthError(e));
     }
     on FirebaseFunctionsException catch (e) {
       throw AuthException("Não foi possível enviar o e-mail de recuperação. ${e.message}");

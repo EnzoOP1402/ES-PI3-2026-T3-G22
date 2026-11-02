@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mescla_invest_app/core/theme/app_colors.dart';
 
 // Widget modularizado para a criação dos cards que representam
 // cada sessão da página detalhada das startups
@@ -32,10 +33,10 @@ class DetailedCatalogModalLayout extends StatelessWidget {
         MediaQuery.of(context).size.height * 0.9 :
         MediaQuery.of(context).size.height * (height!/10),
       decoration: BoxDecoration(
-        color: const Color(0xFFD9D9D9),
+        color: AppColors.surface,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20)
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24)
         )
       ),
       child: Column(
